@@ -100,6 +100,26 @@ export class Database {
 
     return result.success;
   }
+
+  async getSealByPulseToken(pulseToken: string): Promise<TimeSeal | null> {
+    const result = await this.db
+      .prepare('SELECT * FROM seals WHERE pulse_token = ? AND is_active = 1')
+      .bind(pulseToken)
+      .first();
+
+    if (!result) return null;
+
+    return {
+      id: result.id as string,
+      keyB: result.key_b as string,
+      iv: result.iv as string,
+      unlockTime: result.unlock_time as number,
+      createdAt: result.created_at as number,
+      pulseToken: result.pulse_token as string | undefined,
+      pulseDuration: result.pulse_duration as number | undefined,
+      isActive: result.is_active === 1,
+    };
+  }
 }
 
 // Global mock store for local development persistence

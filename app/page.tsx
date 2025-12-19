@@ -1,28 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { encryptData } from '@/lib/crypto';
+import QRCode from 'qrcode';
+
+interface Template {
+  name: string;
+  icon: string;
+  type: 'timed' | 'deadman';
+  placeholder: string;
+  pulseDays?: number;
+}
+
+const TEMPLATES: Template[] = [
+  { name: 'Crypto Inheritance', icon: '💎', type: 'deadman', placeholder: 'Seed phrase: ...\nWallet addresses: ...', pulseDays: 30 },
+  { name: 'Whistleblower', icon: '🕵️', type: 'deadman', placeholder: 'Evidence of...', pulseDays: 7 },
+  { name: 'Product Launch', icon: '🚀', type: 'timed', placeholder: 'Product details, access codes...' },
+  { name: 'Birthday Gift', icon: '🎁', type: 'timed', placeholder: 'Happy Birthday! Here\'s your surprise...' },
+  { name: 'Legal Hold', icon: '⚖️', type: 'timed', placeholder: 'Contract terms...' },
+];
 
 export default function HomePage() {
   const [message, setMessage] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [unlockDate, setUnlockDate] = useState('');
   const [sealType, setSealType] = useState<'timed' | 'deadman'>('timed');
   const [pulseDays, setPulseDays] = useState(7);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string>('');
   const [result, setResult] = useState<{
     publicUrl: string;
     pulseUrl?: string;
   } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [burnSuccess, setBurnSuccess] = useState(false);
+
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('burned') === 'true') {
+        setBurnSuccess(true);
+        setTimeout(() => setBurnSuccess(false), 5000);
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  });
+
+  const applyTemplate = (template: Template) => {
+    setSealType(template.type);
+    setMessage(template.placeholder);
+    if (template.pulseDays) setPulseDays(template.pulseDays);
+  };
 
   const handleCreateSeal = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() && !file) return;
     
     setIsCreating(true);
     setError(null);
     try {
-      // Encrypt the message
-      const encrypted = await encryptData(message);
+      // Encrypt the message or file
+      const encrypted = await encryptData(file || message);
       
       // Calculate unlock time
       let unlockTime: number;
@@ -60,8 +98,11 @@ export default function HomePage() {
       const data = await response.json();
       
       if (data.success) {
+        const publicUrl = `${window.location.origin}${data.publicUrl}#${encrypted.keyA}`;
+        const qr = await QRCode.toDataURL(publicUrl, { width: 256, margin: 2 });
+        setQrCode(qr);
         setResult({
-          publicUrl: `${window.location.origin}${data.publicUrl}#${encrypted.keyA}`,
+          publicUrl,
           pulseUrl: data.pulseUrl ? `${window.location.origin}${data.pulseUrl}` : undefined,
         });
       } else {
@@ -85,6 +126,12 @@ export default function HomePage() {
           </div>
           
           <div className="cyber-border p-6 space-y-4">
+            {qrCode && (
+              <div className="flex justify-center">
+                <img src={qrCode} alt="QR Code" className="border-2 border-neon-green/30" />
+              </div>
+            )}
+            
             <div>
               <label className="block text-sm mb-2">PUBLIC VAULT LINK</label>
               <input
@@ -118,6 +165,8 @@ export default function HomePage() {
             onClick={() => {
               setResult(null);
               setMessage('');
+              setFile(null);
+              setQrCode('');
             }}
             className="cyber-button w-full"
           >
@@ -131,6 +180,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-2xl w-full space-y-8">
+        {burnSuccess && (
+          <div className="cyber-border p-4 bg-red-500/10 border-red-500 text-center">
+            <p className="text-red-500">🔥 Seal burned successfully. Content permanently destroyed.</p>
+          </div>
+        )}
+        
         <div className="text-center">
           <h1 className="text-6xl font-bold glow-text mb-4">TIME-SEAL</h1>
           <p className="text-xl text-neon-green/70 mb-2">The Unbreakable Protocol</p>
@@ -139,13 +194,63 @@ export default function HomePage() {
 
         <div className="cyber-border p-6 space-y-6">
           <div>
-            <label className="block text-sm mb-2">MESSAGE TO SEAL</label>
+            <label className="block text-sm mb-2">QUICK START TEMPLATES</label>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {TEMPLATES.map((t) => (
+                <button
+                  key={t.name}
+                  onClick={() => applyTemplate(t)}
+                  className="cyber-border p-3 hover:bg-neon-green/10 transition-all text-center"
+                  title={t.name}
+                >
+                  <div className="text-2xl mb-1">{t.icon}</div>
+                  <div className="text-xs">{t.name}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2">MESSAGE OR FILE</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Enter your secret message..."
               className="cyber-input w-full h-32 resize-none"
+              disabled={!!file}
             />
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) {
+                    setFile(f);
+                    setMessage('');
+                  }
+                }}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="cyber-button text-xs py-2"
+                disabled={!!message.trim()}
+              >
+                📎 UPLOAD FILE
+              </button>
+              {file && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-neon-green/70">{file.name}</span>
+                  <button
+                    onClick={() => setFile(null)}
+                    className="text-xs text-red-500 hover:text-red-400"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -194,7 +299,7 @@ export default function HomePage() {
 
           <button
             onClick={handleCreateSeal}
-            disabled={isCreating || !message.trim() || (sealType === 'timed' && !unlockDate)}
+            disabled={isCreating || (!message.trim() && !file) || (sealType === 'timed' && !unlockDate)}
             className="cyber-button w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? 'CREATING SEAL...' : 'CREATE TIME-SEAL'}

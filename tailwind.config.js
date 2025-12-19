@@ -11,6 +11,7 @@ module.exports = {
         'neon-green': '#00ff41',
         'dark-bg': '#0a0a0a',
         'dark-surface': '#1a1a1a',
+        border: '#2a2a2a',
         'red': {
           500: '#ef4444',
         },

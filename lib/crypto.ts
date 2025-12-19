@@ -47,7 +47,7 @@ async function deriveMasterKey(keyA: CryptoKey, keyB: CryptoKey): Promise<Crypto
     'raw',
     masterKeyMaterial,
     { name: 'AES-GCM' },
-    false,
+    true,
     ['encrypt', 'decrypt']
   );
 }
@@ -97,7 +97,7 @@ export async function decryptData(
     'raw',
     base64ToArrayBuffer(keys.keyA),
     { name: 'AES-GCM' },
-    false,
+    true,
     ['decrypt']
   );
   
@@ -105,7 +105,7 @@ export async function decryptData(
     'raw',
     base64ToArrayBuffer(keys.keyB),
     { name: 'AES-GCM' },
-    false,
+    true,
     ['decrypt']
   );
 

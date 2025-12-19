@@ -10,11 +10,8 @@ export async function POST(
   try {
     const { token: pulseToken } = await params;
     
-    // Initialize database
     const db = new Database(createMockDB());
-    
-    // Find seal by pulse token
-    const seal = await db.getSeal(''); // Mock - would query by pulse_token
+    const seal = await db.getSealByPulseToken(pulseToken);
     
     if (!seal || !seal.pulseToken || seal.pulseToken !== pulseToken) {
       return NextResponse.json(
@@ -30,7 +27,6 @@ export async function POST(
       );
     }
 
-    // Extend unlock time
     const newUnlockTime = Date.now() + seal.pulseDuration;
     const success = await db.updateUnlockTime(pulseToken, newUnlockTime);
 
@@ -41,7 +37,6 @@ export async function POST(
       );
     }
 
-    // In production, extend R2 Object Lock retention period
     console.log(`[MOCK R2] Extended retention for seal until ${new Date(newUnlockTime)}`);
 
     return NextResponse.json({
@@ -54,6 +49,41 @@ export async function POST(
     console.error('Error updating pulse:', error);
     return NextResponse.json(
       { error: 'Failed to update pulse' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  try {
+    const { token: pulseToken } = await params;
+    
+    const db = new Database(createMockDB());
+    const seal = await db.getSealByPulseToken(pulseToken);
+    
+    if (!seal) {
+      return NextResponse.json(
+        { error: 'Invalid pulse token' },
+        { status: 404 }
+      );
+    }
+
+    const now = Date.now();
+    const timeRemaining = seal.unlockTime - now;
+
+    return NextResponse.json({
+      unlockTime: seal.unlockTime,
+      timeRemaining: Math.max(0, timeRemaining),
+      pulseDuration: seal.pulseDuration,
+    });
+
+  } catch (error) {
+    console.error('Error fetching pulse status:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch pulse status' },
       { status: 500 }
     );
   }

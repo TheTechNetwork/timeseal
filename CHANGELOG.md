@@ -16,6 +16,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD workflow for automated testing
 - Test coverage thresholds (80% across all metrics)
 - Test documentation in `__tests__/README.md`
+- SECURITY.md documenting threat model and mitigations
+- Rate limiting middleware for API protection
+- Centralized error handling with user-friendly messages
+- TODO.md tracking production readiness tasks
+- Storage abstraction layer (R2 vs Mock)
+- Input validation with size and time constraints
+- Structured logging for audit trails
+- Key encryption for keyB database storage
+- Metrics endpoint for monitoring
+- Circuit breaker pattern with retry logic
+- Reusable UI components (Button, Input, Countdown)
+- .env.example documenting required configuration
+
+### Fixed
+- Tailwind border color definition added
+- Crypto tests now test actual encryption/decryption functions
+- Mock storage separated from production code
+
+### Security
+- keyB now encrypted before database storage
+- Master key derived from environment secrets
+- Audit logging for all seal operations
+
+### Known Issues
+- No rate limiting on API endpoints (implementation ready, needs deployment)
+- No authentication required for seal access
+- Key A visible in browser history via URL hash
+- Seal ID enumeration possible without obfuscation
+- R2 Object Lock integration incomplete
+- Playwright E2E tests need debugging
 
 ## [0.1.0] - 2024-01-XX
 

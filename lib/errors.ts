@@ -1,0 +1,112 @@
+// Centralized Error Handling
+export enum ErrorCode {
+  SEAL_NOT_FOUND = 'SEAL_NOT_FOUND',
+  SEAL_LOCKED = 'SEAL_LOCKED',
+  INVALID_KEY = 'INVALID_KEY',
+  DECRYPTION_FAILED = 'DECRYPTION_FAILED',
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  INVALID_UNLOCK_TIME = 'INVALID_UNLOCK_TIME',
+  STORAGE_ERROR = 'STORAGE_ERROR',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+}
+
+export interface AppError {
+  code: ErrorCode;
+  message: string;
+  userMessage: string;
+  statusCode: number;
+}
+
+export const ErrorMessages: Record<ErrorCode, AppError> = {
+  [ErrorCode.SEAL_NOT_FOUND]: {
+    code: ErrorCode.SEAL_NOT_FOUND,
+    message: 'Seal does not exist',
+    userMessage: 'This seal could not be found. Please check the link and try again.',
+    statusCode: 404,
+  },
+  [ErrorCode.SEAL_LOCKED]: {
+    code: ErrorCode.SEAL_LOCKED,
+    message: 'Seal is still locked',
+    userMessage: 'This seal is still locked. Please wait until the unlock time.',
+    statusCode: 403,
+  },
+  [ErrorCode.INVALID_KEY]: {
+    code: ErrorCode.INVALID_KEY,
+    message: 'Invalid decryption key',
+    userMessage: 'The decryption key is invalid. Make sure you have the correct link.',
+    statusCode: 400,
+  },
+  [ErrorCode.DECRYPTION_FAILED]: {
+    code: ErrorCode.DECRYPTION_FAILED,
+    message: 'Decryption failed',
+    userMessage: 'Failed to decrypt the seal. The data may be corrupted.',
+    statusCode: 500,
+  },
+  [ErrorCode.RATE_LIMIT_EXCEEDED]: {
+    code: ErrorCode.RATE_LIMIT_EXCEEDED,
+    message: 'Too many requests',
+    userMessage: 'Too many requests. Please wait a moment and try again.',
+    statusCode: 429,
+  },
+  [ErrorCode.INVALID_UNLOCK_TIME]: {
+    code: ErrorCode.INVALID_UNLOCK_TIME,
+    message: 'Invalid unlock time',
+    userMessage: 'The unlock time must be in the future.',
+    statusCode: 400,
+  },
+  [ErrorCode.STORAGE_ERROR]: {
+    code: ErrorCode.STORAGE_ERROR,
+    message: 'Storage operation failed',
+    userMessage: 'Failed to store the seal. Please try again.',
+    statusCode: 500,
+  },
+  [ErrorCode.DATABASE_ERROR]: {
+    code: ErrorCode.DATABASE_ERROR,
+    message: 'Database operation failed',
+    userMessage: 'A database error occurred. Please try again.',
+    statusCode: 500,
+  },
+};
+
+export function createErrorResponse(code: ErrorCode, details?: string): Response {
+  const error = ErrorMessages[code];
+  return new Response(
+    JSON.stringify({
+      error: {
+        code: error.code,
+        message: error.userMessage,
+        details,
+      },
+    }),
+    {
+      status: error.statusCode,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+}
+
+export function handleError(error: unknown): Response {
+  console.error('Error:', error);
+  
+  if (error instanceof Error) {
+    if (error.message.includes('not found')) {
+      return createErrorResponse(ErrorCode.SEAL_NOT_FOUND);
+    }
+    if (error.message.includes('decrypt')) {
+      return createErrorResponse(ErrorCode.DECRYPTION_FAILED);
+    }
+  }
+  
+  return new Response(
+    JSON.stringify({
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred. Please try again.',
+      },
+    }),
+    {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+}
