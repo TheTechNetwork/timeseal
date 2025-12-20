@@ -122,7 +122,7 @@ function VaultPageClient({ id }: { id: string }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-x-hidden pb-32">
         <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
         <div className="max-w-md w-full text-center relative z-10">
           <div className="text-6xl mb-6">⚠️</div>
@@ -154,7 +154,7 @@ function VaultPageClient({ id }: { id: string }) {
 
   if (decryptedContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-x-hidden pb-32">
         <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

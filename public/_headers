@@ -9,5 +9,8 @@
 /*.css
   Cache-Control: public, max-age=31536000, immutable
 
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /
   Cache-Control: no-cache, no-store, must-revalidate
