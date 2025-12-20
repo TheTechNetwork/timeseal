@@ -35,10 +35,10 @@ export function formatTimeShort(ms: number): string {
 
 export async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
-  const data = await response.json();
+  const data = await response.json() as T;
   
   if (!response.ok) {
-    throw new Error(data.error || `HTTP ${response.status}`);
+    throw new Error((data as any).error || `HTTP ${response.status}`);
   }
   
   return data;

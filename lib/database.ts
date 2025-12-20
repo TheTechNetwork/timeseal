@@ -18,14 +18,13 @@ export interface SealRecord {
   lastPulse?: number;
   keyB: string;
   iv: string;
-  hmac: string;
   pulseToken?: string;
   createdAt: number;
 }
 
 // Production D1 Database
 export class SealDatabase implements DatabaseProvider {
-  constructor(private db: D1Database) { }
+  constructor(public db: D1Database) { }
 
   private mapResultToSealRecord(result: any): SealRecord {
     return {
@@ -36,7 +35,6 @@ export class SealDatabase implements DatabaseProvider {
       lastPulse: result.last_pulse ? Number(result.last_pulse) : undefined,
       keyB: String(result.key_b || ''),
       iv: String(result.iv || ''),
-      hmac: String(result.hmac || ''),
       pulseToken: result.pulse_token ? String(result.pulse_token) : undefined,
       createdAt: Number(result.created_at || 0),
     };
@@ -44,8 +42,8 @@ export class SealDatabase implements DatabaseProvider {
 
   async createSeal(data: SealRecord): Promise<void> {
     const result = await this.db.prepare(
-      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, hmac, pulse_token, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       data.id,
       data.unlockTime,
@@ -54,7 +52,6 @@ export class SealDatabase implements DatabaseProvider {
       data.lastPulse || null,
       data.keyB,
       data.iv,
-      data.hmac,
       data.pulseToken || null,
       data.createdAt
     ).run();
@@ -194,8 +191,9 @@ export function getMockBlob(id: string): ArrayBuffer | undefined {
 
 // Factory
 export function createDatabase(env?: { DB?: D1Database }): DatabaseProvider {
-  if (process.env.NODE_ENV === 'production' && env?.DB) {
+  if (env?.DB) {
     return new SealDatabase(env.DB);
   }
+  console.warn('No D1 binding found, using MockDatabase');
   return new MockDatabase();
 }

@@ -218,7 +218,7 @@ export default function HomePage() {
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; error?: string };
 
       if (data.success) {
         const origin = globalThis.window ? globalThis.window.location.origin : '';
@@ -528,7 +528,7 @@ export default function HomePage() {
             </AnimatePresence>
           </div>
 
-          <div className="flex justify-center pt-2" style={{ filter: 'sepia(1) hue-rotate(80deg) saturate(2)' }}>
+          <div className="flex justify-center pt-2">
             <Turnstile
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
               onSuccess={setTurnstileToken}

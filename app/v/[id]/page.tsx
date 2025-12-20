@@ -1,6 +1,5 @@
 'use client';
 
-export const runtime = 'edge';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -42,7 +41,7 @@ function VaultPageClient({ id }: { id: string }) {
       }
 
       const response = await fetch(`/api/seal/${id}`);
-      const data = await response.json();
+      const data = await response.json() as { encryptedBlob?: string; error?: string };
 
       if (!data.encryptedBlob) {
         setError('Encrypted content not found');
@@ -68,7 +67,7 @@ function VaultPageClient({ id }: { id: string }) {
   const fetchSealStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/seal/${id}`);
-      const data = await response.json();
+      const data = await response.json() as SealStatus & { error?: string };
 
       if (response.ok) {
         setStatus(data);

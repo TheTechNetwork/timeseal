@@ -1,7 +1,7 @@
 // Seal Service - Business Logic Layer
 import { StorageProvider } from './storage';
 import { DatabaseProvider } from './database';
-import { encryptKeyB, decryptKeyBWithFallback, getMasterKey } from './keyEncryption';
+import { encryptKeyB, decryptKeyBWithFallback } from './keyEncryption';
 import { validateFileSize, validateUnlockTime, validatePulseInterval } from './validation';
 import { logger, auditSealCreated, auditSealAccessed } from './logger';
 import { metrics } from './metrics';
@@ -13,7 +13,6 @@ export interface CreateSealRequest {
   encryptedBlob: ArrayBuffer;
   keyB: string;
   iv: string;
-  hmac: string;
   unlockTime: number;
   isDMS?: boolean;
   pulseInterval?: number;
@@ -26,7 +25,6 @@ export interface SealMetadata {
   status: 'locked' | 'unlocked';
   keyB?: string;
   iv?: string;
-  hmac?: string;
 }
 
 import { AuditLogger, AuditEventType } from './auditLogger';
@@ -35,10 +33,15 @@ export class SealService {
   constructor(
     private storage: StorageProvider,
     private db: DatabaseProvider,
+    private masterKey: string,
     private auditLogger?: AuditLogger
-  ) {}
+  ) {
+    if (!masterKey) {
+      throw new Error('SealService requires masterKey');
+    }
+  }
 
-  async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; hmac: string; pulseToken?: string }> {
+  async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; pulseToken?: string }> {
     const sizeValidation = validateFileSize(request.encryptedBlob.byteLength);
     if (!sizeValidation.valid) {
       throw new Error(sizeValidation.error);
@@ -57,9 +60,9 @@ export class SealService {
     }
 
     const sealId = this.generateSealId();
-    const pulseToken = request.isDMS ? await generatePulseToken(sealId, getMasterKey()) : undefined;
+    const pulseToken = request.isDMS ? await generatePulseToken(sealId, this.masterKey) : undefined;
 
-    const encryptedKeyB = await encryptKeyB(request.keyB, getMasterKey(), sealId);
+    const encryptedKeyB = await encryptKeyB(request.keyB, this.masterKey, sealId);
 
     await r2CircuitBreaker.execute(() =>
       withRetry(() => this.storage.uploadBlob(sealId, request.encryptedBlob, request.unlockTime), 3, 1000)
@@ -73,7 +76,6 @@ export class SealService {
       lastPulse: request.isDMS ? Date.now() : undefined,
       keyB: encryptedKeyB,
       iv: request.iv,
-      hmac: request.hmac,
       pulseToken,
       createdAt: Date.now(),
     });
@@ -89,7 +91,7 @@ export class SealService {
     metrics.incrementSealCreated();
     logger.info('seal_created', { sealId, isDMS: request.isDMS });
 
-    return { sealId, iv: request.iv, hmac: request.hmac, pulseToken };
+    return { sealId, iv: request.iv, pulseToken };
   }
 
   async getSeal(sealId: string, ip: string): Promise<SealMetadata> {
@@ -104,7 +106,7 @@ export class SealService {
 
     let decryptedKeyB: string | undefined;
     if (isUnlocked) {
-      decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId);
+      decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [this.masterKey]);
       metrics.incrementSealUnlocked();
     }
 
@@ -124,7 +126,6 @@ export class SealService {
       status: isUnlocked ? 'unlocked' : 'locked',
       keyB: decryptedKeyB,
       iv: isUnlocked ? seal.iv : undefined,
-      hmac: isUnlocked ? seal.hmac : undefined,
     };
   }
 
@@ -146,7 +147,7 @@ export class SealService {
       throw new Error('Replay attack detected');
     }
 
-    const isValid = await validatePulseToken(pulseToken, sealId, getMasterKey());
+    const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }

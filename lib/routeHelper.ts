@@ -1,10 +1,16 @@
 import { NextRequest } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createContainer } from './container';
 import { createHandler, HandlerContext } from './apiHandler';
 import { withRateLimit } from './rateLimit';
 
 interface RouteHandlerOptions {
   rateLimit?: { limit: number; window: number };
+}
+
+interface CloudflareEnv {
+  DB: any;
+  MASTER_ENCRYPTION_KEY?: string;
 }
 
 export function createAPIRoute(
@@ -16,11 +22,13 @@ export function createAPIRoute(
     
     const wrappedHandler = async () => {
       const apiHandler = createHandler(async (ctx: HandlerContext) => {
-        const container = createContainer(ctx.env);
+        const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
+        const container = createContainer(env);
         return handler({ ...ctx, container });
       });
       
-      return apiHandler({ request, ip, env: undefined });
+      const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
+      return apiHandler({ request, ip, env });
     };
 
     if (options.rateLimit) {

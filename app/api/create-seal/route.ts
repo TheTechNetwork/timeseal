@@ -4,7 +4,6 @@ import { createAPIRoute } from '@/lib/routeHelper';
 import { validateFileSize, validateUnlockTime } from '@/lib/validation';
 import { ErrorCode, createErrorResponse } from '@/lib/errors';
 
-export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   const contentLength = request.headers.get('content-length');
@@ -40,7 +39,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse(ErrorCode.INVALID_UNLOCK_TIME, timeValidation.error);
     }
 
-    const sealService: any = container.resolve('sealService');
+    const sealService = container.sealService;
     const blobBuffer = await encryptedBlob.arrayBuffer();
     const result = await sealService.createSeal({
       encryptedBlob: blobBuffer,

@@ -3,17 +3,16 @@ import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
 import { ErrorCode, createErrorResponse } from '@/lib/errors';
 
-export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   return createAPIRoute(async ({ container, request: ctx, ip }) => {
-    const { pulseToken } = await ctx.json();
+    const { pulseToken } = await ctx.json() as { pulseToken: string };
 
     if (!pulseToken) {
       return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
     }
 
-    const sealService: any = container.resolve('sealService');
+    const sealService = container.sealService;
     const result = await sealService.pulseSeal(pulseToken, ip);
 
     return jsonResponse({

@@ -175,6 +175,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to create your first seal.
 
+### 🔐 Production Setup
+
+```bash
+# Generate and set production secrets
+./scripts/setup-secrets.sh
+
+# Or manually:
+openssl rand -base64 32  # Generate key
+wrangler pages secret put MASTER_ENCRYPTION_KEY --project-name=time-seal
+```
+
 ---
 
 ## 📚 Documentation
@@ -223,7 +234,7 @@ See [TODO.md](docs/TODO.md) for complete checklist.
 
 <div align="center">
 
-**Built with 💚 and 🔒**
+**Built with 💚 and 🔒 by [Teycir Ben Soltane](https://teycirbensoltane.tn)**
 
 *Time-Seal: Where cryptography meets inevitability.*
 

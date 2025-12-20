@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
 
-export const runtime = 'edge';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +9,7 @@ export async function GET(
 ) {
   return createAPIRoute(async ({ container, ip }) => {
     const { id: sealId } = await params;
-    const sealService: any = container.resolve('sealService');
+    const sealService = container.sealService;
     const metadata = await sealService.getSeal(sealId, ip);
 
     if (metadata.status === 'locked') {

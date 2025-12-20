@@ -1,89 +1,37 @@
 // Dependency Injection Container
-export class Container {
-  private services = new Map<string, any>();
-  private factories = new Map<string, () => any>();
+import { SealDatabase, MockDatabase } from './database';
+import { SealService } from './sealService';
+import { AuditLogger } from './auditLogger';
+import { createStorage } from './storage';
+import type { D1Database } from '@cloudflare/workers-types';
 
-  register<T>(name: string, instance: T): void {
-    this.services.set(name, instance);
-  }
-
-  registerFactory<T>(name: string, factory: () => T): void {
-    this.factories.set(name, factory);
-  }
-
-  resolve<T>(name: string): T {
-    // Check if already instantiated
-    if (this.services.has(name)) {
-      return this.services.get(name);
-    }
-
-    // Check if factory exists
-    if (this.factories.has(name)) {
-      const instance = this.factories.get(name)!();
-      this.services.set(name, instance);
-      return instance;
-    }
-
-    throw new Error(`Service '${name}' not found in container`);
-  }
-
-  has(name: string): boolean {
-    return this.services.has(name) || this.factories.has(name);
-  }
-
-  clear(): void {
-    this.services.clear();
-    this.factories.clear();
-  }
+interface CloudflareEnv {
+  DB?: D1Database;
+  MASTER_ENCRYPTION_KEY?: string;
 }
 
-// Global container instance
-export const container = new Container();
+export interface Container {
+  sealService: SealService;
+  storage: any;
+  database: any;
+  auditLogger: AuditLogger | undefined;
+}
 
-// Service registration helper
-import { AuditLogger } from "./auditLogger";
+export function createContainer(env?: CloudflareEnv): Container {
+  const masterKey = env?.MASTER_ENCRYPTION_KEY;
+  if (!masterKey) {
+    throw new Error('MASTER_ENCRYPTION_KEY not configured in environment');
+  }
 
-export function createContainer(env?: any) {
-  const c = new Container();
+  const storage = createStorage(env);
+  const database = env?.DB ? new SealDatabase(env.DB) : new MockDatabase();
+  const auditLogger = env?.DB ? new AuditLogger(env.DB) : undefined;
+  const sealService = new SealService(storage, database, masterKey, auditLogger);
 
-  // Register storage
-  c.registerFactory("storage", () => {
-    const { createStorage } = require("./storage");
-    return createStorage(env);
-  });
-
-  // Register database
-  c.registerFactory("database", () => {
-    const { createDatabase } = require("./database");
-    return createDatabase(env);
-  });
-
-  // Register seal service
-  c.registerFactory("sealService", () => {
-    const { SealService } = require("./sealService");
-    const storage = c.resolve("storage");
-    const database = c.resolve("database");
-    const auditLogger: any = c.resolve("auditLogger");
-    return new SealService(storage, database, auditLogger);
-  });
-
-  // Register logger
-  c.registerFactory("logger", () => {
-    const { logger } = require("./logger");
-    return logger;
-  });
-
-  // Register metrics
-  c.registerFactory("metrics", () => {
-    const { metrics } = require("./metrics");
-    return metrics;
-  });
-
-  // Register audit logger
-  c.registerFactory("auditLogger", () => {
-    const database: any = c.resolve("database");
-    return new AuditLogger(database.db);
-  });
-
-  return c;
+  return {
+    sealService,
+    storage,
+    database,
+    auditLogger,
+  };
 }

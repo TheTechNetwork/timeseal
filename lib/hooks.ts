@@ -40,7 +40,7 @@ export function useAPI<T>(url: string, options?: RequestInit) {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      const json = await response.json();
+      const json = await response.json() as T;
       setData(json);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
