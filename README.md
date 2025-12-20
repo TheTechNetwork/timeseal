@@ -152,7 +152,7 @@ sequenceDiagram
 
 ---
 
-## � Tech Stack
+## 🛠️ Tech Stack
 
 *   **Frontend:** `Next.js 14` (App Router)
 *   **Runtime:** `Cloudflare Workers`
