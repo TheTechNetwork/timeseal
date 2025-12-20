@@ -1,21 +1,21 @@
 <div align="center">
 
-# ⏳ TIME-SEAL
-### The Unbreakable Protocol
-
 ![License](https://img.shields.io/badge/license-BSL-neon_green?style=for-the-badge)
 ![Encryption](https://img.shields.io/badge/Encryption-AES--GCM-neon_green?style=for-the-badge)
 ![Storage](https://img.shields.io/badge/Storage-R2_Object_Lock-neon_green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Operational-neon_green?style=for-the-badge)
 
-```text
+# ⏳ TIME-SEAL
+### The Unbreakable Protocol
+
+<pre>
 ████████╗██╗███╗   ███╗███████╗    ███████╗███████╗ █████╗ ██╗
 ╚══██╔══╝██║████╗ ████║██╔════╝    ██╔════╝██╔════╝██╔══██╗██║
    ██║   ██║██╔████╔██║█████╗█████╗███████╗█████╗  ███████║██║
    ██║   ██║██║╚██╔╝██║██╔══╝╚════╝╚════██║██╔══╝  ██╔══██║██║
    ██║   ██║██║ ╚═╝ ██║███████╗    ███████║███████╗██║  ██║███████╗
    ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝    ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
-```
+</pre>
 
 ### *"If I go silent, this speaks for me."*
 

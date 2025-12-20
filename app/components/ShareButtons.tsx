@@ -13,9 +13,8 @@ export function ShareButtons({ url, text = 'Check out my TimeSeal vault!' }: Sha
 
   const shareLinks = {
     twitter: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
-    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
-    whatsapp: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
-    reddit: `https://reddit.com/submit?url=${encodedUrl}&title=${encodedText}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+    github: `https://github.com/teycir/timeseal#readme`,
   };
 
   const handleNativeShare = async () => {
@@ -40,39 +39,29 @@ export function ShareButtons({ url, text = 'Check out my TimeSeal vault!' }: Sha
         target="_blank"
         rel="noopener noreferrer"
         className="cyber-border px-3 py-1 text-xs text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 transition-all font-mono"
-        title="Share on Twitter"
+        title="Share on X"
       >
         𝕏
       </a>
 
       <a
-        href={shareLinks.telegram}
+        href={shareLinks.linkedin}
         target="_blank"
         rel="noopener noreferrer"
         className="cyber-border px-3 py-1 text-xs text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 transition-all font-mono"
-        title="Share on Telegram"
+        title="Share on LinkedIn"
       >
-        TG
+        IN
       </a>
 
       <a
-        href={shareLinks.whatsapp}
+        href={shareLinks.github}
         target="_blank"
         rel="noopener noreferrer"
         className="cyber-border px-3 py-1 text-xs text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 transition-all font-mono"
-        title="Share on WhatsApp"
+        title="View on GitHub"
       >
-        WA
-      </a>
-
-      <a
-        href={shareLinks.reddit}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="cyber-border px-3 py-1 text-xs text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 transition-all font-mono"
-        title="Share on Reddit"
-      >
-        RD
+        GH
       </a>
 
       {typeof navigator !== 'undefined' && 'share' in navigator && (
