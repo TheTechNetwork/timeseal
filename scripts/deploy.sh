@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+echo "⚠️  TIME-SEAL requires server-side rendering for API routes."
+echo "📋 To deploy to Cloudflare Pages:"
+echo ""
+echo "1. Push code to GitHub"
+echo "2. Go to Cloudflare Dashboard → Pages"
+echo "3. Connect to Git → Select repository"
+echo "4. Framework preset: Next.js"
+echo "5. Build command: npm run build"
+echo "6. Build output directory: .next"
+echo "7. Add environment variables:"
+echo "   - NODE_VERSION=20"
+echo "8. Configure bindings:"
+echo "   - R2: BUCKET → timeseal-vault"
+echo "   - D1: DB → timeseal-db"
+echo "9. Add secret: MASTER_ENCRYPTION_KEY"
+echo ""
+echo "🔗 Dashboard: https://dash.cloudflare.com/pages"
+echo ""
+echo "❌ Direct wrangler deployment not supported for Next.js SSR"

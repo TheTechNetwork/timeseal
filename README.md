@@ -186,15 +186,17 @@ Open [http://localhost:3000](http://localhost:3000) to create your first seal.
 
 ## 📚 Documentation
 
-- [Architecture Guide](ARCHITECTURE.md) - Design patterns and abstractions
-- [Deployment Guide](DEPLOYMENT.md) - Cloudflare setup instructions
-- [Security Documentation](SECURITY.md) - Threat model and security controls
-- [Security Enhancements](SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
-- [Key Rotation Guide](KEY-ROTATION.md) - Master key rotation procedures
-- [Security Testing](SECURITY-TESTING.md) - Penetration testing guide
-- [Testing Guide](TESTING.md) - Complete testing documentation
-- [Roadmap](ROADMAP.md) - Feature roadmap and milestones
-- [Changelog](CHANGELOG.md) - Version history and changes
+- [Architecture Guide](docs/ARCHITECTURE.md) - Design patterns and abstractions
+- [Deployment Guide](docs/DEPLOYMENT.md) - Cloudflare setup instructions
+- [Security Documentation](docs/SECURITY.md) - Threat model and security controls
+- [Security Enhancements](docs/SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
+- [Key Rotation Guide](docs/KEY-ROTATION.md) - Master key rotation procedures
+- [Security Testing](docs/SECURITY-TESTING.md) - Penetration testing guide
+- [Audit Logging](docs/AUDIT-LOGGING.md) - Immutable audit trail for all operations
+- [Testing Guide](docs/TESTING.md) - Complete testing documentation
+- [Testing Infrastructure](docs/TESTING-INFRASTRUCTURE.md) - Test setup and configuration
+- [Changelog](docs/CHANGELOG.md) - Version history and changes
+- [TODO](docs/TODO.md) - Production readiness checklist
 
 This project is licensed under the **Business Source License (BSL)**.
 
@@ -207,16 +209,22 @@ See [LICENSE](LICENSE) for full terms.
 
 ---
 
-## 🔮 Future Roadmap
+## 🔮 Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for detailed feature plans.
+**Recently Implemented:**
+- ✅ Audit Logging - Immutable access trail
+- ✅ Code Deduplication - Cleaner API routes  
+- ✅ Test Infrastructure - Fast, reliable tests
 
-**Highlights:**
-- Multi-Sig Unlocking (M-of-N keys)
-- Decentralized Storage (Arweave/IPFS)
-- Hardware Key Support (YubiKey)
-- Mobile Apps (iOS/Android)
-- API Access & Integrations
+**Critical (Before Production):**
+- 🔴 Production Secrets - Set environment variables
+
+**High Priority:**
+- 🟡 Monitoring & Alerts - Failed unlocks, pulse misses
+- 🟡 Security Testing - Penetration tests
+- 🟡 Backup & Recovery - Disaster recovery procedures
+
+See [TODO.md](docs/TODO.md) for complete checklist.
 
 ---
 
