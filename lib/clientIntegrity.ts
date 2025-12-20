@@ -1,6 +1,8 @@
 // Client-Side Integrity Verification
 // Verifies that crypto operations haven't been tampered with
 
+declare const chrome: any;
+
 export async function verifyIntegrity(): Promise<boolean> {
   try {
     // Verify Web Crypto API is available and unmodified
@@ -32,7 +34,7 @@ export async function verifyIntegrity(): Promise<boolean> {
     );
 
     const result = new TextDecoder().decode(decrypted);
-    
+
     if (result !== 'integrity-check') {
       console.error('Crypto integrity check failed');
       return false;
@@ -50,12 +52,12 @@ let integrityVerified = false;
 
 export async function ensureIntegrity(): Promise<void> {
   if (integrityVerified) return;
-  
+
   const verified = await verifyIntegrity();
   if (!verified) {
     throw new Error('Client integrity verification failed. Please refresh and try again.');
   }
-  
+
   integrityVerified = true;
 }
 

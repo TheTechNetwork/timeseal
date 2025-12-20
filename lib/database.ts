@@ -1,4 +1,6 @@
 // Database Abstraction Layer
+import type { D1Database } from '@cloudflare/workers-types';
+
 export interface DatabaseProvider {
   createSeal(data: SealRecord): Promise<void>;
   getSeal(id: string): Promise<SealRecord | null>;
@@ -22,7 +24,7 @@ export interface SealRecord {
 }
 
 // Production D1 Database
-export class D1Database implements DatabaseProvider {
+export class SealDatabase implements DatabaseProvider {
   constructor(private db: D1Database) { }
 
   private mapResultToSealRecord(result: any): SealRecord {
@@ -117,7 +119,7 @@ class MockStore {
   private seals = new Map<string, SealRecord>();
   private blobs = new Map<string, ArrayBuffer>();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): MockStore {
     if (!MockStore.instance) {
@@ -128,7 +130,7 @@ class MockStore {
 
   getSeals() { return this.seals; }
   getBlobs() { return this.blobs; }
-  
+
   clear() {
     this.seals.clear();
     this.blobs.clear();
@@ -193,7 +195,7 @@ export function getMockBlob(id: string): ArrayBuffer | undefined {
 // Factory
 export function createDatabase(env?: { DB?: D1Database }): DatabaseProvider {
   if (process.env.NODE_ENV === 'production' && env?.DB) {
-    return new D1Database(env.DB);
+    return new SealDatabase(env.DB);
   }
   return new MockDatabase();
 }

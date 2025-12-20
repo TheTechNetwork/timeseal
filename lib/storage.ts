@@ -1,4 +1,6 @@
 // Storage Abstraction Layer
+import type { R2Bucket } from '@cloudflare/workers-types';
+
 const MAX_UPLOAD_SIZE = parseInt(process.env.MAX_FILE_SIZE_MB || '10') * 1024 * 1024;
 
 export interface StorageProvider {
@@ -9,16 +11,16 @@ export interface StorageProvider {
 
 // Production R2 Storage
 export class R2Storage implements StorageProvider {
-  constructor(private bucket: R2Bucket) {}
+  constructor(private bucket: R2Bucket) { }
 
   async uploadBlob(sealId: string, data: ArrayBuffer, unlockTime: number): Promise<void> {
     // Enforce size limit at R2 level
     if (data.byteLength > MAX_UPLOAD_SIZE) {
       throw new Error(`File exceeds maximum size of ${MAX_UPLOAD_SIZE / 1024 / 1024}MB`);
     }
-    
+
     const retentionUntil = new Date(unlockTime);
-    
+
     await this.bucket.put(sealId, data, {
       httpMetadata: {
         contentType: 'application/octet-stream',
@@ -33,7 +35,7 @@ export class R2Storage implements StorageProvider {
         mode: 'COMPLIANCE',
         retainUntilDate: retentionUntil,
       },
-    });
+    } as any);
   }
 
   async downloadBlob(sealId: string): Promise<ArrayBuffer> {

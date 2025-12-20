@@ -131,7 +131,7 @@
 
   /* Dynamic Glass Panel */
   .cyber-card {
-    @apply relative overflow-hidden rounded-xl border border-neon-green/20 bg-dark-surface/80 backdrop-blur-xl shadow-[0_0_20px_rgba(0, 255, 65, 0.05)];
+    @apply relative overflow-hidden rounded-xl border border-neon-green/20 bg-dark-surface/80 backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,65,0.05)];
   }
 
   .cyber-card::before {
@@ -145,7 +145,7 @@
 
   /* Glitchy Button */
   .cyber-button {
-    @apply relative overflow-hidden rounded-lg border border-neon-green/50 px-6 py-3 bg-neon-green/5 text-neon-green font-bold tracking-widest uppercase transition-all duration-300 hover:bg-neon-green hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0, 255, 65, 0.6)];
+    @apply relative overflow-hidden rounded-lg border border-neon-green/50 px-6 py-3 bg-neon-green/5 text-neon-green font-bold tracking-widest uppercase transition-all duration-300 hover:bg-neon-green hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0,255,65,0.6)];
   }
 
   .cyber-button:disabled {
@@ -154,7 +154,7 @@
 
   /* Neon Input */
   .cyber-input {
-    @apply w-full bg-dark-bg/50 border border-neon-green/30 rounded-lg px-4 py-3 text-neon-green placeholder-neon-green/30 outline-none transition-all duration-300 focus:border-neon-green focus:shadow-[0_0_15px_rgba(0, 255, 65, 0.2)] focus:bg-dark-bg/80;
+    @apply w-full bg-dark-bg/50 border border-neon-green/30 rounded-lg px-4 py-3 text-neon-green placeholder-neon-green/30 outline-none transition-all duration-300 focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,255,65,0.2)] focus:bg-dark-bg/80;
   }
 
   /* Typography Effects */
@@ -199,7 +199,7 @@
   right: 0;
   height: 5px;
   background: rgba(0, 255, 65, 0.1);
-  box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+  box-shadow: 0 0 10px rgba(0,255,65,0.2);
   animation: scanline 8s linear infinite;
   pointer-events: none;
   z-index: 50;

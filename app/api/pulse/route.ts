@@ -1,38 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createContainer } from '@/lib/container';
-import { createHandler, jsonResponse, HandlerContext } from '@/lib/apiHandler';
-import { withRateLimit } from '@/lib/rateLimit';
+import { NextRequest } from 'next/server';
+import { jsonResponse } from '@/lib/apiHandler';
+import { createAPIRoute } from '@/lib/routeHelper';
 import { ErrorCode, createErrorResponse } from '@/lib/errors';
 
 export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  
-  return withRateLimit(
-    request,
-    async () => {
-      const handler = createHandler(async (ctx: HandlerContext) => {
-        const { pulseToken } = await ctx.request.json();
+  return createAPIRoute(async ({ container, request: ctx, ip }) => {
+    const { pulseToken } = await ctx.json();
 
-        if (!pulseToken) {
-          return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
-        }
+    if (!pulseToken) {
+      return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
+    }
 
-        const container = createContainer(ctx.env);
-        const sealService: any = container.resolve('sealService');
+    const sealService: any = container.resolve('sealService');
+    const result = await sealService.pulseSeal(pulseToken, ip);
 
-        const result = await sealService.pulseSeal(pulseToken, ctx.ip);
-
-        return jsonResponse({
-          success: true,
-          newUnlockTime: result.newUnlockTime,
-          message: 'Pulse updated successfully',
-        });
-      });
-
-      return handler({ request, ip, env: undefined });
-    },
-    { limit: 20, window: 60000 }
-  );
+    return jsonResponse({
+      success: true,
+      newUnlockTime: result.newUnlockTime,
+      message: 'Pulse updated successfully',
+    });
+  }, { rateLimit: { limit: 20, window: 60000 } })(request);
 }

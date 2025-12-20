@@ -2,16 +2,21 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { encryptData } from '@/lib/crypto';
+import { usePWA } from '@/lib/usePWA';
 import QRCode from 'qrcode';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import Datepicker from 'react-tailwindcss-datepicker';
+// import Datepicker from 'react-tailwindcss-datepicker';
 import confetti from 'canvas-confetti';
+import dynamic from 'next/dynamic';
+
+const Datepicker = dynamic(() => import('react-tailwindcss-datepicker'), { ssr: false });
+const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then(mod => mod.Turnstile), { ssr: false });
 import { Card } from './components/Card';
 import { Button } from './components/Button';
 import { Input } from './components/Input';
+import { ShareButtons } from './components/ShareButtons';
 import DecryptedText from './components/DecryptedText';
 import { BackgroundBeams } from './components/ui/background-beams';
 
@@ -32,6 +37,8 @@ const TEMPLATES: Template[] = [
 ];
 
 export default function HomePage() {
+  usePWA();
+
   const [message, setMessage] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
@@ -257,6 +264,9 @@ export default function HomePage() {
               <p className="text-xs text-neon-green/50 mt-1">
                 Share this link. It contains Key A in the URL hash.
               </p>
+              <div className="mt-3">
+                <ShareButtons url={result.publicUrl} text="🔒 I created a time-locked vault with TimeSeal!" />
+              </div>
             </div>
 
             {result.pulseUrl && result.pulseToken && (

@@ -5,16 +5,25 @@ export interface RateLimitConfig {
 }
 
 export class RateLimiter {
-  private config: RateLimitConfig;
-  private cache: Map<string, { count: number; resetAt: number }>;
+  private readonly config: RateLimitConfig;
+  private readonly cache: Map<string, { count: number; resetAt: number }>;
+  private lastCleanup: number;
 
   constructor(config: RateLimitConfig) {
     this.config = config;
     this.cache = new Map();
+    this.lastCleanup = Date.now();
   }
 
   async check(identifier: string): Promise<{ allowed: boolean; remaining: number }> {
     const now = Date.now();
+
+    // Lazy cleanup to prevent memory leaks
+    if (this.cache.size > 5000 && now - this.lastCleanup > 60000) {
+      this.cleanup();
+      this.lastCleanup = now;
+    }
+
     const record = this.cache.get(identifier);
 
     if (!record || now > record.resetAt) {
@@ -32,6 +41,15 @@ export class RateLimiter {
     record.count++;
     return { allowed: true, remaining: this.config.limit - record.count };
   }
+
+  private cleanup() {
+    const now = Date.now();
+    for (const [key, record] of this.cache.entries()) {
+      if (now > record.resetAt) {
+        this.cache.delete(key);
+      }
+    }
+  }
 }
 
 // Singleton pattern for rate limiters
@@ -39,7 +57,7 @@ class RateLimiterRegistry {
   private static instance: RateLimiterRegistry;
   private limiters = new Map<string, RateLimiter>();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): RateLimiterRegistry {
     if (!RateLimiterRegistry.instance) {
@@ -67,10 +85,10 @@ export async function withRateLimit(
   config: RateLimitConfig = { limit: 10, window: 60000 }
 ): Promise<Response> {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  
+
   const key = `${config.limit}:${config.window}`;
   const limiter = RateLimiterRegistry.getInstance().getLimiter(key, config);
-  
+
   const { allowed, remaining } = await limiter.check(ip);
 
   if (!allowed) {

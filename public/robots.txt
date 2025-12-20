@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow private/sensitive routes
+Disallow: /api/
+Disallow: /pulse/
+
+# Sitemap
+Sitemap: https://timeseal.dev/sitemap.xml
