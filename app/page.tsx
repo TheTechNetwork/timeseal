@@ -7,11 +7,9 @@ import QRCode from 'qrcode';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-// import Datepicker from 'react-tailwindcss-datepicker';
 import confetti from 'canvas-confetti';
 import dynamic from 'next/dynamic';
 
-const Datepicker = dynamic(() => import('react-tailwindcss-datepicker'), { ssr: false });
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then(mod => mod.Turnstile), { ssr: false });
 import { Card } from './components/Card';
 import { Button } from './components/Button';
@@ -41,12 +39,7 @@ export default function HomePage() {
 
   const [message, setMessage] = useState('');
   const [file, setFile] = useState<File | null>(null);
-
-  // Datepicker state
-  const [dateValue, setDateValue] = useState<any>({
-    startDate: null,
-    endDate: null
-  });
+  const [unlockDate, setUnlockDate] = useState('');
 
   const [sealType, setSealType] = useState<'timed' | 'deadman'>('timed');
   const [pulseDays, setPulseDays] = useState(7);
@@ -148,13 +141,13 @@ export default function HomePage() {
       let pulseDuration: number | undefined;
 
       if (sealType === 'timed') {
-        if (!dateValue.startDate) {
+        if (!unlockDate) {
           console.error('Invalid unlock date');
           toast.dismiss(loadingToast);
           toast.error('Please select a valid future date');
           return;
         }
-        unlockTime = new Date(dateValue.startDate).getTime();
+        unlockTime = new Date(unlockDate).getTime();
 
         if (Number.isNaN(unlockTime) || unlockTime <= Date.now()) {
           console.error('Invalid unlock date');
@@ -301,7 +294,7 @@ export default function HomePage() {
               setFile(null);
               setQrCode('');
               setTurnstileToken(null);
-              setDateValue({ startDate: null, endDate: null });
+              setUnlockDate('');
               setSealType('timed');
               setPulseDays(7);
             }}
@@ -457,20 +450,14 @@ export default function HomePage() {
                   exit={{ opacity: 0, height: 0 }}
                   className="relative z-50"
                 >
-                  <div className="block text-sm mb-2 text-neon-green/80 font-bold">UNLOCK DATE</div>
-                  <div className="cyber-border">
-                    <Datepicker
-                      asSingle={true}
-                      useRange={false}
-                      value={dateValue}
-                      onChange={(newValue: any) => setDateValue(newValue)}
-                      primaryColor={"green"}
-                      inputClassName="w-full bg-transparent border-none text-neon-green font-mono placeholder-neon-green/30 focus:ring-0"
-                      containerClassName="relative"
-                      toggleClassName="absolute right-0 h-full px-3 text-neon-green focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
-                      placeholder="Select Date..."
-                    />
-                  </div>
+                  <div className="block text-sm mb-2 text-neon-green/80 font-bold">UNLOCK DATE & TIME</div>
+                  <input
+                    type="datetime-local"
+                    value={unlockDate}
+                    onChange={(e) => setUnlockDate(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="cyber-input w-full"
+                  />
                 </motion.div>
               ) : (
                 <motion.div
@@ -522,7 +509,7 @@ export default function HomePage() {
 
           <Button
             onClick={handleCreateSeal}
-            disabled={isCreating || (!message.trim() && !file) || (sealType === 'timed' && !dateValue.startDate) || !turnstileToken}
+            disabled={isCreating || (!message.trim() && !file) || (sealType === 'timed' && !unlockDate) || !turnstileToken}
             className="w-full text-lg shadow-[0_0_20px_rgba(0,255,65,0.2)]"
           >
             {isCreating ? 'ENCRYPTING & SEALING...' : 'CREATE TIME-SEAL'}

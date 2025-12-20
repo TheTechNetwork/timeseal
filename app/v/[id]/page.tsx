@@ -1,5 +1,7 @@
 'use client';
 
+export const runtime = 'edge';
+
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { decryptData } from '@/lib/crypto';

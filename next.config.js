@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable SRI for production builds
   generateBuildId: async () => {
-    return process.env.BUILD_ID || `build-${Date.now()}`;
+    return `build-${Date.now()}`;
   },
 
-  // Security headers
   async headers() {
     return [
       {
@@ -32,7 +30,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), vr=()',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
           },
           {
             key: 'X-Content-Type-Options',
