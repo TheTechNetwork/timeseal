@@ -19,20 +19,49 @@ import DecryptedText from './components/DecryptedText';
 import { TextScramble } from './components/TextScramble';
 import { BackgroundBeams } from './components/ui/background-beams';
 
+import { Bitcoin, ShieldAlert, Rocket, Gift, Scale } from 'lucide-react';
+
 interface Template {
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   type: 'timed' | 'deadman';
   placeholder: string;
   pulseDays?: number;
 }
 
 const TEMPLATES: Template[] = [
-  { name: 'Crypto Inheritance', icon: '💎', type: 'deadman', placeholder: 'Seed phrase: ...\nWallet addresses: ...', pulseDays: 30 },
-  { name: 'Whistleblower', icon: '🕵️', type: 'deadman', placeholder: 'Evidence of...', pulseDays: 7 },
-  { name: 'Product Launch', icon: '🚀', type: 'timed', placeholder: 'Product details, access codes...' },
-  { name: 'Birthday Gift', icon: '🎁', type: 'timed', placeholder: 'Happy Birthday! Here&apos;s your surprise...' },
-  { name: 'Legal Hold', icon: '⚖️', type: 'timed', placeholder: 'Contract terms...' },
+  {
+    name: 'Crypto Inheritance',
+    icon: <Bitcoin className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />,
+    type: 'deadman',
+    placeholder: 'Seed phrase: ...\nWallet addresses: ...',
+    pulseDays: 30
+  },
+  {
+    name: 'Whistleblower',
+    icon: <ShieldAlert className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />,
+    type: 'deadman',
+    placeholder: 'Evidence of...',
+    pulseDays: 7
+  },
+  {
+    name: 'Product Launch',
+    icon: <Rocket className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />,
+    type: 'timed',
+    placeholder: 'Product details, access codes...'
+  },
+  {
+    name: 'Birthday Gift',
+    icon: <Gift className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />,
+    type: 'timed',
+    placeholder: 'Happy Birthday! Here\'s your surprise...'
+  },
+  {
+    name: 'Legal Hold',
+    icon: <Scale className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />,
+    type: 'timed',
+    placeholder: 'Contract terms...'
+  },
 ];
 
 export default function HomePage() {
@@ -366,7 +395,7 @@ export default function HomePage() {
                   className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center"
                   title={t.name}
                 >
-                  <div className="text-2xl mb-1">{t.icon}</div>
+                  <div className="mb-1">{t.icon}</div>
                   <div className="text-xs text-neon-green/70">{t.name}</div>
                 </motion.button>
               ))}
