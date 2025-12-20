@@ -15,6 +15,19 @@ CREATE TABLE IF NOT EXISTS seals (
   INDEX idx_dms_expired (is_dms, last_pulse, pulse_interval)
 );
 
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  seal_id TEXT NOT NULL,
+  ip TEXT NOT NULL,
+  metadata TEXT DEFAULT '{}',
+  created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
+  INDEX idx_audit_seal_id (seal_id),
+  INDEX idx_audit_timestamp (timestamp),
+  INDEX idx_audit_event_type (event_type)
+);
+
 -- R2 Object Lock Configuration
 -- Note: Object Lock must be enabled at bucket creation time
 -- Use the following Wrangler configuration:

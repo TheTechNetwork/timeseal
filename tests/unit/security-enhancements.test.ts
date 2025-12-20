@@ -1,5 +1,5 @@
 // Security Enhancements Test Suite
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { encryptKeyB, decryptKeyB } from '@/lib/keyEncryption';
 import { R2Storage, MockStorage } from '@/lib/storage';
 import { validateFileSize } from '@/lib/validation';
@@ -133,9 +133,15 @@ describe('Security Enhancements', () => {
     });
 
     it('should detect tampering indicators', () => {
+      // Mock browser environment
+      (global as any).window = {
+        isSecureContext: true,
+      };
+      
       const warnings = detectTampering();
       expect(Array.isArray(warnings)).toBe(true);
-      // In Node.js environment, some warnings are expected
+      
+      delete (global as any).window;
     });
 
     it('should verify crypto operations work correctly', async () => {
@@ -151,17 +157,22 @@ describe('Security Enhancements', () => {
     });
 
     it('should detect missing crypto API', async () => {
-      // Temporarily remove crypto.subtle
       const originalSubtle = crypto.subtle;
-      // @ts-ignore
-      crypto.subtle = undefined;
+      
+      try {
+        Object.defineProperty(crypto, 'subtle', {
+          value: undefined,
+          configurable: true,
+        });
 
-      const result = await verifyIntegrity();
-      expect(result).toBe(false);
-
-      // Restore
-      // @ts-ignore
-      crypto.subtle = originalSubtle;
+        const result = await verifyIntegrity();
+        expect(result).toBe(false);
+      } finally {
+        Object.defineProperty(crypto, 'subtle', {
+          value: originalSubtle,
+          configurable: true,
+        });
+      }
     });
   });
 

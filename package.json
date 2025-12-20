@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --coverage",
+    "test": "jest --coverage --maxWorkers=50%",
     "test:watch": "jest --watch",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
+    "test:unit": "jest tests/unit --maxWorkers=50%",
+    "test:integration": "jest tests/integration --maxWorkers=50%",
     "test:e2e": "playwright test -c tests/config/playwright.config.ts",
     "test:e2e:ui": "playwright test -c tests/config/playwright.config.ts --ui",
     "test:all": "npm run test && npm run test:e2e"
@@ -60,7 +60,6 @@
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5",
-    "vitest": "^4.0.16"
+    "typescript": "^5"
   }
 }

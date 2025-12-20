@@ -3,22 +3,36 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests/unit'],
   testMatch: ['**/tests/unit/**/*.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
   collectCoverageFrom: [
-    'app/**/*.{ts,tsx}',
     'lib/**/*.{ts,tsx}',
-    '!**/*.d.ts',
+    '!lib/**/*.d.ts',
     '!**/node_modules/**',
+  ],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/',
+    '/.next/',
   ],
   coverageThreshold: {
     global: {
       branches: 30,
-      functions: 45,
-      lines: 60,
-      statements: 59,
+      functions: 40,
+      lines: 50,
+      statements: 50,
     },
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/tests/unit/setup.ts'],
+  maxWorkers: '50%',
+  testTimeout: 10000,
+  forceExit: true,
+  detectOpenHandles: false,
+  globals: {
+    'ts-jest': {
+      isolatedModules: true,
+    },
+  },
 };

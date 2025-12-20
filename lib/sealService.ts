@@ -29,10 +29,13 @@ export interface SealMetadata {
   hmac?: string;
 }
 
+import { AuditLogger, AuditEventType } from './auditLogger';
+
 export class SealService {
   constructor(
     private storage: StorageProvider,
-    private db: DatabaseProvider
+    private db: DatabaseProvider,
+    private auditLogger?: AuditLogger
   ) {}
 
   async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; hmac: string; pulseToken?: string }> {
@@ -76,6 +79,13 @@ export class SealService {
     });
 
     auditSealCreated(sealId, ip, request.isDMS || false);
+    this.auditLogger?.log({
+      timestamp: Date.now(),
+      eventType: AuditEventType.SEAL_CREATED,
+      sealId,
+      ip,
+      metadata: { isDMS: request.isDMS, unlockTime: request.unlockTime },
+    });
     metrics.incrementSealCreated();
     logger.info('seal_created', { sealId, isDMS: request.isDMS });
 
@@ -99,6 +109,13 @@ export class SealService {
     }
 
     auditSealAccessed(sealId, ip, isUnlocked ? 'unlocked' : 'locked');
+    this.auditLogger?.log({
+      timestamp: Date.now(),
+      eventType: isUnlocked ? AuditEventType.SEAL_UNLOCKED : AuditEventType.SEAL_ACCESS_DENIED,
+      sealId,
+      ip,
+      metadata: { unlockTime: seal.unlockTime },
+    });
 
     return {
       id: sealId,
@@ -146,6 +163,13 @@ export class SealService {
     await this.db.updateUnlockTime(seal.id, newUnlockTime);
 
     metrics.incrementPulseReceived();
+    this.auditLogger?.log({
+      timestamp: Date.now(),
+      eventType: AuditEventType.PULSE_UPDATED,
+      sealId: seal.id,
+      ip,
+      metadata: { newUnlockTime },
+    });
     logger.info('pulse_received', { sealId: seal.id, newUnlockTime });
 
     return { newUnlockTime };

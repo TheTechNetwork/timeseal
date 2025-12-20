@@ -41,39 +41,48 @@ export class Container {
 export const container = new Container();
 
 // Service registration helper
+import { AuditLogger } from "./auditLogger";
+
 export function createContainer(env?: any) {
   const c = new Container();
 
   // Register storage
-  c.registerFactory('storage', () => {
-    const { createStorage } = require('./storage');
+  c.registerFactory("storage", () => {
+    const { createStorage } = require("./storage");
     return createStorage(env);
   });
 
   // Register database
-  c.registerFactory('database', () => {
-    const { createDatabase } = require('./database');
+  c.registerFactory("database", () => {
+    const { createDatabase } = require("./database");
     return createDatabase(env);
   });
 
   // Register seal service
-  c.registerFactory('sealService', () => {
-    const { SealService } = require('./sealService');
-    const storage = c.resolve('storage');
-    const database = c.resolve('database');
-    return new SealService(storage, database);
+  c.registerFactory("sealService", () => {
+    const { SealService } = require("./sealService");
+    const storage = c.resolve("storage");
+    const database = c.resolve("database");
+    const auditLogger: any = c.resolve("auditLogger");
+    return new SealService(storage, database, auditLogger);
   });
 
   // Register logger
-  c.registerFactory('logger', () => {
-    const { logger } = require('./logger');
+  c.registerFactory("logger", () => {
+    const { logger } = require("./logger");
     return logger;
   });
 
   // Register metrics
-  c.registerFactory('metrics', () => {
-    const { metrics } = require('./metrics');
+  c.registerFactory("metrics", () => {
+    const { metrics } = require("./metrics");
     return metrics;
+  });
+
+  // Register audit logger
+  c.registerFactory("auditLogger", () => {
+    const database: any = c.resolve("database");
+    return new AuditLogger(database.db);
   });
 
   return c;

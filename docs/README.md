@@ -13,6 +13,7 @@ Complete documentation for the TIME-SEAL project.
 - **[Security Enhancements](SECURITY-ENHANCEMENTS.md)** - Key rotation, upload limits, integrity
 - **[Key Rotation Guide](KEY-ROTATION.md)** - Master key rotation procedures
 - **[Security Testing](SECURITY-TESTING.md)** - Penetration testing guide
+- **[Audit Logging](AUDIT-LOGGING.md)** - Immutable audit trail for all operations
 
 ## 🧪 Testing Documentation
 

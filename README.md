@@ -186,16 +186,15 @@ Open [http://localhost:3000](http://localhost:3000) to create your first seal.
 
 ## 📚 Documentation
 
-- [Architecture Guide](docs/ARCHITECTURE.md) - Design patterns and abstractions
-- [Deployment Guide](docs/DEPLOYMENT.md) - Cloudflare setup instructions
-- [Security Documentation](docs/SECURITY.md) - Threat model and security controls
-- [Security Enhancements](docs/SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
-- [Key Rotation Guide](docs/KEY-ROTATION.md) - Master key rotation procedures
-- [Security Testing](docs/SECURITY-TESTING.md) - Penetration testing guide
-- [Testing Guide](docs/TESTING.md) - Complete testing documentation
-- [Testing Structure](docs/TESTING-STRUCTURE.md) - Test directory organization
-- [Changelog](docs/CHANGELOG.md) - Version history and changes
-- [TODO](docs/TODO.md) - Remaining tasks and roadmap
+- [Architecture Guide](ARCHITECTURE.md) - Design patterns and abstractions
+- [Deployment Guide](DEPLOYMENT.md) - Cloudflare setup instructions
+- [Security Documentation](SECURITY.md) - Threat model and security controls
+- [Security Enhancements](SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
+- [Key Rotation Guide](KEY-ROTATION.md) - Master key rotation procedures
+- [Security Testing](SECURITY-TESTING.md) - Penetration testing guide
+- [Testing Guide](TESTING.md) - Complete testing documentation
+- [Roadmap](ROADMAP.md) - Feature roadmap and milestones
+- [Changelog](CHANGELOG.md) - Version history and changes
 
 This project is licensed under the **Business Source License (BSL)**.
 
@@ -210,9 +209,14 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🔮 Future Roadmap
 
-- [ ] **Multi-Sig Unlocking**: Require M-of-N keys to open.
-- [ ] **Decentralized Storage**: Backup blobs to Arweave/IPFS.
-- [ ] **Hardware Key Support**: Integration with YubiKey for Pulse.
+See [ROADMAP.md](ROADMAP.md) for detailed feature plans.
+
+**Highlights:**
+- Multi-Sig Unlocking (M-of-N keys)
+- Decentralized Storage (Arweave/IPFS)
+- Hardware Key Support (YubiKey)
+- Mobile Apps (iOS/Android)
+- API Access & Integrations
 
 ---
 

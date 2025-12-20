@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/app/components/Button';
 import { Card } from '@/app/components/Card';
-import { ErrorMessage, PageHeader, CenteredContainer } from '@/app/components/Common';
+import { ErrorMessage } from '@/app/components/Common';
 import { formatTimeShort, fetchJSON } from '@/lib/clientUtils';
 import { TIME_CONSTANTS } from '@/lib/constants';
+import DecryptedText from '@/app/components/DecryptedText';
+import { BackgroundBeams } from '@/app/components/ui/background-beams';
 
 export default function PulsePage() {
   return <PulsePageClient />;
@@ -90,7 +93,7 @@ function PulsePageClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pulseToken }),
       });
-      window.location.href = '/?burned=true';
+      globalThis.window.location.href = '/?burned=true';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to burn seal');
     } finally {
@@ -102,107 +105,140 @@ function PulsePageClient() {
 
   if (!hasToken) {
     return (
-      <CenteredContainer>
-        <PageHeader 
-          icon="💓" 
-          title="DEAD MAN'S SWITCH" 
-          subtitle="Enter your pulse token to manage your seal."
-        />
-        
-        <Card>
-          <label className="block text-sm mb-2">PULSE TOKEN</label>
-          <input
-            type="text"
-            value={pulseToken}
-            onChange={(e) => setPulseToken(e.target.value)}
-            placeholder="Enter your pulse token..."
-            className="cyber-input w-full font-mono mb-4"
-          />
-          
-          <Button onClick={fetchPulseStatus} disabled={!pulseToken.trim()} className="w-full">
-            CONTINUE
-          </Button>
-          
-          {error && <ErrorMessage message={error} />}
-        </Card>
-      </CenteredContainer>
+      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+        <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+        <div className="max-w-md w-full relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="text-6xl mb-4 animate-pulse">💓</div>
+            <h1 className="text-3xl font-bold glow-text mb-2">
+              <DecryptedText text="DEAD MAN'S SWITCH" animateOn="view" className="text-neon-green" />
+            </h1>
+            <p className="text-neon-green/70 mb-8">Enter your pulse token to manage your seal.</p>
+          </motion.div>
+
+          <Card className="p-6 border-neon-green/30">
+            <label htmlFor="pulse-token-input" className="block text-sm mb-2 text-neon-green/80 font-bold">PULSE TOKEN</label>
+            <input
+              id="pulse-token-input"
+              type="text"
+              value={pulseToken}
+              onChange={(e) => setPulseToken(e.target.value)}
+              placeholder="x-x-x-x"
+              className="cyber-input w-full font-mono mb-6 text-center tracking-widest"
+            />
+
+            <Button onClick={fetchPulseStatus} disabled={!pulseToken.trim()} className="w-full">
+              CONTINUE
+            </Button>
+
+            {error && <ErrorMessage message={error} />}
+          </Card>
+        </div>
+      </div>
     );
   }
 
   if (showBurnConfirm) {
     return (
-      <CenteredContainer>
-        <div className="text-center">
-          <PageHeader 
-            icon="🔥" 
-            title="BURN SEAL?" 
-            subtitle="This will permanently destroy the seal. The encrypted content will be unrecoverable. This action cannot be undone."
-          />
-          
+      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+        <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+        <div className="max-w-md w-full relative z-10 text-center">
+          <div className="text-6xl mb-4">🔥</div>
+          <h1 className="text-3xl font-bold glow-text mb-4 text-red-500">BURN SEAL?</h1>
+
+          <Card className="mb-8 border-red-500/30">
+            <p className="text-red-400/90 mb-4">
+              This will <span className="font-bold underline">permanently destroy</span> the seal.
+              The encrypted content will be unrecoverable.
+            </p>
+            <p className="text-red-500 font-bold uppercase text-sm">This action cannot be undone.</p>
+          </Card>
+
           <div className="space-y-4">
-            <Button onClick={handleBurn} disabled={isBurning} variant="danger" className="w-full">
+            <Button onClick={handleBurn} disabled={isBurning} variant="danger" className="w-full shadow-[0_0_20px_rgba(255,0,0,0.3)]">
               {isBurning ? 'BURNING...' : '🔥 YES, BURN IT'}
             </Button>
-            <Button onClick={() => setShowBurnConfirm(false)} className="w-full">
+            <Button onClick={() => setShowBurnConfirm(false)} className="w-full border-neon-green/30 hover:bg-neon-green/10">
               CANCEL
             </Button>
           </div>
           {error && <ErrorMessage message={error} />}
         </div>
-      </CenteredContainer>
+      </div>
     );
   }
 
   if (success) {
     return (
-      <CenteredContainer>
-        <div className="text-center">
-          <PageHeader 
-            icon="✅" 
-            title="PULSE CONFIRMED" 
-            subtitle={`Your seal remains locked. Next pulse needed in ${formatTimeShort(pulseDuration)}.`}
-          />
+      <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+        <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+        <div className="max-w-md w-full relative z-10 text-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-6xl mb-4"
+          >
+            ✅
+          </motion.div>
+          <h1 className="text-3xl font-bold glow-text mb-4">
+            <DecryptedText text="PULSE CONFIRMED" animateOn="view" className="text-neon-green" />
+          </h1>
+          <Card className="border-neon-green/40">
+            <p className="text-neon-green/70">
+              Your seal remains locked. Next pulse needed in <span className="text-neon-green font-mono font-bold">{formatTimeShort(pulseDuration)}</span>.
+            </p>
+          </Card>
         </div>
-      </CenteredContainer>
+      </div>
     );
   }
 
   return (
-    <CenteredContainer>
-      <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+      <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+      <div className="max-w-md w-full relative z-10 text-center">
         <div className={`text-6xl mb-4 ${isUrgent ? 'animate-pulse' : ''}`}>💓</div>
-        <h1 className="text-3xl font-bold glow-text mb-4">DEAD MAN&apos;S SWITCH</h1>
-        
+        <h1 className="text-3xl font-bold glow-text mb-6">
+          <DecryptedText text="DEAD MAN'S SWITCH" animateOn="view" className="text-neon-green" />
+        </h1>
+
         {timeRemaining > 0 && (
-          <Card className="mb-6">
-            <p className="text-sm text-neon-green/70 mb-2">TIME UNTIL AUTO-UNLOCK</p>
-            <div className={`text-4xl font-mono ${isUrgent ? 'text-red-500 pulse-glow' : ''}`}>
+          <Card className={`mb-8 ${isUrgent ? 'border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.2)]' : ''}`}>
+            <p className="text-xs text-neon-green/50 mb-2 uppercase tracking-widest">TIME UNTIL AUTO-UNLOCK</p>
+            <div className={`text-5xl font-mono mb-2 ${isUrgent ? 'text-red-500 pulse-glow' : 'text-neon-green pulse-glow'}`}>
               {formatTimeShort(timeRemaining)}
             </div>
             {isUrgent && (
-              <p className="text-red-500 text-sm mt-2">⚠️ URGENT: Pulse soon or seal will unlock!</p>
+              <p className="text-red-500 text-sm font-bold animate-pulse">⚠️ URGENT: PULSE REQUIRED</p>
             )}
           </Card>
         )}
-        
-        <p className="text-neon-green/70 mb-8">
-          Click to confirm you&apos;re still active and reset the countdown.
+
+        <p className="text-neon-green/70 mb-8 text-sm">
+          Click below to confirm you are active and reset the countdown timer.
         </p>
-        
-        <Button onClick={handlePulse} disabled={isPulsing} className="w-full text-xl py-6 mb-4">
+
+        <Button
+          onClick={handlePulse}
+          disabled={isPulsing}
+          className="w-full text-xl py-6 mb-4 shadow-[0_0_20px_rgba(0,255,65,0.3)] hover:shadow-[0_0_40px_rgba(0,255,65,0.5)]"
+        >
           {isPulsing ? 'PULSING...' : '💓 SEND PULSE'}
         </Button>
-        
-        <Button 
-          onClick={() => setShowBurnConfirm(true)} 
+
+        <Button
+          onClick={() => setShowBurnConfirm(true)}
           variant="danger"
-          className="w-full text-sm"
+          className="w-full text-sm opacity-80 hover:opacity-100"
         >
           🔥 BURN SEAL (PERMANENT)
         </Button>
-        
+
         {error && <ErrorMessage message={error} />}
       </div>
-    </CenteredContainer>
+    </div>
   );
 }

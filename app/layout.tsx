@@ -95,6 +95,7 @@ export default function RootLayout({
       <body className={`${jetbrainsMono.className} min-h-screen bg-dark-bg text-dark-text overflow-x-hidden selection:bg-neon-green/30 selection:text-neon-green`}>
         {children}
         <Footer />
+        <CommandPalette />
         <Toaster
           position="top-center"
           toastOptions={{
