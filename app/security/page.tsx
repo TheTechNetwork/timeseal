@@ -72,6 +72,10 @@ export default function SecurityPage() {
           </h2>
           <div className="space-y-4 text-neon-green/60 text-sm">
             <div>
+              <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Zero-Knowledge Architecture</p>
+              <p>No user accounts, no passwords, no authentication. Security is enforced through cryptography alone. This eliminates credential theft, phishing, and password database breaches.</p>
+            </div>
+            <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Time-Lock Enforcement</p>
               <p>The server will not release Key B before the unlock time. Server-side validation using Date.now() prevents client-side time manipulation.</p>
             </div>

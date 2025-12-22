@@ -178,6 +178,9 @@ sequenceDiagram
 ### "Can I bypass rate limits by rotating IPs or using VPNs?"
 **⚠️ HARDER.** Rate limiting uses browser fingerprinting (IP + User-Agent + Language), making simple IP rotation ineffective. You'd need to change your entire browser signature.
 
+### "Why is there no user authentication?"
+**✅ BY DESIGN.** Authentication adds attack vectors (credential theft, phishing, password breaches, session hijacking). TimeSeal uses cryptography-only security: possession of the vault link (Key A) is the authentication. No passwords to steal, no accounts to hack.
+
 ### "Can I replay old API requests to trick the server?"
 **❌ NO.** Pulse tokens include nonces and timestamps. Replay attacks are detected and rejected.
 
