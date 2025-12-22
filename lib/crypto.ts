@@ -48,8 +48,8 @@ async function deriveMasterKey(keyA: CryptoKey, keyB: CryptoKey): Promise<Crypto
     ['deriveBits']
   );
 
-  // Derive 256-bit key using HKDF
-  const salt = crypto.getRandomValues(new Uint8Array(32));
+  // Derive 256-bit key using HKDF with zero salt for deterministic derivation
+  const salt = new Uint8Array(32); // Zero-filled salt
   const derivedBits = await crypto.subtle.deriveBits(
     {
       name: 'HKDF',
