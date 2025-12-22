@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
 import { validateSealId } from '@/lib/validation';
-import { isHoneypot } from '@/lib/security';
+import { isHoneypot, validateHTTPMethod, validateOrigin, concurrentTracker, detectSuspiciousPattern } from '@/lib/security';
 import { logger } from '@/lib/logger';
 
 
@@ -10,46 +10,67 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!validateHTTPMethod(request, ['GET'])) {
+    return jsonResponse({ error: 'Method not allowed' }, 405);
+  }
+
+  if (!validateOrigin(request)) {
+    return jsonResponse({ error: 'Invalid origin' }, 403);
+  }
+
   return createAPIRoute(async ({ container, ip }) => {
-    const { id: sealId } = await params;
-
-    const sealIdValidation = validateSealId(sealId);
-    if (!sealIdValidation.valid) {
-      return jsonResponse({ error: sealIdValidation.error }, 400);
+    if (!concurrentTracker.track(ip)) {
+      return jsonResponse({ error: 'Too many concurrent requests' }, 429);
     }
 
-    if (isHoneypot(sealId)) {
-      logger.warn('honeypot_accessed', { ip, sealId, userAgent: request.headers.get('user-agent') });
-      return jsonResponse({
-        id: sealId,
-        isLocked: true,
-        unlockTime: Date.now() + 999999999999,
-        timeRemaining: 999999999999,
-      });
-    }
-    const sealService = container.sealService;
-    const metadata = await sealService.getSeal(sealId, ip);
+    try {
+      const { id: sealId } = await params;
 
-    if (metadata.status === 'locked') {
+      const sealIdValidation = validateSealId(sealId);
+      if (!sealIdValidation.valid) {
+        return jsonResponse({ error: sealIdValidation.error }, 400);
+      }
+
+      if (detectSuspiciousPattern(ip, sealId)) {
+        logger.warn('suspicious_pattern', { ip, sealId });
+      }
+
+      if (isHoneypot(sealId)) {
+        logger.warn('honeypot_accessed', { ip, sealId, userAgent: request.headers.get('user-agent') });
+        return jsonResponse({
+          id: sealId,
+          isLocked: true,
+          unlockTime: Date.now() + 999999999999,
+          timeRemaining: 999999999999,
+        });
+      }
+
+      const sealService = container.sealService;
+      const metadata = await sealService.getSeal(sealId, ip);
+
+      if (metadata.status === 'locked') {
+        return jsonResponse({
+          id: sealId,
+          isLocked: true,
+          unlockTime: metadata.unlockTime,
+          timeRemaining: metadata.unlockTime - Date.now(),
+        });
+      }
+
+      const blob = await sealService.getBlob(sealId);
+      const bytes = new Uint8Array(blob);
+      const blobBase64 = btoa(String.fromCharCode(...bytes));
+
       return jsonResponse({
         id: sealId,
-        isLocked: true,
+        isLocked: false,
         unlockTime: metadata.unlockTime,
-        timeRemaining: metadata.unlockTime - Date.now(),
+        keyB: metadata.keyB,
+        iv: metadata.iv,
+        encryptedBlob: blobBase64,
       });
+    } finally {
+      concurrentTracker.release(ip);
     }
-
-    const blob = await sealService.getBlob(sealId);
-    const bytes = new Uint8Array(blob);
-    const blobBase64 = btoa(String.fromCharCode(...bytes));
-
-    return jsonResponse({
-      id: sealId,
-      isLocked: false,
-      unlockTime: metadata.unlockTime,
-      keyB: metadata.keyB,
-      iv: metadata.iv,
-      encryptedBlob: blobBase64,
-    });
   }, { rateLimit: { limit: 20, window: 60000 } })(request);
 }

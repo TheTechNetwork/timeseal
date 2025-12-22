@@ -9,8 +9,17 @@ import {
   validateTimestamp,
 } from "@/lib/validation";
 import { ErrorCode, createErrorResponse } from "@/lib/errors";
+import { validateHTTPMethod, validateOrigin } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
+  if (!validateHTTPMethod(request, ["POST"])) {
+    return jsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  if (!validateOrigin(request)) {
+    return jsonResponse({ error: "Invalid origin" }, 403);
+  }
+
   const contentLength = parseInt(request.headers.get("content-length") || "0");
 
   const sizeValidation = validateRequestSize(contentLength);

@@ -1,4 +1,6 @@
 // Security Utilities
+import { logger } from './logger';
+
 export function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   
@@ -20,6 +22,57 @@ const HONEYPOT_IDS = ['00000000000000000000000000000000', 'fffffffffffffffffffff
 
 export function isHoneypot(sealId: string): boolean {
   return HONEYPOT_IDS.includes(sealId);
+}
+
+export function validateHTTPMethod(request: Request, allowed: string[]): boolean {
+  return allowed.includes(request.method);
+}
+
+export function validateOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  if (!origin) return true;
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ].filter(Boolean);
+  return allowedOrigins.some(allowed => origin.startsWith(allowed as string));
+}
+
+class ConcurrentRequestTracker {
+  private requests = new Map<string, number>();
+  
+  track(ip: string): boolean {
+    const current = this.requests.get(ip) || 0;
+    if (current >= 5) return false;
+    this.requests.set(ip, current + 1);
+    return true;
+  }
+  
+  release(ip: string): void {
+    const current = this.requests.get(ip) || 0;
+    this.requests.set(ip, Math.max(0, current - 1));
+  }
+}
+
+export const concurrentTracker = new ConcurrentRequestTracker();
+
+const accessCache = new Map<string, string>();
+
+export function detectSuspiciousPattern(ip: string, sealId: string): boolean {
+  const lastAccess = accessCache.get(ip);
+  if (lastAccess && isSequential(lastAccess, sealId)) {
+    logger.warn('sequential_access_detected', { ip, sealId });
+    return true;
+  }
+  accessCache.set(ip, sealId);
+  return false;
+}
+
+function isSequential(id1: string, id2: string): boolean {
+  const num1 = parseInt(id1.substring(0, 8), 16);
+  const num2 = parseInt(id2.substring(0, 8), 16);
+  return Math.abs(num1 - num2) === 1;
 }
 
 export async function generatePulseToken(sealId: string, secret: string): Promise<string> {

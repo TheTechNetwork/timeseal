@@ -2,6 +2,7 @@
 
 ## ✅ COMPLETED
 
+- [x] **Defense Hardening**: HTTP method, origin, concurrent limiting, pattern detection
 - [x] **Security Enhancements**: Request size, seal ID, key, timestamp validation
 - [x] **Honeypot Detection**: Fake seal IDs to detect enumeration attacks
 - [x] **User-Agent Logging**: Track bot patterns in audit logs
@@ -43,10 +44,7 @@
 - [ ] **Decentralized Backup**: Arweave/IPFS integration
 - [ ] **Hardware Key Support**: YubiKey for pulse
 - [ ] **Audit Logs**: Immutable access history export
-- [ ] **Email Notifications**: Unlock reminders
-- [ ] **Mobile App**: Native iOS/Android clients
 - [ ] **Enhanced Validation**: File content scanning
-- [ ] **Authentication**: Optional password protection
 
 ## 📝 Documentation Needed
 

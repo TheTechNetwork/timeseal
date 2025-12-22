@@ -47,6 +47,14 @@ export function validateTimestamp(timestamp: number): ValidationResult {
   return { valid: true };
 }
 
+export function validateSealAge(createdAt: number): ValidationResult {
+  const MAX_SEAL_AGE = 2 * 365 * 24 * 60 * 60 * 1000; // 2 years
+  if (Date.now() - createdAt > MAX_SEAL_AGE) {
+    return { valid: false, error: 'Seal expired (max 2 years)' };
+  }
+  return { valid: true };
+}
+
 export function validateFileSize(size: number): ValidationResult {
   if (size > MAX_FILE_SIZE) {
     return {

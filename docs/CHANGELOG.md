@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-12-22
+
+### Added
+- HTTP method validation on all endpoints
+- Request origin validation
+- Concurrent request limiting (5 per IP)
+- Suspicious pattern detection (sequential seal IDs)
+- Seal age validation (2 year maximum)
+
+### Security
+- Method-based access control (GET/POST only)
+- Origin header validation
+- Concurrent request tracking and limiting
+- Sequential access pattern detection
+- Enhanced logging for suspicious activity
+
 ## [0.3.0] - 2025-12-22
 
 ### Added
