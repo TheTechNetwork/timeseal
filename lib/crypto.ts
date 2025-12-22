@@ -49,11 +49,12 @@ async function deriveMasterKey(keyA: CryptoKey, keyB: CryptoKey): Promise<Crypto
   );
 
   // Derive 256-bit key using HKDF
+  const salt = crypto.getRandomValues(new Uint8Array(32));
   const derivedBits = await crypto.subtle.deriveBits(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: new Uint8Array(32), // Static salt for deterministic derivation
+      salt,
       info: new TextEncoder().encode('timeseal-master-key'),
     },
     hkdfKey,

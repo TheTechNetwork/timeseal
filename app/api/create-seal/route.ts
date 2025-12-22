@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
         iv: result.iv,
         publicUrl: `/v/${result.sealId}`,
         pulseUrl: result.pulseToken ? `/pulse/${result.pulseToken}` : undefined,
+        receipt: result.receipt,
       });
     },
     { rateLimit: { limit: 10, window: 60000 } },

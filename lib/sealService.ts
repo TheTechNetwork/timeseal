@@ -27,6 +27,14 @@ export interface SealMetadata {
   iv?: string;
 }
 
+export interface SealReceipt {
+  sealId: string;
+  blobHash: string;
+  unlockTime: number;
+  createdAt: number;
+  signature: string;
+}
+
 import { AuditLogger, AuditEventType } from './auditLogger';
 
 export class SealService {
@@ -41,7 +49,7 @@ export class SealService {
     }
   }
 
-  async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; pulseToken?: string }> {
+  async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; pulseToken?: string; receipt: SealReceipt }> {
     const sizeValidation = validateFileSize(request.encryptedBlob.byteLength);
     if (!sizeValidation.valid) {
       throw new Error(sizeValidation.error);
@@ -60,9 +68,14 @@ export class SealService {
     }
 
     const sealId = this.generateSealId();
+    const createdAt = Date.now();
     const pulseToken = request.isDMS ? await generatePulseToken(sealId, this.masterKey) : undefined;
 
     const encryptedKeyB = await encryptKeyB(request.keyB, this.masterKey, sealId);
+
+    // Generate cryptographic receipt
+    const blobHash = await this.hashBlob(request.encryptedBlob);
+    const receipt = await this.generateReceipt(sealId, blobHash, request.unlockTime, createdAt);
 
     // Create seal record first
     await this.db.createSeal({
@@ -70,11 +83,11 @@ export class SealService {
       unlockTime: request.unlockTime,
       isDMS: request.isDMS || false,
       pulseInterval: request.pulseInterval,
-      lastPulse: request.isDMS ? Date.now() : undefined,
+      lastPulse: request.isDMS ? createdAt : undefined,
       keyB: encryptedKeyB,
       iv: request.iv,
       pulseToken,
-      createdAt: Date.now(),
+      createdAt,
     });
 
     // Then upload blob (D1BlobStorage needs the row to exist)
@@ -84,16 +97,16 @@ export class SealService {
 
     auditSealCreated(sealId, ip, request.isDMS || false);
     this.auditLogger?.log({
-      timestamp: Date.now(),
+      timestamp: createdAt,
       eventType: AuditEventType.SEAL_CREATED,
       sealId,
       ip,
-      metadata: { isDMS: request.isDMS, unlockTime: request.unlockTime },
+      metadata: { isDMS: request.isDMS, unlockTime: request.unlockTime, blobHash },
     });
     metrics.incrementSealCreated();
     logger.info('seal_created', { sealId, isDMS: request.isDMS });
 
-    return { sealId, iv: request.iv, pulseToken };
+    return { sealId, iv: request.iv, pulseToken, receipt };
   }
 
   async getSeal(sealId: string, ip: string): Promise<SealMetadata> {
@@ -161,7 +174,7 @@ export class SealService {
     }
 
     const now = Date.now();
-    const newUnlockTime = now + (seal.pulseInterval || 0) * 1000;
+    const newUnlockTime = now + (seal.pulseInterval || 0);
 
     await this.db.updatePulse(seal.id, now);
     await this.db.updateUnlockTime(seal.id, newUnlockTime);
@@ -183,5 +196,30 @@ export class SealService {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  private async hashBlob(blob: ArrayBuffer): Promise<string> {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', blob);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  private async generateReceipt(sealId: string, blobHash: string, unlockTime: number, createdAt: number): Promise<SealReceipt> {
+    const data = `${sealId}:${blobHash}:${unlockTime}:${createdAt}`;
+    const encoder = new TextEncoder();
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(this.masterKey),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+    const sigArray = Array.from(new Uint8Array(signature));
+    const sigHex = sigArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return { sealId, blobHash, unlockTime, createdAt, signature: sigHex };
   }
 }
