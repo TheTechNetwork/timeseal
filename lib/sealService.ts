@@ -130,19 +130,39 @@ export class SealService {
       throw new Error(ErrorCode.SEAL_NOT_FOUND);
     }
 
+    // Check time BEFORE any other operations to prevent timing attacks
     const now = Date.now();
     const isUnlocked = now >= seal.unlockTime;
 
-    let decryptedKeyB: string | undefined;
-    if (isUnlocked) {
-      decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [this.masterKey]);
-      metrics.incrementSealUnlocked();
+    // Add jitter for locked seals (already done in API route, but double-check here)
+    if (!isUnlocked) {
+      auditSealAccessed(sealId, ip, 'locked');
+      this.auditLogger?.log({
+        timestamp: now,
+        eventType: AuditEventType.SEAL_ACCESS_DENIED,
+        sealId,
+        ip,
+        metadata: { unlockTime: seal.unlockTime },
+      });
+
+      return {
+        id: sealId,
+        unlockTime: seal.unlockTime,
+        isDMS: seal.isDMS,
+        status: 'locked',
+        blobHash: seal.blobHash,
+        accessCount: seal.accessCount,
+      };
     }
 
-    auditSealAccessed(sealId, ip, isUnlocked ? 'unlocked' : 'locked');
+    // Only decrypt if unlocked
+    const decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [this.masterKey]);
+    metrics.incrementSealUnlocked();
+
+    auditSealAccessed(sealId, ip, 'unlocked');
     this.auditLogger?.log({
-      timestamp: Date.now(),
-      eventType: isUnlocked ? AuditEventType.SEAL_UNLOCKED : AuditEventType.SEAL_ACCESS_DENIED,
+      timestamp: now,
+      eventType: AuditEventType.SEAL_UNLOCKED,
       sealId,
       ip,
       metadata: { unlockTime: seal.unlockTime },
@@ -152,11 +172,11 @@ export class SealService {
       id: sealId,
       unlockTime: seal.unlockTime,
       isDMS: seal.isDMS,
-      status: isUnlocked ? 'unlocked' : 'locked',
+      status: 'unlocked',
       keyB: decryptedKeyB,
-      iv: isUnlocked ? seal.iv : undefined,
+      iv: seal.iv,
       blobHash: seal.blobHash,
-      unlockMessage: isUnlocked ? seal.unlockMessage : undefined,
+      unlockMessage: seal.unlockMessage,
       accessCount: seal.accessCount,
     };
   }

@@ -239,10 +239,9 @@ export default function HomePage() {
       if (sealType === 'timed') {
         unlockTime = new Date(unlockDate).getTime();
       } else {
-        // Dead man's switch
+        // Dead man's switch - server generates pulse token
         pulseDuration = pulseDays * 24 * 60 * 60 * 1000;
         unlockTime = Date.now() + pulseDuration;
-        pulseToken = crypto.randomUUID();
       }
 
       // Create FormData for API
@@ -254,7 +253,6 @@ export default function HomePage() {
       formData.append('isDMS', (sealType === 'deadman').toString());
 
       if (turnstileToken) formData.append('cf-turnstile-response', turnstileToken);
-      if (pulseToken) formData.append('pulseToken', pulseToken);
       if (pulseDuration) formData.append('pulseInterval', pulseDuration.toString());
 
       // Send to API
