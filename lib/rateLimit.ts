@@ -1,8 +1,11 @@
 // Rate Limiting Middleware for Cloudflare Workers
+import { DatabaseProvider } from './database';
+
 export interface RateLimitConfig {
   limit: number;
   window: number;
   key?: string;
+  db?: DatabaseProvider;
 }
 
 export class RateLimiter {
@@ -87,6 +90,32 @@ export async function withRateLimit(
 ): Promise<Response> {
   const identifier = config.key || request.headers.get('CF-Connecting-IP') || 'unknown';
 
+  // Use DB-backed rate limiting if available
+  if (config.db) {
+    const { allowed, remaining } = await config.db.checkRateLimit(identifier, config.limit, config.window);
+    
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded' }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': config.limit.toString(),
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': Math.ceil(config.window / 1000).toString(),
+          },
+        }
+      );
+    }
+
+    const response = await handler();
+    response.headers.set('X-RateLimit-Limit', config.limit.toString());
+    response.headers.set('X-RateLimit-Remaining', remaining.toString());
+    return response;
+  }
+
+  // Fallback to in-memory (dev only)
   const key = `${config.limit}:${config.window}`;
   const limiter = RateLimiterRegistry.getInstance().getLimiter(key, config);
 

@@ -208,6 +208,11 @@ class NonceCache {
   }
 }
 
-export function checkAndStoreNonce(nonce: string): boolean {
+export function checkAndStoreNonce(nonce: string, db?: import('./database').DatabaseProvider): boolean | Promise<boolean> {
+  if (db) {
+    const expiresAt = Date.now() + 300000; // 5 minutes
+    return db.storeNonce(nonce, expiresAt);
+  }
+  // Fallback to in-memory for dev
   return NonceCache.getInstance().check(nonce);
 }

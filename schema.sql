@@ -14,3 +14,20 @@ CREATE TABLE IF NOT EXISTS seals (
 
 CREATE INDEX IF NOT EXISTS idx_seals_unlock_time ON seals(unlock_time);
 CREATE INDEX IF NOT EXISTS idx_seals_pulse ON seals(pulse_interval, last_pulse);
+
+-- Rate limiting table
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 1,
+  reset_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_reset ON rate_limits(reset_at);
+
+-- Nonce tracking for replay protection
+CREATE TABLE IF NOT EXISTS nonces (
+  nonce TEXT PRIMARY KEY,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_nonces_expires ON nonces(expires_at);

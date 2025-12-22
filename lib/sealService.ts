@@ -145,7 +145,8 @@ export class SealService {
 
     const [sealId, timestamp, nonce] = parts;
 
-    if (!checkAndStoreNonce(nonce)) {
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
       throw new Error('Replay attack detected');
     }
 

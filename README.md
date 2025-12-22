@@ -181,11 +181,14 @@ sequenceDiagram
 ### "Can I use timing attacks to detect the exact unlock time?"
 **❌ NO.** Server responses include random jitter (0-100ms delay) to prevent timing-based information leakage.
 
+### "Can rate limits be bypassed in serverless environments?"
+**❌ NO.** Rate limits are stored in D1 database, persisting across all Cloudflare Worker instances. In-memory bypass is impossible.
+
 ### "Why is there no user authentication?"
 **✅ BY DESIGN.** Authentication adds attack vectors (credential theft, phishing, password breaches, session hijacking). TimeSeal uses cryptography-only security: possession of the vault link (Key A) is the authentication. No passwords to steal, no accounts to hack.
 
 ### "Can I replay old API requests to trick the server?"
-**❌ NO.** Pulse tokens include nonces and timestamps. Replay attacks are detected and rejected.
+**❌ NO.** Pulse tokens include nonces stored in D1 database. Replay attacks are detected across all worker instances and rejected.
 
 ### "What if Cloudflare goes down?"
 **⏸️ PAUSED.** Your seal remains locked in the database. When Cloudflare comes back online, the countdown resumes.

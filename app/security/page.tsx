@@ -81,7 +81,7 @@ export default function SecurityPage() {
             </div>
             <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Rate Limiting with Fingerprinting</p>
-              <p>API endpoints use browser fingerprinting (IP + User-Agent + Language) to prevent VPN/IP rotation bypass. 10-20 requests per minute per fingerprint.</p>
+              <p>API endpoints use browser fingerprinting (IP + User-Agent + Language) with D1 database persistence. Rate limits survive across all worker instances. 10-20 requests per minute per fingerprint.</p>
             </div>
             <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> No Single Point of Failure</p>
@@ -117,8 +117,9 @@ export default function SecurityPage() {
                 <li>Brute force attacks (256-bit keys + fingerprinted rate limiting)</li>
                 <li>IP rotation bypass (browser fingerprinting)</li>
                 <li>Timing attacks (response jitter)</li>
+                <li>Serverless state bypass (D1-backed rate limits and nonces)</li>
                 <li>Automated abuse (Turnstile CAPTCHA)</li>
-                <li>Replay attacks (nonce validation on pulse tokens)</li>
+                <li>Replay attacks (nonce validation in D1 database)</li>
               </ul>
             </div>
             <div>

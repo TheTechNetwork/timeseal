@@ -8,6 +8,8 @@ export interface DatabaseProvider {
   updatePulse(id: string, timestamp: number): Promise<void>;
   updateUnlockTime(id: string, unlockTime: number): Promise<void>;
   getExpiredDMS(): Promise<SealRecord[]>;
+  checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }>;
+  storeNonce(nonce: string, expiresAt: number): Promise<boolean>;
 }
 
 export interface SealRecord {
@@ -108,6 +110,42 @@ export class SealDatabase implements DatabaseProvider {
 
     return results.results.map((r: any) => this.mapResultToSealRecord(r));
   }
+
+  async checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }> {
+    const now = Date.now();
+    const resetAt = now + window;
+
+    const existing = await this.db.prepare(
+      'SELECT count, reset_at FROM rate_limits WHERE key = ?'
+    ).bind(key).first() as { count: number; reset_at: number } | null;
+
+    if (!existing || now > existing.reset_at) {
+      await this.db.prepare(
+        'INSERT OR REPLACE INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)'
+      ).bind(key, resetAt).run();
+      return { allowed: true, remaining: limit - 1 };
+    }
+
+    if (existing.count >= limit) {
+      return { allowed: false, remaining: 0 };
+    }
+
+    await this.db.prepare(
+      'UPDATE rate_limits SET count = count + 1 WHERE key = ?'
+    ).bind(key).run();
+    return { allowed: true, remaining: limit - existing.count - 1 };
+  }
+
+  async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
+    try {
+      const result = await this.db.prepare(
+        'INSERT INTO nonces (nonce, expires_at) VALUES (?, ?)'
+      ).bind(nonce, expiresAt).run();
+      return result.success;
+    } catch {
+      return false; // Duplicate nonce = replay attack
+    }
+  }
 }
 
 // Singleton pattern for global mock store
@@ -177,6 +215,16 @@ export class MockDatabase implements DatabaseProvider {
       s => s.isDMS && s.lastPulse && s.pulseInterval &&
         s.lastPulse + s.pulseInterval < now
     );
+  }
+
+  async checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }> {
+    // Mock always allows (for dev)
+    return { allowed: true, remaining: limit - 1 };
+  }
+
+  async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
+    // Mock always accepts (for dev)
+    return true;
   }
 }
 
