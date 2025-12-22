@@ -70,13 +70,27 @@ export function Button({
       style={{ x: springX, y: springY }}
       whileHover={!props.disabled ? {
         scale: 1.02,
-        boxShadow: '0 0 15px rgba(0, 255, 65, 0.3)'
+        boxShadow: '0 0 25px rgba(0, 255, 65, 0.5), 0 0 50px rgba(0, 255, 65, 0.2)',
+        textShadow: '0 0 10px rgba(0, 255, 65, 0.8)'
       } : {}}
-      whileTap={!props.disabled ? { scale: 0.98 } : {}}
-      className={`cyber-button ${variantStyles[variant]} ${className}`}
+      whileTap={!props.disabled ? {
+        scale: 0.98,
+        boxShadow: '0 0 30px rgba(0, 255, 65, 0.7), 0 0 60px rgba(0, 255, 65, 0.3)'
+      } : {}}
+      className={`cyber-button ${variantStyles[variant]} ${className} ${!props.disabled && variant === 'primary' ? 'relative overflow-hidden' : ''}`}
       {...props}
     >
-      {children}
+      {!props.disabled && variant === 'primary' && (
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-neon-green/20 to-transparent"
+          initial={{ x: '-100%' }}
+          whileHover={{
+            x: '100%',
+            transition: { duration: 0.6, ease: 'easeInOut' }
+          }}
+        />
+      )}
+      <span className="relative z-10">{children}</span>
     </motion.button>
   );
 }

@@ -19,6 +19,9 @@ import { Input } from './components/Input';
 import DecryptedText from './components/DecryptedText';
 import { TextScramble } from './components/TextScramble';
 import { BackgroundBeams } from './components/ui/background-beams';
+import { AnimatedTagline } from './components/AnimatedTagline';
+import { EncryptionProgress } from './components/EncryptionProgress';
+import { FloatingIcons } from './components/FloatingIcons';
 
 import { Bitcoin, ShieldAlert, Rocket, Gift, Scale, Paperclip, FileText, Trash2, AlertTriangle, Download } from 'lucide-react';
 
@@ -96,6 +99,7 @@ export default function HomePage() {
   const [sealType, setSealType] = useState<'timed' | 'deadman'>('timed');
   const [pulseDays, setPulseDays] = useState(7);
   const [isCreating, setIsCreating] = useState(false);
+  const [encryptionProgress, setEncryptionProgress] = useState(0);
   const [qrCode, setQrCode] = useState<string>('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [result, setResult] = useState<{
@@ -321,11 +325,18 @@ export default function HomePage() {
     }
 
     setIsCreating(true);
+    setEncryptionProgress(0);
     const loadingToast = toast.loading('Encrypting and sealing data...');
 
     try {
+      // Simulate encryption progress
+      setEncryptionProgress(20);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       // Encrypt the message or file
+      setEncryptionProgress(40);
       const encrypted = await encryptData(file || message);
+      setEncryptionProgress(60);
 
       // Calculate unlock time
       let unlockTime: number;
@@ -352,19 +363,24 @@ export default function HomePage() {
       if (pulseDuration) formData.append('pulseInterval', pulseDuration.toString());
 
       // Send to API
+      setEncryptionProgress(80);
       const response = await fetch('/api/create-seal', {
         method: 'POST',
         body: formData,
       });
+      setEncryptionProgress(90);
 
       const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string };
 
       if (data.success) {
+        setEncryptionProgress(95);
         const origin = globalThis.window ? globalThis.window.location.origin : '';
         const publicUrl = `${origin}${data.publicUrl}#${encrypted.keyA}`;
         // Lazy load QRCode
         const QRCodeModule = await import('qrcode');
         const qr = await QRCodeModule.toDataURL(publicUrl, { width: 256, margin: 2 });
+        setEncryptionProgress(100);
+        await new Promise(resolve => setTimeout(resolve, 300));
         setQrCode(qr);
         setResult({
           publicUrl,
@@ -384,6 +400,7 @@ export default function HomePage() {
       toast.error('Failed to create seal: Internal Error');
     } finally {
       setIsCreating(false);
+      setEncryptionProgress(0);
     }
   };
 
@@ -392,11 +409,35 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center py-12 p-4 relative w-full overflow-x-hidden">
       <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+      <FloatingIcons />
+      
+      <AnimatePresence>
+        {isCreating && encryptionProgress > 0 && (
+          <EncryptionProgress progress={encryptionProgress} />
+        )}
+      </AnimatePresence>
+      
+      {/* GitHub Source Code Link */}
+      <motion.a
+        href="https://github.com/teycir/timeseal"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-lg hover:border-neon-green transition-all group"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <span className="text-xs text-neon-green/70 font-mono group-hover:text-neon-green transition-colors">SOURCE CODE</span>
+        <svg className="w-5 h-5 text-neon-green animate-subtle-shimmer" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+        </svg>
+      </motion.a>
+
       <div className="max-w-2xl w-full relative z-10 my-auto">
         <AnimatePresence mode="wait">
           {result ? (
             <motion.div
               key="result"
+              layoutId="main-card"
               initial="initial"
               animate="animate"
               exit="exit"
@@ -404,12 +445,13 @@ export default function HomePage() {
               transition={{ duration: 0.3 }}
               className="space-y-8"
             >
-              <div
+              <motion.div
+                layoutId="header"
                 className="text-center"
               >
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold glow-text mb-4 px-2">SEAL CREATED</h1>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold glow-text pulse-glow mb-4 px-2">SEAL CREATED</h1>
                 <p className="text-neon-green/70 text-sm sm:text-base px-4">Your message is now cryptographically locked</p>
-              </div>
+              </motion.div>
 
               <Card className="space-y-6">
                 {qrCode && (
@@ -514,6 +556,7 @@ export default function HomePage() {
           ) : (
             <motion.div
               key="form"
+              layoutId="main-card"
               initial="initial"
               animate="animate"
               exit="exit"
@@ -521,9 +564,9 @@ export default function HomePage() {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
-              <div className="text-center">
+              <motion.div layoutId="header" className="text-center">
                 <h1
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold glow-text mb-4 px-2"
+                  className="text-4xl sm:text-5xl md:text-6xl font-bold glow-text pulse-glow mb-4 px-2"
                 >
                   <DecryptedText
                     text="TIME-SEAL"
@@ -534,21 +577,20 @@ export default function HomePage() {
                     encryptedClassName="text-neon-green/30"
                   />
                 </h1>
-                <p
-                  className="text-sm text-neon-green/50 animate-subtle-shimmer"
-                  style={{
-                    animationDelay: '0s',
-                    animationIterationCount: 'infinite',
-                    animationDuration: '30s'
-                  }}
-                >
-                  &quot;If I go silent, this speaks for me.&quot;
+                <AnimatedTagline text='"If I go silent, this speaks for me."' />
+                <p className="text-xs text-neon-green/30 max-w-md mx-auto">
+                  Encrypt messages that unlock at a future date or after inactivity
                 </p>
-              </div>
+              </motion.div>
 
               <Card className="space-y-6">
                 <div>
-                  <div className="block text-sm mb-2 text-neon-green/80 font-bold">QUICK START TEMPLATES</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm text-neon-green/80 font-bold tooltip">
+                      QUICK START TEMPLATES
+                      <span className="tooltip-text">Click a template to auto-fill the form with a common use case</span>
+                    </div>
+                  </div>
                   <motion.div
                     variants={containerVariants}
                     initial="hidden"
@@ -562,10 +604,20 @@ export default function HomePage() {
                         variants={itemVariants}
                         whileHover={{ scale: 1.05, backgroundColor: 'rgba(0, 255, 65, 0.1)' }}
                         whileTap={{ scale: 0.95 }}
-                        className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center"
+                        className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center tooltip"
                         title={t.name}
                       >
-                        <div className="mb-1">{t.icon}</div>
+                        <span className="tooltip-text">Click to use {t.name} template</span>
+                        <motion.div
+                          className="mb-1"
+                          whileHover={{
+                            rotate: [0, -10, 10, -10, 0],
+                            scale: 1.2,
+                            transition: { duration: 0.5 }
+                          }}
+                        >
+                          {t.icon}
+                        </motion.div>
                         <div className="text-xs text-neon-green/70">{t.name}</div>
                       </motion.button>
                     ))}
@@ -636,23 +688,31 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-xs text-neon-green/60 tooltip">
+                      Choose seal type
+                      <span className="tooltip-text">Timed Release: unlocks at specific date. Dead Man&apos;s Switch: unlocks if you don&apos;t check in</span>
+                    </div>
+                  </div>
                   <div className="flex space-x-4 bg-dark-bg/30 p-1 rounded-lg border border-neon-green/10">
                     <button
                       onClick={() => setSealType('timed')}
-                      className={`flex-1 py-2 rounded text-sm font-bold transition-all ${sealType === 'timed'
+                      className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === 'timed'
                         ? 'bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]'
                         : 'text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5'
                         }`}
                     >
+                      <span className="tooltip-text">Unlock at a specific future date and time</span>
                       TIMED RELEASE
                     </button>
                     <button
                       onClick={() => setSealType('deadman')}
-                      className={`flex-1 py-2 rounded text-sm font-bold transition-all ${sealType === 'deadman'
+                      className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === 'deadman'
                         ? 'bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]'
                         : 'text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5'
                         }`}
                     >
+                      <span className="tooltip-text">Auto-unlock if you don&apos;t check in periodically</span>
                       DEAD MAN&apos;S SWITCH
                     </button>
                   </div>
@@ -720,22 +780,34 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex justify-center pt-2">
-                  <Turnstile
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-                    onSuccess={setTurnstileToken}
-                    onError={() => toast.error('Security verification failed. Please refresh.')}
-                    options={{ theme: 'dark', size: 'flexible', appearance: 'interaction-only' }}
-                    className="w-full"
-                  />
+                  <div className="w-full tooltip">
+                    <span className="tooltip-text">Complete this security check to prove you&apos;re human</span>
+                    <Turnstile
+                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                      onSuccess={setTurnstileToken}
+                      onError={() => toast.error('Security verification failed. Please refresh.')}
+                      options={{ theme: 'dark', size: 'flexible', appearance: 'interaction-only' }}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
 
-                <Button
-                  onClick={handleCreateSeal}
-                  disabled={isCreating || (!message.trim() && !file) || (sealType === 'timed' && !unlockDate) || !turnstileToken}
-                  className="w-full text-lg shadow-[0_0_20px_rgba(0,255,65,0.2)]"
-                >
-                  {isCreating ? 'ENCRYPTING & SEALING...' : 'CREATE TIME-SEAL'}
-                </Button>
+                <div className="tooltip">
+                  <span className="tooltip-text">
+                    {isCreating ? 'Encrypting your data with AES-256...' :
+                     !message.trim() && !file ? 'Enter a message or upload a file first' :
+                     sealType === 'timed' && !unlockDate ? 'Select an unlock date and time' :
+                     !turnstileToken ? 'Complete security check above' :
+                     'Click to create your encrypted time-locked seal'}
+                  </span>
+                  <Button
+                    onClick={handleCreateSeal}
+                    disabled={isCreating || (!message.trim() && !file) || (sealType === 'timed' && !unlockDate) || !turnstileToken}
+                    className="w-full text-lg shadow-[0_0_20px_rgba(0,255,65,0.2)]"
+                  >
+                    {isCreating ? 'ENCRYPTING & SEALING...' : 'CREATE TIME-SEAL'}
+                  </Button>
+                </div>
               </Card>
             </motion.div>
           )}

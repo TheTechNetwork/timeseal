@@ -124,17 +124,26 @@ body {
 
 /* Cyber Button */
 .cyber-button {
-  @apply px-6 py-3 border-2 border-neon-green text-neon-green font-bold uppercase tracking-wider transition-all duration-300 hover:bg-neon-green hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0,255,65,0.5)] active:scale-95;
+  @apply px-6 py-3 border-2 border-neon-green text-neon-green font-bold uppercase tracking-wider transition-all duration-300 hover:bg-neon-green hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0,255,65,0.5)] active:scale-95 rounded-lg;
 }
 
 /* Cyber Input */
 .cyber-input {
-  @apply w-full px-4 py-3 bg-dark-bg border-2 border-neon-green/30 text-neon-green font-mono focus:border-neon-green focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-all;
+  @apply w-full px-4 py-3 bg-dark-bg border-2 border-neon-green/30 text-neon-green font-mono focus:border-neon-green focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-all rounded-lg;
 }
 
 /* Cyber Border */
 .cyber-border {
-  @apply border-2 border-neon-green/30 p-4 transition-all hover:border-neon-green/50;
+  @apply border-2 border-neon-green/30 p-4 transition-all hover:border-neon-green/50 rounded-lg;
+}
+
+/* Cyber Card */
+.cyber-card {
+  @apply border-2 border-neon-green/30 transition-all rounded-xl;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px 0 rgba(0, 255, 65, 0.1);
 }
 
 /* Glow Text */

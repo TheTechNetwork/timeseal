@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import { CommandPalette } from './components/CommandPalette'
 import { StructuredData } from './components/StructuredData'
 import { Footer } from './components/Footer'
+import { ScrollProgress } from './components/ScrollProgress'
 
 import { IdleBlur } from './components/IdleBlur'
 
@@ -103,6 +104,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#00ff41" />
       </head>
       <body className={`${jetbrainsMono.className} min-h-screen bg-dark-bg text-dark-text overflow-x-hidden selection:bg-neon-green/30 selection:text-neon-green`}>
+        <ScrollProgress />
         {children}
         <Footer />
         <CommandPalette />
