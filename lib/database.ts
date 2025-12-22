@@ -77,17 +77,12 @@ export class SealDatabase implements DatabaseProvider {
   }
 
   async getSeal(id: string): Promise<SealRecord | null> {
+    // Use RETURNING clause for atomic update (SQLite 3.35+)
     const result = await this.db.prepare(
-      'SELECT * FROM seals WHERE id = ?'
+      'UPDATE seals SET access_count = access_count + 1 WHERE id = ? RETURNING *'
     ).bind(id).first();
 
     if (!result) return null;
-
-    // Increment access count
-    await this.db.prepare(
-      'UPDATE seals SET access_count = access_count + 1 WHERE id = ?'
-    ).bind(id).run();
-
     return this.mapResultToSealRecord(result);
   }
 

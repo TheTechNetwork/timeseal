@@ -64,7 +64,7 @@ function VaultPageClient({ id }: { id: string }) {
     toast.success('Content downloaded');
   };
 
-  const decryptMessage = useCallback(async (keyB: string, iv: string) => {
+  const decryptMessage = useCallback(async (keyB: string, iv: string, encryptedBlob?: string) => {
     try {
       // Verify client integrity before decryption
       await ensureIntegrity();
@@ -75,15 +75,20 @@ function VaultPageClient({ id }: { id: string }) {
         return;
       }
 
-      const response = await fetch(`/api/seal/${id}`);
-      const data = await response.json() as { encryptedBlob?: string; error?: string };
+      // Use cached blob if provided, otherwise fetch
+      let blobData = encryptedBlob;
+      if (!blobData) {
+        const response = await fetch(`/api/seal/${id}`);
+        const data = await response.json() as { encryptedBlob?: string; error?: string };
+        blobData = data.encryptedBlob;
+      }
 
-      if (!data.encryptedBlob) {
+      if (!blobData) {
         setError('Encrypted content not found');
         return;
       }
 
-      const binary = atob(data.encryptedBlob);
+      const binary = atob(blobData);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -108,13 +113,14 @@ function VaultPageClient({ id }: { id: string }) {
   const fetchSealStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/seal/${id}`);
-      const data = await response.json() as SealStatus & { error?: string };
+      const data = await response.json() as SealStatus & { encryptedBlob?: string; error?: string };
 
       if (response.ok) {
         setStatus(data);
 
         if (!data.isLocked && data.keyB && data.iv) {
-          await decryptMessage(data.keyB, data.iv);
+          // Pass encryptedBlob to avoid duplicate fetch
+          await decryptMessage(data.keyB, data.iv, data.encryptedBlob);
         }
       } else {
         setError(data.error || 'Seal not found');

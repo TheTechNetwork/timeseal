@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { encryptData } from '@/lib/crypto';
 import { ensureIntegrity } from '@/lib/clientIntegrity';
 import { usePWA } from '@/lib/usePWA';
-import QRCode from 'qrcode';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
@@ -12,6 +11,7 @@ import confetti from 'canvas-confetti';
 import dynamic from 'next/dynamic';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then(mod => mod.Turnstile), { ssr: false });
+const QRCode = dynamic(() => import('qrcode'), { ssr: false });
 import { Card } from './components/Card';
 import { Button } from './components/Button';
 import { Input } from './components/Input';
@@ -341,7 +341,9 @@ export default function HomePage() {
       if (data.success) {
         const origin = globalThis.window ? globalThis.window.location.origin : '';
         const publicUrl = `${origin}${data.publicUrl}#${encrypted.keyA}`;
-        const qr = await QRCode.toDataURL(publicUrl, { width: 256, margin: 2 });
+        // Lazy load QRCode
+        const QRCodeModule = await QRCode;
+        const qr = await QRCodeModule.toDataURL(publicUrl, { width: 256, margin: 2 });
         setQrCode(qr);
         setResult({
           publicUrl,

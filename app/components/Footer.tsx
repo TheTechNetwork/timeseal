@@ -1,5 +1,3 @@
-'use client';
-
 import { Heart, Lock } from 'lucide-react';
 
 export function Footer() {

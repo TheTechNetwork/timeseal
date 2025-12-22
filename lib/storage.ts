@@ -20,7 +20,15 @@ export class D1BlobStorage implements StorageProvider {
       throw new Error(`File exceeds maximum size of ${MAX_UPLOAD_SIZE / 1024 / 1024}MB`);
     }
 
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(data)));
+    // Chunked base64 encoding to avoid stack overflow
+    const bytes = new Uint8Array(data);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode(...chunk);
+    }
+    const base64 = btoa(binary);
     
     await this.db.prepare(
       'UPDATE seals SET encrypted_blob = ? WHERE id = ?'
@@ -34,10 +42,15 @@ export class D1BlobStorage implements StorageProvider {
     
     if (!result?.encrypted_blob) throw new Error('Blob not found');
     
+    // Chunked decoding to avoid stack overflow
     const binary = atob(result.encrypted_blob);
     const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
+    const chunkSize = 8192;
+    for (let i = 0; i < binary.length; i += chunkSize) {
+      const end = Math.min(i + chunkSize, binary.length);
+      for (let j = i; j < end; j++) {
+        bytes[j] = binary.charCodeAt(j);
+      }
     }
     return bytes.buffer;
   }
