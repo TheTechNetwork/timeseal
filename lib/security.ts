@@ -119,6 +119,13 @@ export async function validatePulseToken(token: string, sealId: string, secret: 
   return await crypto.subtle.verify('HMAC', key, sigBytes, encoder.encode(data));
 }
 
+export function getRequestFingerprint(request: Request): string {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const ua = request.headers.get('user-agent') || '';
+  const lang = request.headers.get('accept-language') || '';
+  return `${ip}:${ua.slice(0, 50)}:${lang.slice(0, 20)}`;
+}
+
 export function sanitizeError(error: unknown): string {
   if (process.env.NODE_ENV === 'production') {
     return 'An error occurred. Please try again.';

@@ -175,6 +175,9 @@ sequenceDiagram
 - Key A (in the URL hash)
 - Key B (server releases only after unlock time)
 
+### "Can I bypass rate limits by rotating IPs or using VPNs?"
+**⚠️ HARDER.** Rate limiting uses browser fingerprinting (IP + User-Agent + Language), making simple IP rotation ineffective. You'd need to change your entire browser signature.
+
 ### "Can I replay old API requests to trick the server?"
 **❌ NO.** Pulse tokens include nonces and timestamps. Replay attacks are detected and rejected.
 
@@ -200,6 +203,7 @@ sequenceDiagram
 *   **Database:** `Cloudflare D1` (SQLite)
 *   **Storage:** `Cloudflare D1` (Encrypted Blobs)
 *   **Crypto:** `Web Crypto API` (Native AES-GCM)
+*   **Security:** Browser Fingerprinting, Rate Limiting, Input Validation
 *   **Styling:** `Tailwind CSS` (Cipher-punk Theme)
 
 ---

@@ -3,6 +3,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createContainer } from './container';
 import { createHandler, HandlerContext } from './apiHandler';
 import { withRateLimit } from './rateLimit';
+import { getRequestFingerprint } from './security';
 
 interface RouteHandlerOptions {
   rateLimit?: { limit: number; window: number };
@@ -19,6 +20,7 @@ export function createAPIRoute(
 ) {
   return async (request: NextRequest, routeParams?: any) => {
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const fingerprint = getRequestFingerprint(request);
     
     const wrappedHandler = async () => {
       const apiHandler = createHandler(async (ctx: HandlerContext) => {
@@ -32,7 +34,7 @@ export function createAPIRoute(
     };
 
     if (options.rateLimit) {
-      return withRateLimit(request, wrappedHandler, options.rateLimit);
+      return withRateLimit(request, wrappedHandler, { ...options.rateLimit, key: fingerprint });
     }
     
     return wrappedHandler();

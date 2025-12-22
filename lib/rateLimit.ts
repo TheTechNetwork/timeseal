@@ -1,7 +1,8 @@
 // Rate Limiting Middleware for Cloudflare Workers
 export interface RateLimitConfig {
   limit: number;
-  window: number; // milliseconds
+  window: number;
+  key?: string;
 }
 
 export class RateLimiter {
@@ -84,12 +85,12 @@ export async function withRateLimit(
   handler: () => Promise<Response>,
   config: RateLimitConfig = { limit: 10, window: 60000 }
 ): Promise<Response> {
-  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const identifier = config.key || request.headers.get('CF-Connecting-IP') || 'unknown';
 
   const key = `${config.limit}:${config.window}`;
   const limiter = RateLimiterRegistry.getInstance().getLimiter(key, config);
 
-  const { allowed, remaining } = await limiter.check(ip);
+  const { allowed, remaining } = await limiter.check(identifier);
 
   if (!allowed) {
     return new Response(
