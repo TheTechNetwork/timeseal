@@ -7,6 +7,45 @@ export interface ValidationResult {
 const MAX_FILE_SIZE = Number.parseInt(process.env.MAX_FILE_SIZE_MB || '10') * 1024 * 1024;
 const MAX_DURATION_DAYS = Number.parseInt(process.env.MAX_SEAL_DURATION_DAYS || '365');
 const MIN_UNLOCK_DELAY = 60 * 1000; // 1 minute
+const MAX_REQUEST_SIZE = 30 * 1024 * 1024; // 30MB (25MB file + overhead)
+
+export function validateRequestSize(contentLength: number): ValidationResult {
+  if (contentLength > MAX_REQUEST_SIZE) {
+    return { valid: false, error: 'Request too large' };
+  }
+  return { valid: true };
+}
+
+export function validateSealId(sealId: string): ValidationResult {
+  if (!/^[a-f0-9]{32}$/.test(sealId)) {
+    return { valid: false, error: 'Invalid seal ID format' };
+  }
+  return { valid: true };
+}
+
+export function validateKey(key: string, name: string): ValidationResult {
+  if (!key || typeof key !== 'string') {
+    return { valid: false, error: `${name} is required` };
+  }
+  if (!/^[A-Za-z0-9+/=]+$/.test(key)) {
+    return { valid: false, error: `${name} must be base64 encoded` };
+  }
+  if (key.length < 32 || key.length > 100) {
+    return { valid: false, error: `${name} has invalid length` };
+  }
+  return { valid: true };
+}
+
+export function validateTimestamp(timestamp: number): ValidationResult {
+  if (!Number.isInteger(timestamp) || timestamp < 0) {
+    return { valid: false, error: 'Invalid timestamp' };
+  }
+  const maxFuture = Date.now() + (100 * 365 * 24 * 60 * 60 * 1000); // 100 years
+  if (timestamp > maxFuture) {
+    return { valid: false, error: 'Timestamp too far in future' };
+  }
+  return { valid: true };
+}
 
 export function validateFileSize(size: number): ValidationResult {
   if (size > MAX_FILE_SIZE) {

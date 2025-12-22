@@ -77,19 +77,19 @@ export const logger = new Logger(
 );
 
 // Audit event helpers
-export function auditSealCreated(sealId: string, ip: string, isDMS: boolean): void {
+export function auditSealCreated(sealId: string, ip: string, isDMS: boolean, userAgent?: string): void {
   logger.audit('seal_created', {
     sealId,
     ip,
-    metadata: { isDMS },
+    metadata: { isDMS, userAgent: userAgent || 'unknown' },
   });
 }
 
-export function auditSealAccessed(sealId: string, ip: string, status: 'locked' | 'unlocked'): void {
+export function auditSealAccessed(sealId: string, ip: string, status: 'locked' | 'unlocked', userAgent?: string): void {
   logger.audit('seal_accessed', {
     sealId,
     ip,
-    metadata: { status },
+    metadata: { status, userAgent: userAgent || 'unknown' },
   });
 }
 

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-22
+
+### Added
+- Request size validation (30MB limit)
+- Seal ID format validation (32 hex characters)
+- Key format validation (base64, length checks)
+- Timestamp validation (prevent overflow)
+- IP address validation (IPv4/IPv6)
+- Honeypot seals for enumeration detection
+- User-agent logging in audit trail
+
+### Security
+- Enhanced input validation across all API endpoints
+- Honeypot IDs: 00000000... and ffffffff...
+- Improved audit logging with user-agent tracking
+
 ## [0.2.0] - 2025-12-22
 
 ### Added

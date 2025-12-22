@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
+import { validateSealId } from '@/lib/validation';
+import { isHoneypot } from '@/lib/security';
+import { logger } from '@/lib/logger';
 
 
 export async function GET(
@@ -9,6 +12,21 @@ export async function GET(
 ) {
   return createAPIRoute(async ({ container, ip }) => {
     const { id: sealId } = await params;
+
+    const sealIdValidation = validateSealId(sealId);
+    if (!sealIdValidation.valid) {
+      return jsonResponse({ error: sealIdValidation.error }, 400);
+    }
+
+    if (isHoneypot(sealId)) {
+      logger.warn('honeypot_accessed', { ip, sealId, userAgent: request.headers.get('user-agent') });
+      return jsonResponse({
+        id: sealId,
+        isLocked: true,
+        unlockTime: Date.now() + 999999999999,
+        timeRemaining: 999999999999,
+      });
+    }
     const sealService = container.sealService;
     const metadata = await sealService.getSeal(sealId, ip);
 

@@ -9,6 +9,19 @@ export function constantTimeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
+export function validateIP(ip: string): boolean {
+  if (!ip || ip === 'unknown') return false;
+  const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/;
+  const ipv6 = /^([0-9a-f]{0,4}:){7}[0-9a-f]{0,4}$/i;
+  return ipv4.test(ip) || ipv6.test(ip);
+}
+
+const HONEYPOT_IDS = ['00000000000000000000000000000000', 'ffffffffffffffffffffffffffffffff'];
+
+export function isHoneypot(sealId: string): boolean {
+  return HONEYPOT_IDS.includes(sealId);
+}
+
 export async function generatePulseToken(sealId: string, secret: string): Promise<string> {
   const data = `${sealId}:${Date.now()}:${crypto.randomUUID()}`;
   const encoder = new TextEncoder();
