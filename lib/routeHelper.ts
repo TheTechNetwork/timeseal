@@ -4,6 +4,7 @@ import { createContainer } from './container';
 import { createHandler, HandlerContext } from './apiHandler';
 import { withRateLimit } from './rateLimit';
 import { getRequestFingerprint } from './security';
+import { createDatabase } from './database';
 
 interface RouteHandlerOptions {
   rateLimit?: { limit: number; window: number };
@@ -21,20 +22,20 @@ export function createAPIRoute(
   return async (request: NextRequest, routeParams?: any) => {
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     const fingerprint = getRequestFingerprint(request);
+    const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
     
     const wrappedHandler = async () => {
       const apiHandler = createHandler(async (ctx: HandlerContext) => {
-        const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
         const container = createContainer(env);
         return handler({ ...ctx, container });
       });
       
-      const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
       return apiHandler({ request, ip, env });
     };
 
     if (options.rateLimit) {
-      return withRateLimit(request, wrappedHandler, { ...options.rateLimit, key: fingerprint });
+      const db = createDatabase(env);
+      return withRateLimit(request, wrappedHandler, { ...options.rateLimit, key: fingerprint, db });
     }
     
     return wrappedHandler();
