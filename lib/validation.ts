@@ -31,7 +31,10 @@ export function validateKey(key: string, name: string): ValidationResult {
   if (!/^[A-Za-z0-9+/=]+$/.test(key)) {
     return { valid: false, error: `${name} must be base64 encoded` };
   }
-  if (key.length < 32 || key.length > 100) {
+  // IV is 12 bytes = 16 chars base64, Keys are 32 bytes = 44 chars base64
+  const minLength = name === 'IV' ? 16 : 32;
+  const maxLength = name === 'IV' ? 16 : 100;
+  if (key.length < minLength || key.length > maxLength) {
     return { valid: false, error: `${name} has invalid length` };
   }
   return { valid: true };

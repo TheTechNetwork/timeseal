@@ -10,7 +10,6 @@ import {
 } from "@/lib/validation";
 import { ErrorCode, createErrorResponse } from "@/lib/errors";
 import { validateHTTPMethod, validateOrigin } from "@/lib/security";
-import { validateTurnstile } from "@/lib/turnstile";
 
 export async function POST(request: NextRequest) {
   if (!validateHTTPMethod(request, ["POST"])) {
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
   return createAPIRoute(
     async ({ container, request: ctx, ip }) => {
       const formData = await ctx.formData();
-      const turnstileToken = formData.get("cf-turnstile-response") as string;
       const encryptedBlob = formData.get("encryptedBlob") as File;
       const keyB = formData.get("keyB") as string;
       const iv = formData.get("iv") as string;
@@ -40,15 +38,6 @@ export async function POST(request: NextRequest) {
       const pulseInterval = formData.get("pulseInterval")
         ? parseInt(formData.get("pulseInterval") as string)
         : undefined;
-
-      if (!turnstileToken) {
-        return createErrorResponse(ErrorCode.INVALID_INPUT, "Turnstile token required");
-      }
-
-      const turnstileValid = await validateTurnstile(turnstileToken, ip);
-      if (!turnstileValid) {
-        return createErrorResponse(ErrorCode.INVALID_INPUT, "Turnstile validation failed");
-      }
 
       if (!encryptedBlob || !keyB || !iv || !unlockTime || isNaN(unlockTime)) {
         return createErrorResponse(

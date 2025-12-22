@@ -372,6 +372,8 @@ export default function HomePage() {
 
       const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string };
 
+      console.log('[CREATE-SEAL] Response:', response.status, data);
+
       if (data.success) {
         setEncryptionProgress(95);
         const origin = globalThis.window ? globalThis.window.location.origin : '';
@@ -724,11 +726,12 @@ export default function HomePage() {
                         exit={{ opacity: 0, height: 0 }}
                         className="relative z-50"
                       >
-                        <div className="block text-sm mb-2 text-neon-green/80 font-bold tooltip">
+                        <label htmlFor="unlock-date" className="block text-sm mb-2 text-neon-green/80 font-bold">
                           UNLOCK DATE & TIME
-                          <span className="tooltip-text">Select when the seal will automatically unlock. Must be at least 1 minute in the future.</span>
-                        </div>
+                        </label>
+                        <p className="text-xs text-neon-green/50 mb-2">Select when the seal will automatically unlock. Must be at least 1 minute in the future.</p>
                         <input
+                          id="unlock-date"
                           type="datetime-local"
                           value={unlockDate}
                           onChange={(e) => setUnlockDate(e.target.value)}

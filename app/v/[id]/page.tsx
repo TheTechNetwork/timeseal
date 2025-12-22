@@ -20,11 +20,14 @@ interface SealStatus {
 }
 
 export default function VaultPage({ params }: { params: Promise<{ id: string }> }) {
-  return <VaultPageWrapper params={params} />;
-}
+  const [id, setId] = useState<string | null>(null);
 
-async function VaultPageWrapper({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  useEffect(() => {
+    params.then(p => setId(p.id));
+  }, [params]);
+
+  if (!id) return null;
+
   return <VaultPageClient id={id} />;
 }
 

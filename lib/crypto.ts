@@ -85,6 +85,7 @@ export async function encryptData(data: string | File): Promise<EncryptionResult
 
   // Generate random IV
   const iv = crypto.getRandomValues(new Uint8Array(12));
+  console.log('[ENCRYPT] IV length:', iv.length, 'bytes');
   
   // Encrypt with master key
   const encryptedBlob = await crypto.subtle.encrypt(
@@ -96,12 +97,14 @@ export async function encryptData(data: string | File): Promise<EncryptionResult
   // Export keys as base64 strings
   const keyABuffer = await crypto.subtle.exportKey('raw', keyA);
   const keyBBuffer = await crypto.subtle.exportKey('raw', keyB);
+  const ivBase64 = arrayBufferToBase64(iv.buffer);
+  console.log('[ENCRYPT] IV base64 length:', ivBase64.length, 'value:', ivBase64);
   
   return {
     encryptedBlob,
     keyA: arrayBufferToBase64(keyABuffer),
     keyB: arrayBufferToBase64(keyBBuffer),
-    iv: arrayBufferToBase64(iv.buffer),
+    iv: ivBase64,
   };
 }
 
@@ -110,33 +113,43 @@ export async function decryptData(
   encryptedBlob: ArrayBuffer,
   keys: DecryptionKeys
 ): Promise<ArrayBuffer> {
-  // Import keys from base64
-  const keyA = await crypto.subtle.importKey(
-    'raw',
-    base64ToArrayBuffer(keys.keyA),
-    { name: 'AES-GCM' },
-    true,
-    ['decrypt']
-  );
-  
-  const keyB = await crypto.subtle.importKey(
-    'raw',
-    base64ToArrayBuffer(keys.keyB),
-    { name: 'AES-GCM' },
-    true,
-    ['decrypt']
-  );
+  try {
+    // Import keys from base64
+    const keyA = await crypto.subtle.importKey(
+      'raw',
+      base64ToArrayBuffer(keys.keyA),
+      { name: 'AES-GCM' },
+      true,
+      ['decrypt']
+    );
+    
+    const keyB = await crypto.subtle.importKey(
+      'raw',
+      base64ToArrayBuffer(keys.keyB),
+      { name: 'AES-GCM' },
+      true,
+      ['decrypt']
+    );
 
-  // Derive master key
-  const masterKey = await deriveMasterKey(keyA, keyB);
-  
-  // Decrypt
-  const iv = base64ToArrayBuffer(keys.iv);
-  return await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
-    masterKey,
-    encryptedBlob
-  ) as ArrayBuffer;
+    // Derive master key
+    const masterKey = await deriveMasterKey(keyA, keyB);
+    
+    // Decrypt
+    console.log('[DECRYPT] IV base64 received:', keys.iv, 'length:', keys.iv.length);
+    const iv = base64ToArrayBuffer(keys.iv);
+    console.log('[DECRYPT] IV ArrayBuffer byteLength:', iv.byteLength);
+    return await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      masterKey,
+      encryptedBlob
+    ) as ArrayBuffer;
+  } catch (error) {
+    // Check if it's an IV length error
+    if (error instanceof Error && error.message.includes('iv')) {
+      throw new Error('This seal was created with an incompatible version. Please create a new seal.');
+    }
+    throw error;
+  }
 }
 
 // Utility functions
