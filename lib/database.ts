@@ -127,8 +127,10 @@ export class SealDatabase implements DatabaseProvider {
 
   async getExpiredDMS(): Promise<SealRecord[]> {
     const results = await this.db.prepare(
-      `SELECT * FROM seals 
-       WHERE is_dms = 1 
+      `SELECT * FROM seals
+       WHERE is_dms = 1
+       AND last_pulse IS NOT NULL
+       AND pulse_interval IS NOT NULL
        AND last_pulse + pulse_interval < ?`
     ).bind(Date.now()).all();
 
@@ -241,7 +243,7 @@ export class MockDatabase implements DatabaseProvider {
   async getExpiredDMS(): Promise<SealRecord[]> {
     const now = Date.now();
     return Array.from(this.store.getSeals().values()).filter(
-      s => s.isDMS && s.lastPulse && s.pulseInterval &&
+      s => s.isDMS && s.lastPulse !== undefined && s.pulseInterval !== undefined &&
         s.lastPulse + s.pulseInterval < now
     );
   }

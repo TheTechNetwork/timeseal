@@ -5,18 +5,24 @@ import { ErrorCode, createErrorResponse } from '@/lib/errors';
 
 export async function POST(request: NextRequest) {
   return createAPIRoute(async ({ container, request: ctx, ip }) => {
-    const { pulseToken } = await ctx.json() as { pulseToken: string };
+    try {
+      const { pulseToken } = await ctx.json() as { pulseToken: string };
 
-    if (!pulseToken) {
-      return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
+      if (!pulseToken) {
+        return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
+      }
+
+      const sealService = container.sealService;
+      await sealService.burnSeal(pulseToken, ip);
+
+      return jsonResponse({
+        success: true,
+        message: 'Seal burned successfully',
+      });
+    } catch (error) {
+      console.error('[BURN] Error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return createErrorResponse(ErrorCode.INTERNAL_ERROR, `Burn failed: ${errorMessage}`);
     }
-
-    const sealService = container.sealService;
-    await sealService.burnSeal(pulseToken, ip);
-
-    return jsonResponse({
-      success: true,
-      message: 'Seal burned successfully',
-    });
   }, { rateLimit: { limit: 10, window: 60000 } })(request);
 }

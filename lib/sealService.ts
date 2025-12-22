@@ -65,7 +65,10 @@ export class SealService {
       throw new Error(timeValidation.error);
     }
 
-    if (request.isDMS && request.pulseInterval) {
+    if (request.isDMS) {
+      if (!request.pulseInterval) {
+        throw new Error('Dead Man\'s Switch requires pulse interval');
+      }
       const pulseValidation = validatePulseInterval(request.pulseInterval);
       if (!pulseValidation.valid) {
         throw new Error(pulseValidation.error);
@@ -211,7 +214,14 @@ export class SealService {
     }
 
     const now = Date.now();
-    const intervalToUse = newInterval ? newInterval * 24 * 60 * 60 * 1000 : (seal.pulseInterval || 0);
+    const intervalToUse = newInterval
+      ? newInterval * 24 * 60 * 60 * 1000
+      : (seal.pulseInterval || 0);
+
+    if (intervalToUse === 0) {
+      throw new Error('Pulse interval not configured');
+    }
+
     const newUnlockTime = now + intervalToUse;
 
     await this.db.updatePulse(seal.id, now);
