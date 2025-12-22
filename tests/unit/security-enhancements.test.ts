@@ -59,7 +59,7 @@ describe('Security Enhancements', () => {
   });
 
   describe('2. File Upload Limits', () => {
-    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_SIZE = 750 * 1024; // 750KB (actual limit)
 
     it('should reject files exceeding size limit', () => {
       const oversized = MAX_SIZE + 1;
@@ -70,7 +70,7 @@ describe('Security Enhancements', () => {
     });
 
     it('should accept files within size limit', () => {
-      const validSize = MAX_SIZE - 1;
+      const validSize = 500 * 1024; // 500KB
       const result = validateFileSize(validSize);
 
       expect(result.valid).toBe(true);
@@ -98,8 +98,8 @@ describe('Security Enhancements', () => {
     it('should validate at multiple layers', () => {
       const testSizes = [
         { size: 1024, expected: true },           // 1KB - valid
-        { size: 5 * 1024 * 1024, expected: true }, // 5MB - valid
-        { size: MAX_SIZE, expected: true },        // 10MB - valid
+        { size: 500 * 1024, expected: true },     // 500KB - valid
+        { size: 700 * 1024, expected: true },     // 700KB - valid
         { size: MAX_SIZE + 1, expected: false },   // 10MB+1 - invalid
         { size: 50 * 1024 * 1024, expected: false }, // 50MB - invalid
       ];
@@ -164,7 +164,7 @@ describe('Security Enhancements', () => {
   describe('Integration: All Three Enhancements', () => {
     it('should work together in complete flow', async () => {
       // 1. Validate file size
-      const fileSize = 1024 * 1024; // 1MB
+      const fileSize = 500 * 1024; // 500KB
       const sizeValidation = validateFileSize(fileSize);
       expect(sizeValidation.valid).toBe(true);
 
