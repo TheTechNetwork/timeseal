@@ -12,7 +12,7 @@ describe('Integration Tests - End-to-End Flows', () => {
   beforeEach(() => {
     db = new MockDatabase();
     storage = new MockStorage();
-    sealService = new SealService(storage, db);
+    sealService = new SealService(storage, db, 'test-master-key-32-bytes-long!!');
   });
 
   describe('Complete Timed Release Flow', () => {
@@ -92,8 +92,8 @@ describe('Integration Tests - End-to-End Flows', () => {
   describe('Complete Dead Man\'s Switch Flow', () => {
     it('should create DMS, pulse to extend, and track expiry', async () => {
       const emergencyMessage = 'If you see this, I need help';
-      const pulseInterval = 86400; // 1 day in seconds
-      const unlockTime = Date.now() + pulseInterval * 1000;
+      const pulseInterval = 86400 * 1000; // 1 day in ms
+      const unlockTime = Date.now() + pulseInterval;
 
       // Step 1: Encrypt message
       const encrypted = await encryptData(emergencyMessage);
@@ -133,7 +133,7 @@ describe('Integration Tests - End-to-End Flows', () => {
 
     it('should detect expired DMS seals', async () => {
       const message = 'Expired DMS';
-      const pulseInterval = 3600;
+      const pulseInterval = 3600 * 1000;
       const unlockTime = Date.now() + 61000;
 
       const encrypted = await encryptData(message);
@@ -210,7 +210,7 @@ describe('Integration Tests - End-to-End Flows', () => {
 
       // Generate wrong keyA
       const wrongEncrypted = await encryptData('different');
-      
+
       await expect(
         decryptData(encrypted.encryptedBlob, {
           keyA: wrongEncrypted.keyA, // Wrong key
@@ -252,7 +252,7 @@ describe('Integration Tests - End-to-End Flows', () => {
     it('should reject pulse for non-DMS seal', async () => {
       const message = 'Regular seal';
       const encrypted = await encryptData(message);
-      
+
       const sealResult = await sealService.createSeal({
         encryptedBlob: encrypted.encryptedBlob,
         keyB: encrypted.keyB,
@@ -331,7 +331,7 @@ describe('Integration Tests - End-to-End Flows', () => {
         iv: dmsEncrypted.iv,
         unlockTime: Date.now() + 100000,
         isDMS: true,
-        pulseInterval: 86400,
+        pulseInterval: 86400 * 1000,
       }, '192.168.1.1');
 
       const regularMetadata = await sealService.getSeal(regularSeal.sealId, '192.168.1.1');
@@ -375,13 +375,13 @@ describe('Integration Tests - End-to-End Flows', () => {
     it('should handle pulse updates in database', async () => {
       const message = 'DMS test';
       const encrypted = await encryptData(message);
-      const pulseInterval = 86400;
+      const pulseInterval = 86400 * 1000;
 
       const sealResult = await sealService.createSeal({
         encryptedBlob: encrypted.encryptedBlob,
         keyB: encrypted.keyB,
         iv: encrypted.iv,
-        unlockTime: Date.now() + pulseInterval * 1000,
+        unlockTime: Date.now() + pulseInterval,
         isDMS: true,
         pulseInterval,
       }, '192.168.1.1');

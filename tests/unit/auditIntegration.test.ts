@@ -12,7 +12,7 @@ describe('Audit Logging Integration', () => {
 
   beforeEach(() => {
     auditEvents = [];
-    
+
     const mockAuditDb = {
       prepare: (sql: string) => ({
         bind: (...args: any[]) => ({
@@ -38,7 +38,7 @@ describe('Audit Logging Integration', () => {
     mockDb = new MockDatabase();
     auditLogger = new AuditLogger(mockAuditDb);
     const storage = new MockStorage();
-    sealService = new SealService(storage, mockDb, auditLogger);
+    sealService = new SealService(storage, mockDb, 'test-master-key-32-bytes-long!!', auditLogger);
   });
 
   it('should log SEAL_CREATED event', async () => {
@@ -53,7 +53,7 @@ describe('Audit Logging Integration', () => {
     const createdEvents = auditEvents.filter(
       e => e.eventType === AuditEventType.SEAL_CREATED
     );
-    
+
     expect(createdEvents.length).toBe(1);
     expect(createdEvents[0].sealId).toBe(result.sealId);
     expect(createdEvents[0].ip).toBe('127.0.0.1');
@@ -73,7 +73,7 @@ describe('Audit Logging Integration', () => {
     const deniedEvents = auditEvents.filter(
       e => e.eventType === AuditEventType.SEAL_ACCESS_DENIED
     );
-    
+
     expect(deniedEvents.length).toBe(1);
     expect(deniedEvents[0].ip).toBe('192.168.1.1');
   });
@@ -98,7 +98,7 @@ describe('Audit Logging Integration', () => {
     const unlockedEvents = auditEvents.filter(
       e => e.eventType === AuditEventType.SEAL_UNLOCKED
     );
-    
+
     expect(unlockedEvents.length).toBe(1);
     expect(unlockedEvents[0].ip).toBe('10.0.0.1');
   });
@@ -111,7 +111,7 @@ describe('Audit Logging Integration', () => {
       hmac: 'testhmac',
       unlockTime: Date.now() + 120000, // 2 minutes
       isDMS: true,
-      pulseInterval: 3600,
+      pulseInterval: 3600 * 1000,
     }, '127.0.0.1');
 
     if (result.pulseToken) {
@@ -120,7 +120,7 @@ describe('Audit Logging Integration', () => {
       const pulseEvents = auditEvents.filter(
         e => e.eventType === AuditEventType.PULSE_UPDATED
       );
-      
+
       expect(pulseEvents.length).toBe(1);
       expect(pulseEvents[0].ip).toBe('172.16.0.1');
     }

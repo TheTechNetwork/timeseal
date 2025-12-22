@@ -83,7 +83,6 @@ export default function HomePage() {
   } | null>(null);
 
   // Use a ref for file input fallback (kept even if dropzone exists for accessibility/fallback)
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Dropzone hook
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -133,6 +132,12 @@ export default function HomePage() {
         toast.error('🔥 Seal burned successfully. Content permanently destroyed.');
         globalThis.window.history.replaceState({}, '', '/');
       }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_IS_E2E === 'true') {
+      setTurnstileToken('e2e-test-token');
     }
   }, []);
 

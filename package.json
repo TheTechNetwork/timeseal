@@ -16,7 +16,8 @@
     "test:integration": "jest tests/integration --maxWorkers=50%",
     "test:e2e": "playwright test -c tests/config/playwright.config.ts",
     "test:e2e:ui": "playwright test -c tests/config/playwright.config.ts --ui",
-    "test:all": "npm run test && npm run test:e2e"
+    "test:e2e:full": "playwright test -c tests/config/playwright-e2e.config.ts",
+    "test:all": "npm run test && npm run test:e2e:full"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20231218.0",
