@@ -12,7 +12,7 @@
 
 ### *"If I go silent, this speaks for me."*
 
-[Create a Seal](http://localhost:3000) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
+[Create a Seal](https://timeseal.teycir-932.workers.dev) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
 
 </div>
 
@@ -175,15 +175,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to create your first seal.
 
-### 🔐 Production Setup
+### 🔐 Production Deployment
+
+The app is deployed at **[https://timeseal.teycir-932.workers.dev](https://timeseal.teycir-932.workers.dev)**
 
 ```bash
-# Generate and set production secrets
-./scripts/setup-secrets.sh
+# Deploy to Cloudflare Workers
+npm run deploy
 
-# Or manually:
+# Set production secrets
 openssl rand -base64 32  # Generate key
-wrangler pages secret put MASTER_ENCRYPTION_KEY --project-name=time-seal
+wrangler secret put MASTER_ENCRYPTION_KEY
 ```
 
 ---
@@ -220,8 +222,9 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Code Deduplication - Cleaner API routes  
 - ✅ Test Infrastructure - Fast, reliable tests
 
-**Critical (Before Production):**
-- 🔴 Production Secrets - Set environment variables
+**Recently Completed:**
+- ✅ Production Deployment - Live at timeseal.teycir-932.workers.dev
+- ✅ Cloudflare Workers Migration - Migrated from deprecated @cloudflare/next-on-pages
 
 **High Priority:**
 - 🟡 Monitoring & Alerts - Failed unlocks, pulse misses
