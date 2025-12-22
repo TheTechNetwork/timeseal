@@ -29,7 +29,7 @@
 
 ## 🟡 High Priority (Should Fix Soon)
 
-- [ ] **API Documentation**: Create OpenAPI spec
+- [x] **API Documentation**: Complete API reference created (docs/API.md)
 - [ ] **Video Tutorials**: Screen recordings for common use cases
 
 ## 🟢 Nice to Have (Future Enhancements)
@@ -46,8 +46,8 @@
 
 ## 📝 Documentation Needed
 
-- [ ] API documentation (OpenAPI spec)
-- [ ] Trust assumptions document
+- [x] API documentation (docs/API.md)
+- [x] Trust assumptions document (docs/TRUST-ASSUMPTIONS.md)
 - [ ] Video tutorials
 
 ## 📊 Current Status

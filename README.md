@@ -233,9 +233,11 @@ wrangler secret put MASTER_ENCRYPTION_KEY
 
 ## 📚 Documentation
 
+- [API Reference](docs/API.md) - Complete REST API documentation
 - [Architecture Guide](docs/ARCHITECTURE.md) - Design patterns and abstractions
 - [Deployment Guide](docs/DEPLOYMENT.md) - Cloudflare setup instructions
 - [Security Documentation](docs/SECURITY.md) - Threat model and security controls
+- [Trust Assumptions](docs/TRUST-ASSUMPTIONS.md) - What you must trust to use TimeSeal
 - [Security Enhancements](docs/SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
 - [Key Rotation Guide](docs/KEY-ROTATION.md) - Master key rotation procedures
 - [Security Testing](docs/SECURITY-TESTING.md) - Penetration testing guide
