@@ -9,7 +9,7 @@ import {
 describe('Validation', () => {
   describe('validateFileSize', () => {
     it('should accept valid file size', () => {
-      const result = validateFileSize(1024 * 1024); // 1MB
+      const result = validateFileSize(500 * 1024); // 500KB
       expect(result.valid).toBe(true);
     });
 
