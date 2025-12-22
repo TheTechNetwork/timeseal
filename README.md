@@ -6,7 +6,6 @@
 ![Status](https://img.shields.io/badge/Status-Operational-neon_green?style=for-the-badge)
 
 # ⏳ TIME-SEAL
-### The Unbreakable Protocol
 
 ![Time-Seal Animation](public/timeseal_ascii.svg)
 

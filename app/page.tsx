@@ -535,13 +535,6 @@ export default function HomePage() {
                   />
                 </h1>
                 <p
-                  className="text-base sm:text-lg md:text-xl text-neon-green/70 mb-2 px-4"
-                >
-                  <TextScramble className="text-neon-green/90 tracking-widest font-bold">
-                    The Unbreakable Protocol
-                  </TextScramble>
-                </p>
-                <p
                   className="text-sm text-neon-green/50 animate-subtle-shimmer"
                   style={{
                     animationDelay: '0s',
