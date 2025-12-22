@@ -177,17 +177,16 @@ export default function HomePage() {
 
       if (sealType === 'timed') {
         if (!unlockDate) {
-          console.error('Invalid unlock date');
           toast.dismiss(loadingToast);
           toast.error('Please select a valid future date');
           return;
         }
         unlockTime = new Date(unlockDate).getTime();
 
-        if (Number.isNaN(unlockTime) || unlockTime <= Date.now()) {
-          console.error('Invalid unlock date');
+        const minTime = Date.now() + 60000; // 1 minute from now
+        if (Number.isNaN(unlockTime) || unlockTime <= minTime) {
           toast.dismiss(loadingToast);
-          toast.error('Please select a valid future date');
+          toast.error('Unlock time must be at least 1 minute in the future');
           return;
         }
       } else {
@@ -538,7 +537,7 @@ export default function HomePage() {
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
               onSuccess={setTurnstileToken}
               onError={() => toast.error('Security verification failed. Please refresh.')}
-              options={{ theme: 'dark', size: 'flexible' }}
+              options={{ theme: 'dark', size: 'flexible', appearance: 'interaction-only' }}
               className="w-full"
             />
           </div>
