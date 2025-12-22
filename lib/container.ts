@@ -18,8 +18,9 @@ export interface Container {
 }
 
 export function createContainer(env?: CloudflareEnv): Container {
-  const masterKey = env?.MASTER_ENCRYPTION_KEY;
+  const masterKey = env?.MASTER_ENCRYPTION_KEY || process.env.MASTER_ENCRYPTION_KEY;
   if (!masterKey) {
+    console.error('MASTER_ENCRYPTION_KEY not configured');
     throw new Error('MASTER_ENCRYPTION_KEY not configured in environment');
   }
 

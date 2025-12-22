@@ -120,6 +120,18 @@ Expected response time: 48 hours
 
 ## Recent Security Enhancements
 
+**v0.5.1 (2025-12-22):**
+- CRITICAL FIX: HKDF deterministic salt (all seals now decryptable)
+- Server-only pulse token generation (removed client UUID)
+- Time check ordering (prevents timing attacks)
+- **SECURITY FIX: Implemented missing burn endpoint**
+
+**v0.5.0 (2025-12-22):**
+- Cryptographic receipts with HMAC signatures
+- DB-backed rate limiting and nonce storage
+- Browser fingerprinting for rate limits
+- Timing attack mitigation with response jitter
+
 See [SECURITY-ENHANCEMENTS.md](SECURITY-ENHANCEMENTS.md):
 
 1. **Master Key Rotation** - Dual-key support, 90-day schedule
@@ -137,7 +149,9 @@ Users should:
 ## Cryptographic Details
 
 - **Algorithm**: AES-GCM-256
-- **Key Derivation**: PBKDF2 (100,000 iterations)
+- **Key Derivation**: HKDF-SHA256 with deterministic zero salt
+- **Key Generation**: Two random 256-bit AES keys (keyA + keyB)
+- **Master Key**: Derived from concatenated keys via HKDF
 - **IV**: Random 12 bytes per encryption
-- **Auth Tag**: 128 bits
-- **Key Split**: XOR-based (Key A ⊕ Key B = Master Key)
+- **Auth Tag**: 128 bits (AES-GCM)
+- **Deterministic Derivation**: Zero salt ensures same keys produce same master key

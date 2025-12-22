@@ -7,6 +7,7 @@ export interface DatabaseProvider {
   getSealByPulseToken(token: string): Promise<SealRecord | null>;
   updatePulse(id: string, timestamp: number): Promise<void>;
   updateUnlockTime(id: string, unlockTime: number): Promise<void>;
+  deleteSeal(id: string): Promise<void>;
   getExpiredDMS(): Promise<SealRecord[]>;
   checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }>;
   storeNonce(nonce: string, expiresAt: number): Promise<boolean>;
@@ -81,12 +82,12 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(id).first();
 
     if (!result) return null;
-    
+
     // Increment access count
     await this.db.prepare(
       'UPDATE seals SET access_count = access_count + 1 WHERE id = ?'
     ).bind(id).run();
-    
+
     return this.mapResultToSealRecord(result);
   }
 
@@ -107,6 +108,16 @@ export class SealDatabase implements DatabaseProvider {
 
     if (!result.success) {
       throw new Error('Failed to update unlock time');
+    }
+  }
+
+  async deleteSeal(id: string): Promise<void> {
+    const result = await this.db.prepare(
+      'DELETE FROM seals WHERE id = ?'
+    ).bind(id).run();
+
+    if (!result.success) {
+      throw new Error('Failed to delete seal');
     }
   }
 
@@ -216,6 +227,11 @@ export class MockDatabase implements DatabaseProvider {
       seal.unlockTime = unlockTime;
       this.store.getSeals().set(id, seal);
     }
+  }
+
+  async deleteSeal(id: string): Promise<void> {
+    this.store.getSeals().delete(id);
+    this.store.getBlobs().delete(id);
   }
 
   async getSealByPulseToken(token: string): Promise<SealRecord | null> {

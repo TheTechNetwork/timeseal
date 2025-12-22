@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { encryptData } from '@/lib/crypto';
+import { ensureIntegrity } from '@/lib/clientIntegrity';
 import { usePWA } from '@/lib/usePWA';
 import QRCode from 'qrcode';
 import { toast } from 'sonner';
@@ -142,6 +143,15 @@ export default function HomePage() {
     }
   }, []);
 
+  // Integrity Check
+  useEffect(() => {
+    ensureIntegrity().catch(err => {
+      toast.error('Security Alert: Client integrity check failed. Env may be tampered.');
+      console.error(err);
+    });
+  }, []);
+
+
   const applyTemplate = (template: Template) => {
     setSealType(template.type);
     setMessage(template.placeholder);
@@ -159,6 +169,14 @@ export default function HomePage() {
   };
 
   const handleCreateSeal = async () => {
+    // Verify client integrity
+    try {
+      await ensureIntegrity();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Security check failed');
+      return;
+    }
+
     // Validate Turnstile
     if (!turnstileToken) {
       toast.error('Please complete the security check');

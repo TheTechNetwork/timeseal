@@ -229,6 +229,42 @@ export class SealService {
     return { newUnlockTime };
   }
 
+  async burnSeal(pulseToken: string, ip: string): Promise<void> {
+    const parts = pulseToken.split(':');
+    if (parts.length !== 4) {
+      throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    const [sealId, timestamp, nonce] = parts;
+
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
+      throw new Error('Replay attack detected');
+    }
+
+    const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
+    if (!isValid) {
+      throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    const seal = await this.db.getSeal(sealId);
+    if (!seal || !seal.isDMS) {
+      throw new Error(ErrorCode.SEAL_NOT_FOUND);
+    }
+
+    await this.db.deleteSeal(sealId);
+    await this.storage.deleteBlob(sealId);
+
+    this.auditLogger?.log({
+      timestamp: Date.now(),
+      eventType: AuditEventType.SEAL_DELETED,
+      sealId,
+      ip,
+      metadata: { burned: true },
+    });
+    logger.info('seal_burned', { sealId });
+  }
+
   private generateSealId(): string {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2025-12-22
+
+### Fixed
+- CRITICAL: HKDF salt randomization bug (made all seals undecryptable)
+- Client-side pulse token generation removed (server-only now)
+- Time check ordering in seal service (prevents timing attacks)
+
+### Security
+- HKDF now uses deterministic zero salt for reproducible key derivation
+- Pulse tokens fully server-generated with HMAC signatures
+- Time validation happens before decryption operations
+
 ## [0.5.0] - 2025-12-22
 
 ### Added

@@ -206,6 +206,12 @@ sequenceDiagram
 - **Timed Release:** ❌ NO. WORM storage prevents deletion.
 - **Dead Man's Switch:** ✅ YES. Use the pulse token to burn the seal permanently.
 
+### "Can I spam seal creation with bots?"
+**❌ NO.** Cloudflare Turnstile (CAPTCHA alternative) validates all seal creation requests. Bot traffic is blocked at the edge before reaching the API.
+
+### "Can I inject malicious HTML/JavaScript into seals?"
+**✅ SAFE.** All decrypted content is rendered as plain text or safe file downloads. No HTML parsing or script execution occurs in the vault viewer.
+
 ---
 
 ## 🛠️ Tech Stack
@@ -215,7 +221,8 @@ sequenceDiagram
 *   **Database:** `Cloudflare D1` (SQLite)
 *   **Storage:** `Cloudflare D1` (Encrypted Blobs)
 *   **Crypto:** `Web Crypto API` (Native AES-GCM)
-*   **Security:** Browser Fingerprinting, Rate Limiting, Input Validation
+*   **Bot Protection:** `Cloudflare Turnstile` (CAPTCHA-less verification)
+*   **Security:** Browser Fingerprinting, Rate Limiting, Input Validation, XSS Prevention
 *   **Styling:** `Tailwind CSS` (Cipher-punk Theme)
 
 ---
@@ -275,6 +282,11 @@ See [LICENSE](LICENSE) for full terms.
 ---
 
 ## 🔮 Roadmap
+
+**Recently Implemented (v0.5.1):**
+- ✅ CRITICAL FIX: HKDF deterministic salt (decryption now works)
+- ✅ Server-only pulse token generation (removed client UUID)
+- ✅ Time check ordering fix (timing attack prevention)
 
 **Recently Implemented (v0.5.0):**
 - ✅ Cryptographic Receipts - HMAC-signed proof of seal creation

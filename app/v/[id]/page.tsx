@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { decryptData } from '@/lib/crypto';
+import { ensureIntegrity } from '@/lib/clientIntegrity';
 import DecryptedText from '../../components/DecryptedText';
 import { BackgroundBeams } from '../../components/ui/background-beams';
 import { Card } from '../../components/Card';
+import { toast } from 'sonner';
 
 interface SealStatus {
   id: string;
@@ -31,8 +33,19 @@ function VaultPageClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
+  useEffect(() => {
+    ensureIntegrity().catch(err => {
+      toast.error('Security Alert: Client integrity check failed. Safely refusing to decrypt.');
+      console.error(err);
+      setError('Client integrity verification failed');
+    });
+  }, []);
+
   const decryptMessage = useCallback(async (keyB: string, iv: string) => {
     try {
+      // Verify client integrity before decryption
+      await ensureIntegrity();
+
       const keyA = globalThis.window.location.hash.substring(1);
       if (!keyA) {
         setError('Key A not found in URL. Invalid vault link.');
@@ -50,12 +63,12 @@ function VaultPageClient({ id }: { id: string }) {
       const binary = atob(data.encryptedBlob);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.codePointAt(i) || 0;
+        bytes[i] = binary.charCodeAt(i);
       }
       const encryptedBuffer = bytes.buffer;
 
       const decrypted = await decryptData(encryptedBuffer, { keyA, keyB, iv });
-      
+
       // Validate decrypted content is valid UTF-8
       try {
         const content = new TextDecoder('utf-8', { fatal: true }).decode(decrypted);
@@ -211,8 +224,8 @@ function VaultPageClient({ id }: { id: string }) {
           className="mb-6 flex justify-center"
         >
           <svg className="w-16 h-16 text-neon-green" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z"/>
-            <circle cx="12" cy="16" r="1.5"/>
+            <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z" />
+            <circle cx="12" cy="16" r="1.5" />
           </svg>
         </motion.div>
 
