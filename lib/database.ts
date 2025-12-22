@@ -22,6 +22,10 @@ export interface SealRecord {
   iv: string;
   pulseToken?: string;
   createdAt: number;
+  blobHash?: string;
+  unlockMessage?: string;
+  expiresAt?: number;
+  accessCount?: number;
 }
 
 // Production D1 Database
@@ -39,13 +43,17 @@ export class SealDatabase implements DatabaseProvider {
       iv: String(result.iv || ''),
       pulseToken: result.pulse_token ? String(result.pulse_token) : undefined,
       createdAt: Number(result.created_at || 0),
+      blobHash: result.blob_hash ? String(result.blob_hash) : undefined,
+      unlockMessage: result.unlock_message ? String(result.unlock_message) : undefined,
+      expiresAt: result.expires_at ? Number(result.expires_at) : undefined,
+      accessCount: result.access_count ? Number(result.access_count) : 0,
     };
   }
 
   async createSeal(data: SealRecord): Promise<void> {
     const result = await this.db.prepare(
-      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at, blob_hash, unlock_message, expires_at, access_count)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       data.id,
       data.unlockTime,
@@ -55,7 +63,11 @@ export class SealDatabase implements DatabaseProvider {
       data.keyB,
       data.iv,
       data.pulseToken || null,
-      data.createdAt
+      data.createdAt,
+      data.blobHash || null,
+      data.unlockMessage || null,
+      data.expiresAt || null,
+      data.accessCount || 0
     ).run();
 
     if (!result.success) {
@@ -69,6 +81,12 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(id).first();
 
     if (!result) return null;
+    
+    // Increment access count
+    await this.db.prepare(
+      'UPDATE seals SET access_count = access_count + 1 WHERE id = ?'
+    ).bind(id).run();
+    
     return this.mapResultToSealRecord(result);
   }
 

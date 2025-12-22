@@ -16,6 +16,8 @@ export interface CreateSealRequest {
   unlockTime: number;
   isDMS?: boolean;
   pulseInterval?: number;
+  unlockMessage?: string;
+  expiresAfterDays?: number;
 }
 
 export interface SealMetadata {
@@ -25,6 +27,9 @@ export interface SealMetadata {
   status: 'locked' | 'unlocked';
   keyB?: string;
   iv?: string;
+  blobHash?: string;
+  unlockMessage?: string;
+  accessCount?: number;
 }
 
 export interface SealReceipt {
@@ -76,6 +81,11 @@ export class SealService {
     // Generate cryptographic receipt
     const blobHash = await this.hashBlob(request.encryptedBlob);
     const receipt = await this.generateReceipt(sealId, blobHash, request.unlockTime, createdAt);
+    
+    // Calculate expiration
+    const expiresAt = request.expiresAfterDays 
+      ? request.unlockTime + (request.expiresAfterDays * 24 * 60 * 60 * 1000)
+      : undefined;
 
     // Create seal record first
     await this.db.createSeal({
@@ -88,6 +98,10 @@ export class SealService {
       iv: request.iv,
       pulseToken,
       createdAt,
+      blobHash,
+      unlockMessage: request.unlockMessage,
+      expiresAt,
+      accessCount: 0,
     });
 
     // Then upload blob (D1BlobStorage needs the row to exist)
@@ -141,6 +155,9 @@ export class SealService {
       status: isUnlocked ? 'unlocked' : 'locked',
       keyB: decryptedKeyB,
       iv: isUnlocked ? seal.iv : undefined,
+      blobHash: seal.blobHash,
+      unlockMessage: isUnlocked ? seal.unlockMessage : undefined,
+      accessCount: seal.accessCount,
     };
   }
 

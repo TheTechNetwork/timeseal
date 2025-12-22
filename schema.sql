@@ -9,7 +9,11 @@ CREATE TABLE IF NOT EXISTS seals (
   iv TEXT NOT NULL,
   encrypted_blob TEXT,
   pulse_token TEXT,
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  blob_hash TEXT,
+  unlock_message TEXT,
+  expires_at INTEGER,
+  access_count INTEGER DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_seals_unlock_time ON seals(unlock_time);
