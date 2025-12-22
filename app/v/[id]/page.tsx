@@ -196,20 +196,18 @@ function VaultPageClient({ id }: { id: string }) {
         <motion.div
           animate={{
             scale: [1, 1.05, 1],
-            textShadow: [
-              "0 0 20px rgba(0,255,65,0.2)",
-              "0 0 40px rgba(0,255,65,0.4)",
-              "0 0 20px rgba(0,255,65,0.2)"
-            ]
           }}
           transition={{
             duration: 3,
             repeat: Infinity,
             repeatType: "reverse"
           }}
-          className="text-6xl mb-6 filter drop-shadow-[0_0_15px_rgba(0,255,65,0.3)]"
+          className="mb-6 flex justify-center"
         >
-          🔒
+          <svg className="w-16 h-16 text-neon-green" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z"/>
+            <circle cx="12" cy="16" r="1.5"/>
+          </svg>
         </motion.div>
 
         <h1 className="text-4xl font-bold glow-text mb-3">
