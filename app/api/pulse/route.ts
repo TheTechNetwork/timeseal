@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
