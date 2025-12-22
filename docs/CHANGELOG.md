@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-12-22
+
+### Added
+- Cryptographic receipts with HMAC-SHA256 signatures
+- Receipt download functionality (JSON format)
+- Receipt verification API endpoint
+- Seal statistics (access count tracking)
+- Custom unlock messages (shown after unlock)
+- Auto-expiration (configurable days after unlock)
+- Blob hash preview (SHA-256, visible before unlock)
+- DB-backed rate limiting (persistent across workers)
+- DB-backed nonce storage (replay protection)
+- Browser fingerprinting for rate limits (IP + UA + Lang)
+- Timing attack mitigation (random jitter 0-100ms)
+- UTF-8 validation on decrypted content
+
+### Fixed
+- CRITICAL: Pulse interval bug (1000x multiplier removed)
+- Serverless state vulnerabilities (moved to D1 database)
+- Rate limit bypass via IP rotation (fingerprinting added)
+- Replay attacks across worker instances (DB nonces)
+
+### Security
+- Rate limits now persist in D1 database
+- Nonces stored in D1 for distributed replay protection
+- Timing attacks prevented with response jitter
+- Decryption integrity validation added
+- Cryptographic receipts for tamper detection
+
+### Database
+- Added `blob_hash` column for content verification
+- Added `unlock_message` column for custom messages
+- Added `expires_at` column for auto-expiration
+- Added `access_count` column for statistics
+- Added `rate_limits` table for persistent rate limiting
+- Added `nonces` table for replay protection
+
 ## [0.4.0] - 2025-12-22
 
 ### Added

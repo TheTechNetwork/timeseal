@@ -276,6 +276,18 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🔮 Roadmap
 
+**Recently Implemented (v0.5.0):**
+- ✅ Cryptographic Receipts - HMAC-signed proof of seal creation
+- ✅ Receipt Verification - API endpoint to verify signatures
+- ✅ Seal Statistics - Access count tracking
+- ✅ Custom Unlock Messages - Personalized messages on unlock
+- ✅ Auto-Expiration - Configurable seal deletion after unlock
+- ✅ Blob Hash Preview - SHA-256 hash visible before unlock
+- ✅ DB-Backed Security - Rate limits and nonces in D1
+- ✅ Browser Fingerprinting - Enhanced rate limit bypass prevention
+- ✅ Timing Attack Mitigation - Random response jitter
+- ✅ Pulse Interval Fix - Critical 1000x multiplier bug fixed
+
 **Recently Implemented:**
 - ✅ Audit Logging - Immutable access trail
 - ✅ Code Deduplication - Cleaner API routes  
