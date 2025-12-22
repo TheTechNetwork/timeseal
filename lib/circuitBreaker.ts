@@ -1,4 +1,4 @@
-// Circuit Breaker for R2 Operations
+// Circuit Breaker for Storage Operations
 export enum CircuitState {
   CLOSED = 'closed',
   OPEN = 'open',
@@ -89,4 +89,4 @@ export async function withRetry<T>(
   throw lastError!;
 }
 
-export const r2CircuitBreaker = new CircuitBreaker();
+export const storageCircuitBreaker = new CircuitBreaker();

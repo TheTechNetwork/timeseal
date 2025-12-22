@@ -189,15 +189,15 @@ export default function HomePage() {
       return;
     }
 
-    // Validate message length
-    if (message.trim() && message.length > 1000000) {
-      toast.error('Message too large (max 1MB)');
+    // Validate message length (D1 limit: 750KB)
+    if (message.trim() && message.length > 750000) {
+      toast.error('Message too large (max 750KB)');
       return;
     }
 
-    // Validate file size
-    if (file && file.size > 25 * 1024 * 1024) {
-      toast.error('File too large (max 25MB)');
+    // Validate file size (D1 limit: 750KB)
+    if (file && file.size > 750 * 1024) {
+      toast.error('File too large (max 750KB)');
       return;
     }
 

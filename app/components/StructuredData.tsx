@@ -20,7 +20,7 @@ export function StructuredData() {
       'Zero-trust architecture',
       'Split-key cryptography',
       'Cloudflare edge deployment',
-      'R2 object lock storage',
+      'D1 database storage',
     ],
     screenshot: 'https://timeseal.dev/explainerimage.png',
     aggregateRating: {

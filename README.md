@@ -203,7 +203,7 @@ sequenceDiagram
 **✅ YES, BY DESIGN.** The URL hash is never sent to the server (unlike query parameters). HTTPS protects it in transit. Browser history/bookmarks are your responsibility—treat vault links like passwords. This is the tradeoff for zero-trust, no-authentication security. Alternative approaches (server-side key storage, password protection) would defeat the entire architecture.
 
 ### "Can I delete or cancel a seal after creating it?"
-- **Timed Release:** ❌ NO. WORM storage prevents deletion.
+- **Timed Release:** ❌ NO. Cannot be deleted once created.
 - **Dead Man's Switch:** ✅ YES. Use the pulse token to burn the seal permanently.
 
 ### "Can I spam seal creation with bots?"

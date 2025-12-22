@@ -48,12 +48,8 @@ export default function SecurityPage() {
           </h2>
           <div className="space-y-4 text-neon-green/60 text-sm">
             <div>
-              <p className="text-neon-green font-bold mb-2">Cloudflare R2 Object Lock (WORM)</p>
-              <p>Encrypted blobs are stored with Write Once, Read Many compliance. Files cannot be deleted or modified until the retention period expires—even by administrators.</p>
-            </div>
-            <div>
-              <p className="text-neon-green font-bold mb-2">Cloudflare D1 Database</p>
-              <p>Metadata and Key B are stored in Cloudflare&apos;s edge database with automatic replication and encryption at rest.</p>
+              <p className="text-neon-green font-bold mb-2">Cloudflare D1 Database Storage</p>
+              <p>Encrypted blobs and metadata are stored in Cloudflare&apos;s edge database with automatic replication and encryption at rest.</p>
             </div>
             <div>
               <p className="text-neon-green font-bold mb-2">Edge Runtime</p>
@@ -88,8 +84,8 @@ export default function SecurityPage() {
               <p>Split-key architecture means neither the server alone nor the client alone can decrypt content.</p>
             </div>
             <div>
-              <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Immutable Storage</p>
-              <p>R2 Object Lock prevents premature deletion or modification of encrypted content.</p>
+              <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Encrypted Storage</p>
+              <p>All data stored in D1 database with encryption at rest and cryptographic access controls.</p>
             </div>
             <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Client-Side Decryption</p>
@@ -113,7 +109,7 @@ export default function SecurityPage() {
                 <li>Unauthorized early access (time-lock enforced server-side)</li>
                 <li>Client-side time manipulation (server validates with Date.now())</li>
                 <li>Server compromise (split-key architecture)</li>
-                <li>Data tampering (WORM storage + AEAD)</li>
+                <li>Data tampering (AEAD encryption + database integrity)</li>
                 <li>Brute force attacks (256-bit keys + fingerprinted rate limiting)</li>
                 <li>IP rotation bypass (browser fingerprinting)</li>
                 <li>Timing attacks (response jitter)</li>

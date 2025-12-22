@@ -34,8 +34,8 @@ export const metadata: Metadata = {
     'Cloudflare Workers',
     'zero-trust encryption',
     'split-key cryptography',
-    'R2 object lock',
-    'WORM storage',
+    'D1 database',
+    'encrypted blob storage',
     'time capsule encryption'
   ],
   authors: [{ name: 'TimeSeal' }],

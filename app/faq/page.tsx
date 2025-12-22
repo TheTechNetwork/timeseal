@@ -24,7 +24,7 @@ export default function FAQPage() {
         <Card className="p-4 sm:p-6 md:p-8 space-y-6">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">What is the maximum file size?</h3>
-            <p className="text-neon-green/60 text-sm">25 MB per seal (Cloudflare Pages limit).</p>
+            <p className="text-neon-green/60 text-sm">750 KB per seal (D1 database limit with base64 encoding).</p>
           </div>
 
           <div>
@@ -44,17 +44,17 @@ export default function FAQPage() {
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">Can I cancel or delete a seal?</h3>
-            <p className="text-neon-green/60 text-sm">Dead Man&apos;s Switch seals can be burned (permanently destroyed) using the pulse token. Timed seals cannot be deleted due to WORM storage.</p>
+            <p className="text-neon-green/60 text-sm">Dead Man&apos;s Switch seals can be burned (permanently destroyed) using the pulse token. Timed seals cannot be deleted.</p>
           </div>
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">Where is my data stored?</h3>
-            <p className="text-neon-green/60 text-sm">Encrypted blobs are stored in Cloudflare R2 (global edge storage). Metadata is in Cloudflare D1 database.</p>
+            <p className="text-neon-green/60 text-sm">Encrypted blobs are stored in Cloudflare D1 database. Metadata and keys are also in D1.</p>
           </div>
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">Is this really secure?</h3>
-            <p className="text-neon-green/60 text-sm">Yes. We use AES-GCM 256-bit encryption, split-key architecture, and WORM storage. The code is open source for audit.</p>
+            <p className="text-neon-green/60 text-sm">Yes. We use AES-GCM 256-bit encryption, split-key architecture, and database-backed storage. The code is open source for audit.</p>
           </div>
 
           <div>

@@ -1,6 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { jsonResponse } from '@/lib/apiHandler';
-import { r2CircuitBreaker } from '@/lib/circuitBreaker';
+import { storageCircuitBreaker } from '@/lib/circuitBreaker';
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       timestamp: Date.now(),
       version: '0.1.0',
       services: {
-        storage: r2CircuitBreaker.getState(),
+        storage: storageCircuitBreaker.getState(),
         database: env?.DB ? 'operational' : 'not configured',
         encryption: env?.MASTER_ENCRYPTION_KEY ? 'configured' : 'missing',
       },

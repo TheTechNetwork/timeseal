@@ -1,8 +1,9 @@
 // Storage Abstraction Layer
-import type { R2Bucket } from '@cloudflare/workers-types';
 import type { D1Database } from '@cloudflare/workers-types';
 
-const MAX_UPLOAD_SIZE = parseInt(process.env.MAX_FILE_SIZE_MB || '10') * 1024 * 1024;
+// D1 has 1MB column limit for TEXT, base64 encoding adds ~33% overhead
+// Safe limit: 750KB binary = ~1MB base64
+const MAX_UPLOAD_SIZE = 750 * 1024; // 750KB
 
 export interface StorageProvider {
   uploadBlob(sealId: string, data: ArrayBuffer, unlockTime: number): Promise<void>;
@@ -48,45 +49,6 @@ export class D1BlobStorage implements StorageProvider {
   }
 }
 
-// Production R2 Storage
-export class R2Storage implements StorageProvider {
-  constructor(private bucket: R2Bucket) { }
-
-  async uploadBlob(sealId: string, data: ArrayBuffer, unlockTime: number): Promise<void> {
-    if (data.byteLength > MAX_UPLOAD_SIZE) {
-      throw new Error(`File exceeds maximum size of ${MAX_UPLOAD_SIZE / 1024 / 1024}MB`);
-    }
-
-    const retentionUntil = new Date(unlockTime);
-
-    await this.bucket.put(sealId, data, {
-      httpMetadata: {
-        contentType: 'application/octet-stream',
-        cacheControl: 'no-cache',
-      },
-      customMetadata: {
-        unlockTime: unlockTime.toString(),
-        retentionUntil: retentionUntil.toISOString(),
-        sealId: sealId,
-      },
-      retention: {
-        mode: 'COMPLIANCE',
-        retainUntilDate: retentionUntil,
-      },
-    } as any);
-  }
-
-  async downloadBlob(sealId: string): Promise<ArrayBuffer> {
-    const object = await this.bucket.get(sealId);
-    if (!object) throw new Error('Blob not found');
-    return await object.arrayBuffer();
-  }
-
-  async deleteBlob(sealId: string): Promise<void> {
-    await this.bucket.delete(sealId);
-  }
-}
-
 // Mock Storage for Development
 export class MockStorage implements StorageProvider {
   private storage = new Map<string, ArrayBuffer>();
@@ -110,10 +72,7 @@ export class MockStorage implements StorageProvider {
 }
 
 // Factory function
-export function createStorage(env?: { BUCKET?: R2Bucket; DB?: D1Database }): StorageProvider {
-  if (env?.BUCKET) {
-    return new R2Storage(env.BUCKET);
-  }
+export function createStorage(env?: { DB?: D1Database }): StorageProvider {
   if (env?.DB) {
     return new D1BlobStorage(env.DB);
   }

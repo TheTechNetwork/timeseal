@@ -6,7 +6,7 @@ import { validateFileSize, validateUnlockTime, validatePulseInterval } from './v
 import { logger, auditSealCreated, auditSealAccessed } from './logger';
 import { metrics } from './metrics';
 import { ErrorCode } from './errors';
-import { r2CircuitBreaker, withRetry } from './circuitBreaker';
+import { storageCircuitBreaker, withRetry } from './circuitBreaker';
 import { generatePulseToken, validatePulseToken, checkAndStoreNonce } from './security';
 
 export interface CreateSealRequest {
@@ -105,7 +105,7 @@ export class SealService {
     });
 
     // Then upload blob (D1BlobStorage needs the row to exist)
-    await r2CircuitBreaker.execute(() =>
+    await storageCircuitBreaker.execute(() =>
       withRetry(() => this.storage.uploadBlob(sealId, request.encryptedBlob, request.unlockTime), 3, 1000)
     );
 
@@ -182,7 +182,7 @@ export class SealService {
   }
 
   async getBlob(sealId: string): Promise<ArrayBuffer> {
-    return await r2CircuitBreaker.execute(() =>
+    return await storageCircuitBreaker.execute(() =>
       withRetry(() => this.storage.downloadBlob(sealId), 3, 1000)
     );
   }

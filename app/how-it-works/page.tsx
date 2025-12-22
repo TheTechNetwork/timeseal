@@ -25,12 +25,12 @@ export default function HowItWorksPage() {
         <Card className="p-4 sm:p-6 md:p-8 space-y-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-neon-green mb-4 flex items-center gap-2">
-              <Lock className="w-6 h-6" /> Layer 1: The Vault (R2 Object Lock)
+              <Lock className="w-6 h-6" /> Layer 1: The Vault (D1 Database Storage)
             </h2>
-            <p className="text-neon-green/80 mb-2 text-sm sm:text-base">Immutable Storage</p>
+            <p className="text-neon-green/80 mb-2 text-sm sm:text-base">Encrypted Storage</p>
             <p className="text-neon-green/60 text-sm leading-relaxed">
-              Files are stored in Cloudflare R2 with WORM Compliance (Write Once, Read Many).
-              This prevents deletion—even by the admin—until the unlock time expires.
+              Files are stored encrypted in Cloudflare D1 database. The encrypted blobs are stored alongside metadata,
+              with cryptographic enforcement preventing early access.
             </p>
           </div>
 
@@ -68,7 +68,7 @@ export default function HowItWorksPage() {
           <ul className="text-neon-green/60 text-sm space-y-2">
             <li><strong className="text-neon-green">Algorithm:</strong> AES-GCM (256-bit)</li>
             <li><strong className="text-neon-green">Key Generation:</strong> Web Crypto API (CSPRNG)</li>
-            <li><strong className="text-neon-green">Storage:</strong> Cloudflare R2 with Object Lock</li>
+            <li><strong className="text-neon-green">Storage:</strong> Cloudflare D1 (Encrypted Blobs)</li>
             <li><strong className="text-neon-green">Database:</strong> Cloudflare D1 (SQLite)</li>
             <li><strong className="text-neon-green">Audit Trail:</strong> Immutable access logs</li>
           </ul>
