@@ -73,7 +73,11 @@ export default function SecurityPage() {
           <div className="space-y-4 text-neon-green/60 text-sm">
             <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Time-Lock Enforcement</p>
-              <p>The server will not release Key B before the unlock time. This is enforced at the API level with timestamp validation.</p>
+              <p>The server will not release Key B before the unlock time. Server-side validation using Date.now() prevents client-side time manipulation.</p>
+            </div>
+            <div>
+              <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Rate Limiting</p>
+              <p>API endpoints are rate-limited to 10-20 requests per minute per IP address to prevent brute-force attacks.</p>
             </div>
             <div>
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> No Single Point of Failure</p>
@@ -87,6 +91,10 @@ export default function SecurityPage() {
               <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Client-Side Decryption</p>
               <p>Decryption happens in your browser. The server never sees the decrypted content.</p>
             </div>
+            <div>
+              <p className="text-neon-green font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> CAPTCHA Protection</p>
+              <p>Turnstile CAPTCHA on seal creation prevents automated abuse and bot attacks.</p>
+            </div>
           </div>
         </Card>
 
@@ -98,10 +106,13 @@ export default function SecurityPage() {
             <div>
               <p className="text-neon-green font-bold mb-2">Protected Against:</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Unauthorized early access (time-lock enforced)</li>
+                <li>Unauthorized early access (time-lock enforced server-side)</li>
+                <li>Client-side time manipulation (server validates with Date.now())</li>
                 <li>Server compromise (split-key architecture)</li>
                 <li>Data tampering (WORM storage + AEAD)</li>
-                <li>Brute force attacks (256-bit keys)</li>
+                <li>Brute force attacks (256-bit keys + rate limiting)</li>
+                <li>Automated abuse (Turnstile CAPTCHA)</li>
+                <li>Replay attacks (nonce validation on pulse tokens)</li>
               </ul>
             </div>
             <div>

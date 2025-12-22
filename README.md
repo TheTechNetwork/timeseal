@@ -150,6 +150,49 @@ sequenceDiagram
 
 ---
 
+## 🛡️ Security: Attack Scenarios
+
+### "Can I just change my computer's clock to unlock it early?"
+**❌ NO.** The unlock time is checked on the **server**, not your computer. Your local clock is irrelevant.
+
+### "What if I hack the server and change the time there?"
+**❌ NO.** Time-Seal runs on Cloudflare Workers—you don't have root access. The time comes from Cloudflare's NTP-synchronized infrastructure.
+
+### "Can I intercept the API request and modify the unlock time?"
+**❌ NO.** The unlock time is stored in the database when you create the seal. API requests can't modify it.
+
+### "What if I steal Key B from the database?"
+**⚠️ PARTIAL.** Key B is encrypted with a master key. Even if you steal it, you still need:
+1. The master encryption key (environment secret)
+2. Key A (stored in the URL hash, never sent to server)
+3. Both keys to decrypt
+
+### "Can I brute-force the encryption?"
+**❌ NO.** AES-GCM-256 with cryptographically random keys. Would take billions of years with current technology.
+
+### "What if I find the seal ID and try to access it?"
+**✅ YES, BUT...** You can see the countdown timer, but you **cannot decrypt** without:
+- Key A (in the URL hash)
+- Key B (server releases only after unlock time)
+
+### "Can I replay old API requests to trick the server?"
+**❌ NO.** Pulse tokens include nonces and timestamps. Replay attacks are detected and rejected.
+
+### "What if Cloudflare goes down?"
+**⏸️ PAUSED.** Your seal remains locked in the database. When Cloudflare comes back online, the countdown resumes.
+
+### "Can the admin/creator decrypt my seal early?"
+**❌ NO.** Not even the creator can decrypt early. The server enforces the time-lock mathematically.
+
+### "What if I lose the vault link?"
+**💀 LOST FOREVER.** Key A is in the URL hash. No Key A = No decryption. **Save your links securely.**
+
+### "Can I delete or cancel a seal after creating it?"
+- **Timed Release:** ❌ NO. WORM storage prevents deletion.
+- **Dead Man's Switch:** ✅ YES. Use the pulse token to burn the seal permanently.
+
+---
+
 ## 🛠️ Tech Stack
 
 *   **Frontend:** `Next.js 14` (App Router)

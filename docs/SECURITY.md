@@ -7,46 +7,83 @@ Time-Seal is designed to protect against:
 - ✅ Early access attempts (R2 Object Lock + time validation)
 - ✅ Admin deletion (WORM compliance)
 - ✅ Man-in-the-middle (HTTPS + client-side crypto)
+- ✅ Client-side time manipulation (server-side validation)
+
+## Time-Lock Security
+
+### How Time Validation Works
+
+1. **Server-Side Time Check**: All unlock time validation happens on Cloudflare Workers using `Date.now()`
+2. **Key B Withholding**: Server refuses to release Key B until `serverTime >= unlockTime`
+3. **Trusted Time Source**: Cloudflare Workers use NTP-synchronized clocks across their global network
+
+### Attack Scenarios & Defenses
+
+#### ❌ Client Changes System Clock
+**Attack**: User sets their device clock forward to bypass countdown
+**Defense**: Time check happens server-side; client clock is irrelevant
+
+#### ❌ Attacker Compromises Server Clock
+**Attack**: Gain root access to server and change system time
+**Defense**: 
+- Cloudflare Workers run in isolated V8 contexts
+- No root access to underlying infrastructure
+- Time synchronized via Cloudflare's NTP infrastructure
+
+#### ❌ Time Skew Attack
+**Attack**: Exploit clock drift between client and server
+**Defense**: Only server time matters; client countdown is cosmetic
+
+#### ⚠️ Cloudflare Infrastructure Compromise
+**Risk**: If Cloudflare's entire infrastructure is compromised, time could theoretically be manipulated
+**Mitigation**: This is outside our threat model (requires nation-state level attack)
+
+### Time Validation Code
+
+```typescript
+// lib/sealService.ts (line 103-110)
+const now = Date.now(); // Server time, not client time
+const isUnlocked = now >= seal.unlockTime;
+
+let decryptedKeyB: string | undefined;
+if (isUnlocked) {
+  decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [this.masterKey]);
+  metrics.incrementSealUnlocked();
+}
+```
+
+The server **never trusts client-provided time** and always uses its own clock.
 
 ## Known Limitations
 
-### 🔴 Critical
-1. **No Rate Limiting** - API endpoints vulnerable to brute-force attacks
-2. **No Authentication** - Anyone with seal ID can check status
-
 ### 🟡 Medium
-3. **Key A in URL Hash** - Visible in browser history, bookmarks, and referrer logs
-4. **No Request Signing** - Pulse endpoints can be replayed
+1. **No Authentication** - Anyone with seal ID can check status (by design for public vaults)
+2. **Key A in URL Hash** - Visible in browser history, bookmarks, and referrer logs
+3. **Pulse Token Replay** - Nonce validation prevents replays but tokens are long-lived
 
-### 🟢 Low
-5. **Seal ID Enumeration** - Sequential IDs could be guessed
-6. **No CAPTCHA** - Automated seal creation possible
+### 🟢 Low / Accepted Trade-offs
+4. **Seal ID Enumeration** - Cryptographically random IDs (16 bytes) make guessing impractical
+5. **Public Vault Access** - Anyone can view countdown timer (content remains encrypted)
 
 ## Mitigations
 
-### Implemented
-- Client-side encryption (Key A never sent to server)
-- Split-key architecture (no single point of failure)
-- R2 Object Lock (immutable until unlock time)
-- HTTPS-only (enforced by Cloudflare)
+### ✅ Implemented
+- **Rate Limiting** - 10-20 req/min per IP across all API endpoints
+- **Cryptographically Random Seal IDs** - 16-byte random IDs (not sequential)
+- **Turnstile CAPTCHA** - On seal creation to prevent automation
+- **Nonce Validation** - Pulse tokens include nonces to prevent replay attacks
+- **Client-side Encryption** - Key A never sent to server
+- **Split-Key Architecture** - No single point of failure
+- **HTTPS-only** - Enforced by Cloudflare
+- **Input Validation** - File size limits, time constraints
+- **Audit Logging** - Immutable access trail
 
-### Recommended
+### 🔧 Optional Enhancements
 ```typescript
-// Rate limiting (Cloudflare Workers)
-const rateLimiter = new RateLimit({
-  limit: 10,
-  window: 60000, // 1 minute
-});
-
-// Seal ID obfuscation
-const sealId = nanoid(21); // Cryptographically random
-
-// Request signing for pulse
-const signature = await crypto.subtle.sign(
-  'HMAC',
-  key,
-  new TextEncoder().encode(pulseToken)
-);
+// Additional Cloudflare WAF rules
+// IP reputation filtering
+// Geographic restrictions
+// Advanced bot detection
 ```
 
 ## Reporting Vulnerabilities
@@ -65,20 +102,21 @@ Expected response time: 48 hours
 
 ## Security Checklist for Production
 
-- [x] Enable Cloudflare rate limiting
-- [x] Implement request signing for pulse endpoints
-- [x] Use cryptographically random seal IDs (nanoid/uuid)
-- [x] Add CAPTCHA to seal creation
-- [x] Monitor for suspicious access patterns
-- [x] Set up alerting for failed unlock attempts
-- [x] Implement IP-based throttling
-- [ ] Add honeypot seals to detect enumeration
-- [x] Enable Cloudflare WAF rules
-- [x] Rotate encryption keys periodically (see [KEY-ROTATION.md](KEY-ROTATION.md))
-- [x] Enforce file upload limits at multiple layers (10MB default)
-- [x] Client-side integrity verification with CSP headers
-- [x] Content-Security-Policy headers configured
-- [x] Subresource integrity monitoring
+- [x] Rate limiting enabled (10-20 req/min per IP)
+- [x] Cryptographically random seal IDs (16-byte)
+- [x] Turnstile CAPTCHA on seal creation
+- [x] Nonce validation for pulse tokens
+- [x] Input validation (file size, time constraints)
+- [x] Audit logging with immutable trail
+- [x] HTTPS-only enforcement
+- [x] Master key encryption for Key B storage
+- [x] Key rotation procedures documented
+- [x] File upload limits (25MB Cloudflare Pages limit)
+- [x] Content-Security-Policy headers
+- [ ] Cloudflare WAF rules (optional)
+- [ ] IP reputation filtering (optional)
+- [ ] Geographic restrictions (optional)
+- [ ] Honeypot seals for enumeration detection (optional)
 
 ## Recent Security Enhancements
 
