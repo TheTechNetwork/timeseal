@@ -208,18 +208,18 @@ function PulsePageClient() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-x-hidden pb-20">
       <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
       <div className="max-w-md w-full relative z-10 text-center">
-        <Heart className={`w-16 h-16 mx-auto mb-4 ${isUrgent ? 'text-red-500 animate-pulse' : 'text-neon-green'}`} />
-        <h1 className="text-2xl sm:text-3xl font-bold glow-text mb-6 px-2">
+        <Heart className={`w-12 h-12 mx-auto mb-3 ${isUrgent ? 'text-red-500 animate-pulse' : 'text-neon-green'}`} />
+        <h1 className="text-2xl sm:text-3xl font-bold glow-text mb-4 px-2">
           <DecryptedText text="DEAD MAN'S SWITCH" animateOn="view" className="text-neon-green" />
         </h1>
 
         {timeRemaining > 0 && (
-          <Card className={`mb-8 ${isUrgent ? 'border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.2)]' : ''}`}>
+          <Card className={`mb-6 p-4 ${isUrgent ? 'border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.2)]' : ''}`}>
             <p className="text-xs text-neon-green/50 mb-2 uppercase tracking-widest">TIME UNTIL AUTO-UNLOCK</p>
-            <div className={`text-3xl sm:text-4xl md:text-5xl font-mono mb-2 ${isUrgent ? 'text-red-500 pulse-glow' : 'text-neon-green pulse-glow'}`}>
+            <div className={`text-3xl sm:text-4xl font-mono mb-2 ${isUrgent ? 'text-red-500 pulse-glow' : 'text-neon-green pulse-glow'}`}>
               {formatTimeShort(timeRemaining)}
             </div>
             {isUrgent && (
@@ -231,27 +231,29 @@ function PulsePageClient() {
           </Card>
         )}
 
-        <p className="text-neon-green/70 mb-8 text-sm">
+        <p className="text-neon-green/70 mb-6 text-sm px-4">
           Click below to confirm you are active and reset the countdown timer.
         </p>
 
-        <Button
-          onClick={handlePulse}
-          disabled={isPulsing}
-          className="w-full text-xl py-6 mb-4 shadow-[0_0_20px_rgba(0,255,65,0.3)] hover:shadow-[0_0_40px_rgba(0,255,65,0.5)] flex items-center justify-center gap-2"
-        >
-          <Heart className="w-5 h-5" />
-          {isPulsing ? 'PULSING...' : 'SEND PULSE'}
-        </Button>
+        <div className="space-y-3">
+          <Button
+            onClick={handlePulse}
+            disabled={isPulsing}
+            className="w-full text-lg py-4 shadow-[0_0_20px_rgba(0,255,65,0.3)] hover:shadow-[0_0_40px_rgba(0,255,65,0.5)] flex items-center justify-center gap-2"
+          >
+            <Heart className="w-5 h-5" />
+            {isPulsing ? 'PULSING...' : 'SEND PULSE'}
+          </Button>
 
-        <Button
-          onClick={() => setShowBurnConfirm(true)}
-          variant="danger"
-          className="w-full text-sm opacity-80 hover:opacity-100 flex items-center justify-center gap-2"
-        >
-          <Flame className="w-4 h-4" />
-          BURN SEAL (PERMANENT)
-        </Button>
+          <Button
+            onClick={() => setShowBurnConfirm(true)}
+            variant="danger"
+            className="w-full text-sm opacity-80 hover:opacity-100 flex items-center justify-center gap-2"
+          >
+            <Flame className="w-4 h-4" />
+            BURN SEAL (PERMANENT)
+          </Button>
+        </div>
 
         {error && <ErrorMessage message={error} />}
       </div>

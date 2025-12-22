@@ -58,6 +58,8 @@ export async function GET(
           isLocked: true,
           unlockTime: metadata.unlockTime,
           timeRemaining: metadata.unlockTime - Date.now(),
+          isDMS: metadata.isDMS,
+          pulseToken: metadata.isDMS ? (await container.db.getSeal(sealId))?.pulseToken : undefined,
         });
       }
 
@@ -72,6 +74,7 @@ export async function GET(
         keyB: metadata.keyB,
         iv: metadata.iv,
         encryptedBlob: blobBase64,
+        isDMS: metadata.isDMS,
       });
     } finally {
       concurrentTracker.release(ip);

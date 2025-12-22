@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Shield, Calendar, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,7 +38,7 @@ export default function AdminCanaryPage() {
           <h1 className="text-3xl font-bold text-neon-green">WARRANT CANARY</h1>
         </div>
 
-        <Card className="p-6 mb-6">
+        <div className="cyber-card p-6 mb-6">
           <h2 className="text-xl font-bold text-neon-green mb-4">Monthly Update</h2>
           
           <div className="space-y-4 mb-6">
@@ -76,16 +74,20 @@ export default function AdminCanaryPage() {
             </div>
           </div>
 
-          <Button onClick={updateCanary} disabled={updating} className="w-full">
+          <button
+            onClick={updateCanary}
+            disabled={updating}
+            className="cyber-button w-full"
+          >
             {updating ? 'UPDATING...' : 'UPDATE CANARY'}
-          </Button>
-        </Card>
+          </button>
+        </div>
 
-        <Card className="p-6">
-          <a href="/canary.txt" target="_blank" className="text-neon-green hover:underline">
+        <div className="cyber-card p-6">
+          <a href="/canary" target="_blank" className="text-neon-green hover:underline">
             View Current Canary →
           </a>
-        </Card>
+        </div>
       </div>
     </div>
   );

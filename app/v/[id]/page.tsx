@@ -17,6 +17,8 @@ interface SealStatus {
   timeRemaining?: number;
   keyB?: string;
   iv?: string;
+  isDMS?: boolean;
+  pulseToken?: string;
 }
 
 export default function VaultPage({ params }: { params: { id: string } }) {
@@ -257,7 +259,7 @@ function VaultPageClient({ id }: { id: string }) {
 
   // Locked state with countdown
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative w-full overflow-x-hidden pb-20">
       <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
       <div className="max-w-md w-full text-center relative z-10">
         <motion.div
@@ -269,30 +271,46 @@ function VaultPageClient({ id }: { id: string }) {
             repeat: Infinity,
             repeatType: "reverse"
           }}
-          className="mb-6 flex justify-center"
+          className="mb-4 flex justify-center"
         >
-          <Lock className="w-16 h-16 text-neon-green" />
+          <Lock className="w-12 h-12 text-neon-green" />
         </motion.div>
 
-        <h1 className="text-3xl sm:text-4xl font-bold glow-text mb-3 px-2">
-          <DecryptedText text="VAULT SEALED" animateOn="view" className="text-neon-green" />
+        <h1 className="text-2xl sm:text-3xl font-bold glow-text mb-3 px-2">
+          <DecryptedText text={status.isDMS ? "DEAD MAN'S SWITCH ACTIVE" : "VAULT SEALED"} animateOn="view" className="text-neon-green" />
         </h1>
-        <p className="text-neon-green/70 mb-6 text-sm sm:text-base px-4">
-          This message is cryptographically locked until:
+        
+        {status.isDMS && status.pulseToken && (
+          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-500 text-sm font-bold mb-2">⚠️ PULSE REQUIRED</p>
+            <p className="text-yellow-400/80 text-xs mb-3">
+              This seal will auto-unlock if not pulsed. Click below to keep it locked.
+            </p>
+            <a
+              href={`/pulse/${status.pulseToken}`}
+              className="cyber-button inline-flex items-center justify-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500/50 text-yellow-500 w-full text-sm"
+            >
+              SEND PULSE NOW →
+            </a>
+          </div>
+        )}
+        
+        <p className="text-neon-green/70 mb-4 text-sm px-4">
+          {status.isDMS ? 'Will auto-unlock if pulse not received by:' : 'This message is cryptographically locked until:'}
         </p>
 
-        <Card className="p-4 sm:p-6 mb-6 border-neon-green/40 shadow-[0_0_30px_rgba(0,255,65,0.1)]">
-          <div className="text-base sm:text-lg md:text-xl font-bold mb-4 text-neon-green/80 uppercase tracking-widest border-b border-neon-green/20 pb-2">
+        <Card className="p-4 mb-4 border-neon-green/40 shadow-[0_0_30px_rgba(0,255,65,0.1)]">
+          <div className="text-sm font-bold mb-3 text-neon-green/80 uppercase tracking-widest border-b border-neon-green/20 pb-2">
             Protocol Unlock Time
           </div>
-          <div className="text-lg sm:text-xl md:text-2xl font-bold mb-6 text-white font-mono break-words">
+          <div className="text-lg sm:text-xl font-bold mb-4 text-white font-mono break-words">
             {new Date(status.unlockTime).toLocaleString()}
           </div>
 
-          <div className="text-xs text-neon-green/50 mb-2 uppercase tracking-abovet">Time Remaining</div>
+          <div className="text-xs text-neon-green/50 mb-2 uppercase tracking-widest">Time Remaining</div>
           {timeLeft > 0 ? (
             <>
-              <div className="text-2xl sm:text-3xl md:text-4xl font-mono pulse-glow text-neon-green tabular-nums mb-4">
+              <div className="text-2xl sm:text-3xl font-mono pulse-glow text-neon-green tabular-nums mb-3">
                 <DecryptedText
                   text={formatTimeLeft(timeLeft)}
                   speed={0}
@@ -316,16 +334,16 @@ function VaultPageClient({ id }: { id: string }) {
           )}
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <button
             onClick={copyVaultLink}
-            className="cyber-button inline-flex items-center justify-center gap-2 bg-neon-green/10 hover:bg-neon-green/20"
+            className="cyber-button inline-flex items-center justify-center gap-2 bg-neon-green/10 hover:bg-neon-green/20 w-full"
           >
             <Copy className="w-4 h-4" />
             COPY VAULT LINK
           </button>
 
-          <p className="text-xs text-neon-green/40 max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-neon-green/40 max-w-xs mx-auto leading-relaxed px-2">
             <span className="block mb-1">SECURITY LEVEL: MAXIMUM</span>
             This vault uses split-key encryption and WORM storage.
             It cannot be opened early, even by the creator.

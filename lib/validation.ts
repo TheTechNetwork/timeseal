@@ -4,11 +4,11 @@ export interface ValidationResult {
   error?: string;
 }
 
-// D1 TEXT column limit: 1MB. Base64 adds ~33% overhead, so max binary is 750KB
-const MAX_FILE_SIZE = 750 * 1024; // 750KB
+// D1 TEXT column limit: 1MB. Base64 adds ~33% overhead, so max binary is 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_DURATION_DAYS = Number.parseInt(process.env.MAX_SEAL_DURATION_DAYS || '365');
 const MIN_UNLOCK_DELAY = 60 * 1000; // 1 minute
-const MAX_REQUEST_SIZE = 1 * 1024 * 1024; // 1MB (750KB file + overhead)
+const MAX_REQUEST_SIZE = 7 * 1024 * 1024; // 7MB (5MB file + overhead)
 
 export function validateRequestSize(contentLength: number): ValidationResult {
   if (contentLength > MAX_REQUEST_SIZE) {
