@@ -39,6 +39,7 @@ interface Template {
   type: "timed" | "deadman";
   placeholder: string;
   pulseDays?: number;
+  tooltip: string;
 }
 
 const TEMPLATES: Template[] = [
@@ -51,6 +52,7 @@ const TEMPLATES: Template[] = [
     placeholder:
       "Seed phrase: ...\nWallet addresses: ...\nExchange accounts: ...",
     pulseDays: 30,
+    tooltip: "Auto-unlock crypto wallet info for beneficiaries if you stop checking in monthly",
   },
   {
     name: "Whistleblower",
@@ -61,6 +63,7 @@ const TEMPLATES: Template[] = [
     placeholder:
       "Evidence of wrongdoing...\nDocumentation...\nWitness contacts...",
     pulseDays: 7,
+    tooltip: "Release evidence automatically if you're silenced or can't check in weekly",
   },
   {
     name: "Product Launch",
@@ -69,6 +72,7 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Product details...\nAccess codes...\nLaunch instructions...",
+    tooltip: "Schedule product reveal at exact launch time - builds anticipation with countdown",
   },
   {
     name: "Birthday Gift",
@@ -77,6 +81,7 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Happy Birthday! 🎉\n\nHere's your surprise...",
+    tooltip: "Send a message or gift that unlocks exactly at midnight on their birthday",
   },
   {
     name: "Legal Hold",
@@ -85,6 +90,7 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Contract terms...\nSettlement details...\nLegal documents...",
+    tooltip: "Lock legal documents until settlement date - ensures compliance and timing",
   },
 ];
 
@@ -123,7 +129,6 @@ export function CreateSealForm({
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isCreating, setIsCreating] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [webhookUrl, setWebhookUrl] = useState("");
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -273,9 +278,7 @@ export function CreateSealForm({
       }
 
       onProgressChange(40);
-      const encrypted = await encryptData(file || message, { 
-        webhookUrl: webhookUrl.trim() || undefined,
-      });
+      const encrypted = await encryptData(file || message);
       onProgressChange(60);
 
       let unlockTime: number;
@@ -301,8 +304,6 @@ export function CreateSealForm({
         formData.append("cf-turnstile-response", turnstileToken);
       if (pulseDuration)
         formData.append("pulseInterval", pulseDuration.toString());
-      if (encrypted.encryptedWebhook)
-        formData.append("encryptedWebhook", encrypted.encryptedWebhook);
 
       onProgressChange(80);
       const response = await fetch("/api/create-seal", {
@@ -459,7 +460,7 @@ export function CreateSealForm({
                 }}
                 whileTap={{ scale: 0.95 }}
                 className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center"
-                title={`${t.name}: ${t.type === 'deadman' ? 'Dead Man\'s Switch' : 'Timed Release'} template`}
+                title={t.tooltip}
               >
                 <motion.div
                   className="mb-1"

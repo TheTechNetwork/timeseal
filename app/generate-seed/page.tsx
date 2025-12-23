@@ -53,10 +53,10 @@ export default function GenerateSeedPage() {
         </svg>
       </motion.a>
 
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-[220px]">
         <motion.a
           href="/dashboard"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -65,20 +65,11 @@ export default function GenerateSeedPage() {
 
         <motion.a
           href="/"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
           <span className="text-xs text-neon-green/70 font-mono group-hover:text-neon-green transition-colors">HOME</span>
-        </motion.a>
-
-        <motion.a
-          href="/webhook"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
-          whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <span className="text-xs text-neon-green/70 font-mono group-hover:text-neon-green transition-colors">WEBHOOK</span>
         </motion.a>
       </div>
 
@@ -113,15 +104,7 @@ export default function GenerateSeedPage() {
               className="space-y-4 mt-8"
             >
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-neon-green/70 font-mono text-sm">12-WORD SEED PHRASE</label>
-                  <button
-                    onClick={() => handleCopy(seedPhrase, 'Seed phrase')}
-                    className="text-xs text-neon-green/70 hover:text-neon-green font-mono"
-                  >
-                    COPY
-                  </button>
-                </div>
+                <label className="text-neon-green/70 font-mono text-sm block mb-2">12-WORD SEED PHRASE</label>
                 <div className="grid grid-cols-3 gap-2 p-4 bg-black/50 rounded-xl border-2 border-neon-green/20">
                   {seedPhrase.split(' ').map((word, i) => (
                     <div key={i} className="text-neon-green font-mono text-sm">
@@ -129,18 +112,35 @@ export default function GenerateSeedPage() {
                     </div>
                   ))}
                 </div>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleCopy(seedPhrase, 'Seed phrase')}
+                    className="flex-1 cyber-button py-2"
+                  >
+                    COPY SEED PHRASE
+                  </button>
+                  <button
+                    onClick={() => {
+                      const words = seedPhrase.split(' ').map((word, i) => `${i + 1}. ${word}`).join('\n');
+                      const data = `# TIMESEAL SEED PHRASE BACKUP\n\n**Generated:** ${new Date().toISOString()}\n\n## 12-WORD SEED PHRASE\n\n${words}\n\n## KEY A ADMIN LINK\n\n${window.location.origin}/dashboard#${keyA}\n\n## SECURITY WARNING\n\n⚠️ **Write down your seed phrase and store it securely.**\n\n- Anyone with this phrase can recover your Key A\n- Never share or store digitally unencrypted\n- Keep in a safe place (safe, password manager, paper backup)`;
+                      const blob = new Blob([data], { type: 'text/markdown' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `timeseal-seed-${Date.now()}.md`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('Seed phrase backup downloaded');
+                    }}
+                    className="flex-1 cyber-button py-2 bg-neon-green/10"
+                  >
+                    DOWNLOAD SEED PHRASE
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-neon-green/70 font-mono text-sm">KEY A ADMIN LINK</label>
-                  <button
-                    onClick={() => handleCopy(`${window.location.origin}/dashboard#${keyA}`, 'Admin link')}
-                    className="text-xs text-neon-green/70 hover:text-neon-green font-mono"
-                  >
-                    COPY
-                  </button>
-                </div>
+                <label className="text-neon-green/70 font-mono text-sm block mb-2">KEY A ADMIN LINK</label>
                 <a
                   href={`/dashboard#${keyA}`}
                   target="_blank"
@@ -151,31 +151,31 @@ export default function GenerateSeedPage() {
                     {window.location.origin}/dashboard#{keyA}
                   </p>
                 </a>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleCopy(`${window.location.origin}/dashboard#${keyA}`, 'Admin link')}
+                    className="flex-1 cyber-button py-2"
+                  >
+                    COPY ADMIN LINK
+                  </button>
+                  <button
+                    onClick={() => {
+                      const data = `# TIMESEAL KEY A ADMIN LINK\n\n**Generated:** ${new Date().toISOString()}\n\n## ADMIN LINK\n\n${window.location.origin}/dashboard#${keyA}\n\n## USAGE\n\nThis link contains your Key A in the URL hash. Use it to access your vault admin panel.`;
+                      const blob = new Blob([data], { type: 'text/markdown' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `timeseal-keya-${Date.now()}.md`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('Admin link backup downloaded');
+                    }}
+                    className="flex-1 cyber-button py-2 bg-neon-green/10"
+                  >
+                    DOWNLOAD ADMIN LINK
+                  </button>
+                </div>
               </div>
-
-              <div className="p-4 bg-red-500/10 border-2 border-red-500/30 rounded-xl">
-                <p className="text-red-400/70 font-mono text-xs">
-                  ⚠️ SECURITY WARNING: Write down your seed phrase and store it securely. Anyone with this phrase can recover your Key A.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  const words = seedPhrase.split(' ').map((word, i) => `${i + 1}. ${word}`).join('\n');
-                  const data = `# TIMESEAL SEED PHRASE BACKUP\n\n**Generated:** ${new Date().toISOString()}\n\n## 12-WORD SEED PHRASE\n\n${words}\n\n## KEY A ADMIN LINK\n\n${window.location.origin}/dashboard#${keyA}\n\n## SECURITY WARNING\n\n⚠️ **Write down your seed phrase and store it securely.**\n\n- Anyone with this phrase can recover your Key A\n- Never share or store digitally unencrypted\n- Keep in a safe place (safe, password manager, paper backup)`;
-                  const blob = new Blob([data], { type: 'text/markdown' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `timeseal-seed-${Date.now()}.md`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                  toast.success('Seed phrase backup downloaded');
-                }}
-                className="w-full cyber-button py-3 bg-neon-green/10"
-              >
-                DOWNLOAD BACKUP
-              </button>
             </motion.div>
           )}
         </Card>

@@ -34,7 +34,6 @@ export interface CreateSealRequest {
   pulseInterval?: number;
   unlockMessage?: string;
   expiresAfterDays?: number;
-  encryptedWebhook?: string;
   // Ephemeral seal options
   isEphemeral?: boolean;
   maxViews?: number | null;
@@ -67,7 +66,6 @@ export interface SealReceipt {
 }
 
 import { AuditLogger, AuditEventType } from "./auditLogger";
-import { decryptAndFireWebhook } from "./reusable/webhook";
 
 import { base64ToArrayBuffer } from "./cryptoUtils";
 
@@ -160,7 +158,6 @@ export class SealService {
         unlockMessage: request.unlockMessage,
         expiresAt,
         accessCount: 0,
-        encryptedWebhook: request.encryptedWebhook,
         // Ephemeral fields
         isEphemeral: request.isEphemeral || false,
         maxViews: request.maxViews !== undefined ? request.maxViews : null,
@@ -350,19 +347,6 @@ export class SealService {
         sealId,
         viewCount: viewCheck.viewCount,
       });
-    }
-
-    // Fire webhook if configured
-    if (seal.encryptedWebhook) {
-      decryptAndFireWebhook(
-        seal.encryptedWebhook,
-        decryptedKeyB,
-        {
-          event: 'seal_unlocked',
-          sealId,
-          unlockedAt: new Date().toISOString(),
-        },
-      ).catch(() => { });
     }
 
     // Emit event for observers
