@@ -1,5 +1,6 @@
 // Database Abstraction Layer
 import type { D1Database } from '@cloudflare/workers-types';
+import { timingSafeEqual } from './timingSafe';
 
 export interface DatabaseProvider {
   createSeal(data: SealRecord): Promise<void>;
@@ -36,16 +37,24 @@ export class SealDatabase implements DatabaseProvider {
   constructor(public db: D1Database) { }
 
   private mapResultToSealRecord(result: any): SealRecord {
+    // Fail-fast validation - throw on missing required fields
+    if (!result.id) throw new Error('Invalid seal record: missing id');
+    if (!result.key_b) throw new Error('Invalid seal record: missing key_b');
+    if (!result.iv) throw new Error('Invalid seal record: missing iv');
+    if (result.unlock_time === null || result.unlock_time === undefined) {
+      throw new Error('Invalid seal record: missing unlock_time');
+    }
+    
     return {
-      id: String(result.id || ''),
-      unlockTime: Number(result.unlock_time || 0),
+      id: String(result.id),
+      unlockTime: Number(result.unlock_time),
       isDMS: result.is_dms === 1,
       pulseInterval: result.pulse_interval ? Number(result.pulse_interval) : undefined,
       lastPulse: result.last_pulse ? Number(result.last_pulse) : undefined,
-      keyB: String(result.key_b || ''),
-      iv: String(result.iv || ''),
+      keyB: String(result.key_b),
+      iv: String(result.iv),
       pulseToken: result.pulse_token ? String(result.pulse_token) : undefined,
-      createdAt: Number(result.created_at || 0),
+      createdAt: Number(result.created_at || Date.now()),
       blobHash: result.blob_hash ? String(result.blob_hash) : undefined,
       unlockMessage: result.unlock_message ? String(result.unlock_message) : undefined,
       expiresAt: result.expires_at ? Number(result.expires_at) : undefined,
@@ -74,7 +83,7 @@ export class SealDatabase implements DatabaseProvider {
     ).run();
 
     if (!result.success) {
-      throw new Error('Failed to create seal in database');
+      throw new Error(`Failed to create seal ${data.id} in database`);
     }
   }
 
@@ -88,9 +97,13 @@ export class SealDatabase implements DatabaseProvider {
   }
 
   async incrementAccessCount(id: string): Promise<void> {
-    await this.db.prepare(
+    const result = await this.db.prepare(
       'UPDATE seals SET access_count = access_count + 1 WHERE id = ?'
     ).bind(id).run();
+    
+    if (!result.success) {
+      throw new Error(`Failed to increment access count for seal ${id}`);
+    }
   }
 
   async updatePulse(id: string, timestamp: number): Promise<void> {
@@ -99,7 +112,7 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(timestamp, id).run();
 
     if (!result.success) {
-      throw new Error('Failed to update pulse');
+      throw new Error(`Failed to update pulse for seal ${id}`);
     }
   }
 
@@ -109,7 +122,7 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(unlockTime, id).run();
 
     if (!result.success) {
-      throw new Error('Failed to update unlock time');
+      throw new Error(`Failed to update unlock time for seal ${id}`);
     }
   }
 
@@ -119,7 +132,7 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(lastPulse, unlockTime, id).run();
 
     if (!result.success) {
-      throw new Error('Failed to update pulse and unlock time');
+      throw new Error(`Failed to update pulse and unlock time for seal ${id}`);
     }
   }
 
@@ -139,7 +152,15 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(token).first();
 
     if (!result) return null;
-    return this.mapResultToSealRecord(result);
+    
+    const seal = this.mapResultToSealRecord(result);
+    
+    // Timing-safe comparison to prevent timing attacks
+    if (seal.pulseToken && !timingSafeEqual(seal.pulseToken, token)) {
+      return null;
+    }
+    
+    return seal;
   }
 
   async getExpiredDMS(): Promise<SealRecord[]> {
@@ -158,40 +179,38 @@ export class SealDatabase implements DatabaseProvider {
     const now = Date.now();
     const resetAt = now + window;
 
-    const existing = await this.db.prepare(
-      'SELECT count, reset_at FROM rate_limits WHERE key = ?'
-    ).bind(key).first() as { count: number; reset_at: number } | null;
+    // Atomic upsert to prevent race conditions
+    const result = await this.db.prepare(`
+      INSERT INTO rate_limits (key, count, reset_at)
+      VALUES (?, 1, ?)
+      ON CONFLICT(key) DO UPDATE SET
+        count = CASE WHEN reset_at <= ? THEN 1 ELSE count + 1 END,
+        reset_at = CASE WHEN reset_at <= ? THEN ? ELSE reset_at END
+      RETURNING count, reset_at
+    `).bind(key, resetAt, now, now, resetAt).first() as { count: number; reset_at: number } | null;
 
-    if (!existing || now > existing.reset_at) {
-      await this.db.prepare(
-        'INSERT OR REPLACE INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)'
-      ).bind(key, resetAt).run();
-      return { allowed: true, remaining: limit - 1 };
-    }
-
-    if (existing.count >= limit) {
-      return { allowed: false, remaining: 0 };
-    }
-
-    await this.db.prepare(
-      'UPDATE rate_limits SET count = count + 1 WHERE key = ?'
-    ).bind(key).run();
-    return { allowed: true, remaining: limit - existing.count - 1 };
+    if (!result) return { allowed: false, remaining: 0 };
+    
+    const allowed = result.count <= limit;
+    const remaining = Math.max(0, limit - result.count);
+    return { allowed, remaining };
   }
 
   async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
     try {
+      // Sanitize nonce for logging (remove newlines/control chars)
+      const sanitizedNonce = nonce.replace(/[\r\n\x00-\x1F\x7F]/g, '');
+      
       const result = await this.db.prepare(
         'INSERT INTO nonces (nonce, expires_at) VALUES (?, ?)'
       ).bind(nonce, expiresAt).run();
       return result.success;
     } catch (error) {
-      // Distinguish between replay attacks and database errors
       const err = error as Error;
       if (err.message?.includes('UNIQUE')) {
-        console.warn('[SECURITY] Replay attack detected:', nonce);
+        console.warn('[SECURITY] Replay attack detected');
       } else {
-        console.error('[DB] Nonce storage failed:', err);
+        console.error('[DB] Nonce storage failed');
       }
       return false;
     }

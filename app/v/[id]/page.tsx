@@ -8,8 +8,10 @@ import DecryptedText from '../../components/DecryptedText';
 import { BackgroundBeams } from '../../components/ui/background-beams';
 import { Card } from '../../components/Card';
 import { toast } from 'sonner';
-import { Lock, AlertTriangle, Hourglass, Copy, Download } from 'lucide-react';
+import { Lock, AlertTriangle, Hourglass, Copy, Download, Share2 } from 'lucide-react';
 import { ErrorLogger } from '@/lib/errorLogger';
+import { triggerHaptic, shareContent, copyToClipboard, isMobile } from '@/lib/mobile';
+import { BottomSheet } from '../../components/BottomSheet';
 
 interface SealStatus {
   id: string;
@@ -31,6 +33,8 @@ function VaultPageClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const mobile = isMobile();
 
   useEffect(() => {
     ensureIntegrity().catch(err => {
@@ -43,10 +47,27 @@ function VaultPageClient({ id }: { id: string }) {
   const copyVaultLink = async () => {
     try {
       const fullUrl = globalThis.window.location.href;
-      await navigator.clipboard.writeText(fullUrl);
-      toast.success('Vault link copied to clipboard');
+      const success = await copyToClipboard(fullUrl);
+      if (success) {
+        toast.success('Vault link copied to clipboard');
+      } else {
+        toast.error('Failed to copy link');
+      }
     } catch {
       toast.error('Failed to copy link');
+    }
+  };
+
+  const handleShare = async () => {
+    const fullUrl = globalThis.window.location.href;
+    const shared = await shareContent({
+      title: 'TimeSeal Vault',
+      text: 'Check out this time-locked vault',
+      url: fullUrl
+    });
+    
+    if (!shared) {
+      setShowShareSheet(true);
     }
   };
 
@@ -158,34 +179,16 @@ function VaultPageClient({ id }: { id: string }) {
           await decryptMessage(data.keyB, data.iv, data.encryptedBlob);
         }
       } else {
-        // Handle both string and nested error object formats
-        let errorMsg = 'Seal not found';
-        let debugInfo = null;
-        if (data.error) {
-          if (typeof data.error === 'string') {
-            errorMsg = data.error;
-          } else if (typeof data.error === 'object') {
-            errorMsg = data.error.message || errorMsg;
-            debugInfo = {
-              code: data.error.code,
-              details: data.error.details,
-              debugInfo: data.error.debugInfo,
-              status: response.status
-            };
-          }
-        }
-        console.error('[VAULT] Error:', errorMsg, debugInfo, data);
-        ErrorLogger.log(data.error, { component: 'Vault', action: 'fetchStatus', sealId: id, debugInfo });
+        // Sanitized error - no internal details exposed
+        const errorMsg = 'Seal not found or unavailable';
+        console.error('[VAULT] Error:', data.error);
+        ErrorLogger.log(data.error, { component: 'Vault', action: 'fetchStatus', sealId: id });
         setError(errorMsg);
-        setErrorDetails(debugInfo);
       }
     } catch (err) {
       console.error('[VAULT] Fetch failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      const errorStack = err instanceof Error ? err.stack : undefined;
       ErrorLogger.log(err, { component: 'Vault', action: 'fetchStatus', sealId: id });
-      setError(`Failed to fetch seal: ${errorMessage}`);
-      setErrorDetails({ reason: 'fetch_failed', error: errorMessage, stack: errorStack, sealId: id });
+      setError('Failed to fetch seal');
     }
   }, [id, decryptMessage]);
 
@@ -360,14 +363,39 @@ function VaultPageClient({ id }: { id: string }) {
               <Download className="w-4 h-4" />
               DOWNLOAD CONTENT
             </motion.button>
-            <button
-              onClick={copyVaultLink}
-              className="cyber-button flex items-center justify-center gap-2 flex-1 bg-neon-green/10"
-            >
-              <Copy className="w-4 h-4" />
-              COPY LINK
-            </button>
+            {mobile ? (
+              <button
+                onClick={handleShare}
+                className="cyber-button flex items-center justify-center gap-2 flex-1 bg-neon-green/10"
+              >
+                <Share2 className="w-4 h-4" />
+                SHARE
+              </button>
+            ) : (
+              <button
+                onClick={copyVaultLink}
+                className="cyber-button flex items-center justify-center gap-2 flex-1 bg-neon-green/10"
+              >
+                <Copy className="w-4 h-4" />
+                COPY LINK
+              </button>
+            )}
           </motion.div>
+
+          <BottomSheet isOpen={showShareSheet} onClose={() => setShowShareSheet(false)} title="Share Vault">
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  copyVaultLink();
+                  setShowShareSheet(false);
+                }}
+                className="cyber-button w-full flex items-center justify-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                COPY LINK
+              </button>
+            </div>
+          </BottomSheet>
 
           <motion.div 
             initial={{ opacity: 0 }}

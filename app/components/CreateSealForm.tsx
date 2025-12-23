@@ -14,7 +14,9 @@ import { Input } from './Input';
 import DecryptedText from './DecryptedText';
 import { AnimatedTagline } from './AnimatedTagline';
 import { SealCounter } from './SealCounter';
+import { ActivityTicker } from './ActivityTicker';
 import { Bitcoin, ShieldAlert, Rocket, Gift, Scale, Paperclip, FileText, Trash2, AlertTriangle } from 'lucide-react';
+import { triggerHaptic } from '@/lib/mobile';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then(mod => mod.Turnstile), { ssr: false });
 
@@ -228,6 +230,7 @@ export function CreateSealForm({ onSuccess, onProgressChange }: CreateSealFormPr
       const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string | { code: string; message: string; details?: string; debugInfo?: any } };
 
       if (data.success) {
+        triggerHaptic('heavy');
         onProgressChange(95);
         const origin = globalThis.window ? globalThis.window.location.origin : '';
         const publicUrl = `${origin}${data.publicUrl}#${encrypted.keyA}`;
@@ -291,6 +294,7 @@ export function CreateSealForm({ onSuccess, onProgressChange }: CreateSealFormPr
         <p className="text-xs text-neon-green/30 max-w-md mx-auto">Encrypt messages that unlock at a future date or after inactivity</p>
         <p className="text-xs text-yellow-500/50 max-w-md mx-auto mt-2">⚠️ Seals auto-delete 30 days after unlock</p>
         <SealCounter />
+        <ActivityTicker />
       </motion.div>
 
       <Card className="space-y-6">

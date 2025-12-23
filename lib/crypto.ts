@@ -17,17 +17,19 @@ export interface DecryptionKeys {
 
 // Generate two random AES-256 keys
 export async function generateKeys(): Promise<{ keyA: CryptoKey; keyB: CryptoKey }> {
-  const keyA = await crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt']
-  );
-  
-  const keyB = await crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt']
-  );
+  // Generate keys in parallel for better performance
+  const [keyA, keyB] = await Promise.all([
+    crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    ),
+    crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    )
+  ]);
 
   return { keyA, keyB };
 }
@@ -42,6 +44,10 @@ async function deriveMasterKey(keyA: CryptoKey, keyB: CryptoKey): Promise<Crypto
   combinedKey.set(new Uint8Array(keyABuffer), 0);
   combinedKey.set(new Uint8Array(keyBBuffer), 32);
 
+  // Zero exported key buffers after copying
+  new Uint8Array(keyABuffer).fill(0);
+  new Uint8Array(keyBBuffer).fill(0);
+
   // Import combined key for HKDF
   const hkdfKey = await crypto.subtle.importKey(
     'raw',
@@ -50,6 +56,9 @@ async function deriveMasterKey(keyA: CryptoKey, keyB: CryptoKey): Promise<Crypto
     false,
     ['deriveBits']
   );
+
+  // Zero combined key after import
+  combinedKey.fill(0);
 
   // Derive 256-bit key using HKDF with zero salt for deterministic derivation
   const salt = new Uint8Array(32); // Zero-filled salt
