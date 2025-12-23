@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
       if (!encryptedBlob || !keyB || !iv || !unlockTime || isNaN(unlockTime)) {
         return createErrorResponse(
-          ErrorCode.INVALID_UNLOCK_TIME,
+          ErrorCode.INVALID_INPUT,
           "Missing required fields",
         );
       }

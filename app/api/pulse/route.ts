@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/lib/apiHandler';
 import { createAPIRoute } from '@/lib/routeHelper';
 import { ErrorCode, createErrorResponse } from '@/lib/errors';
-import { RATE_LIMIT_PULSE } from '@/lib/constants';
+import { RATE_LIMIT_PULSE, MAX_PULSE_INTERVAL } from '@/lib/constants';
 import { trackAnalytics } from '@/lib/apiHelpers';
 
+const MAX_PULSE_INTERVAL_DAYS = MAX_PULSE_INTERVAL / (24 * 60 * 60 * 1000);
 
 export async function POST(request: NextRequest) {
   return createAPIRoute(async ({ container, request: ctx, ip }) => {
@@ -16,8 +17,8 @@ export async function POST(request: NextRequest) {
 
     // Validate newInterval if provided
     if (newInterval !== undefined) {
-      if (typeof newInterval !== 'number' || newInterval <= 0 || newInterval > 30) {
-        return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse interval must be between 1 and 30 days');
+      if (typeof newInterval !== 'number' || newInterval <= 0 || newInterval > MAX_PULSE_INTERVAL_DAYS) {
+        return createErrorResponse(ErrorCode.INVALID_INPUT, `Pulse interval must be between 1 and ${MAX_PULSE_INTERVAL_DAYS} days`);
       }
     }
 

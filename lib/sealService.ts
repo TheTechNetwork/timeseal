@@ -233,16 +233,16 @@ export class SealService {
       throw new Error('Invalid nonce format');
     }
 
-    // Check nonce FIRST (atomic, prevents race condition)
-    const nonceValid = await checkAndStoreNonce(nonce, this.db);
-    if (!nonceValid) {
-      throw new Error('Replay attack detected');
-    }
-
-    // Then validate token signature
+    // Validate token signature FIRST (cheap operation)
     const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    // THEN check nonce (expensive DB operation, only after signature validated)
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
+      throw new Error('Replay attack detected');
     }
 
     const seal = await this.db.getSeal(sealId);
@@ -257,6 +257,12 @@ export class SealService {
 
     if (intervalToUse === 0) {
       throw new Error('Pulse interval not configured');
+    }
+
+    // Validate interval against max limit
+    const intervalValidation = validatePulseInterval(intervalToUse);
+    if (!intervalValidation.valid) {
+      throw new Error(intervalValidation.error);
     }
 
     const newUnlockTime = now + intervalToUse;
@@ -294,12 +300,13 @@ export class SealService {
 
     const [sealId, timestamp, nonce] = parts;
 
-    // Validate token FIRST
+    // Validate token signature FIRST (cheap operation)
     const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
 
+    // THEN check nonce (expensive DB operation)
     const nonceValid = await checkAndStoreNonce(nonce, this.db);
     if (!nonceValid) {
       throw new Error('Replay attack detected');

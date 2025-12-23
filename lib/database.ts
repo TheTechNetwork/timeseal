@@ -34,7 +34,7 @@ export interface SealRecord {
 
 // Production D1 Database
 export class SealDatabase implements DatabaseProvider {
-  constructor(public db: D1Database) { }
+  constructor(private readonly db: D1Database) { }
 
   private mapResultToSealRecord(result: any): SealRecord {
     // Fail-fast validation - throw on missing required fields
@@ -142,7 +142,7 @@ export class SealDatabase implements DatabaseProvider {
     ).bind(id).run();
 
     if (!result.success) {
-      throw new Error('Failed to delete seal');
+      throw new Error(`Failed to delete seal ${id}`);
     }
   }
 
@@ -198,9 +198,6 @@ export class SealDatabase implements DatabaseProvider {
 
   async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
     try {
-      // Sanitize nonce for logging (remove newlines/control chars)
-      const sanitizedNonce = nonce.replace(/[\r\n\x00-\x1F\x7F]/g, '');
-      
       const result = await this.db.prepare(
         'INSERT INTO nonces (nonce, expires_at) VALUES (?, ?)'
       ).bind(nonce, expiresAt).run();
