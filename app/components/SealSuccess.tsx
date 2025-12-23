@@ -137,7 +137,6 @@ export function SealSuccess({
             <Button
               onClick={() => copyToClipboard(publicUrl, "Link")}
               className="bg-neon-green/20 mb-[2px]"
-              title="Copy link (Ctrl+K)"
               variant="secondary"
             >
               COPY
@@ -187,7 +186,6 @@ ${pulseUrl && pulseToken ? '- Anyone with the pulse link can control the seal (r
                 toast.success("Saved as markdown");
               }}
               className="bg-neon-green/20 mb-[2px]"
-              title="Download as markdown"
               variant="secondary"
             >
               <Download className="w-4 h-4" />
@@ -210,7 +208,6 @@ ${pulseUrl && pulseToken ? '- Anyone with the pulse link can control the seal (r
                 }
               }}
               className="bg-neon-green/20 mb-[2px]"
-              title="Save to encrypted vault"
               variant="secondary"
             >
               SAVE
@@ -241,7 +238,6 @@ ${pulseUrl && pulseToken ? '- Anyone with the pulse link can control the seal (r
                   )
                 }
                 className="bg-neon-green/20 mb-[2px]"
-                title="Copy link (Ctrl+Shift+K)"
                 variant="secondary"
               >
                 COPY
