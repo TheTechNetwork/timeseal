@@ -7,6 +7,8 @@
 
 # ⏳ TIME-SEAL
 
+**Send digital time capsules that are impossible to open until the date you choose.**
+
 ![Time-Seal Animation](public/timeseal_ascii.svg)
 
 ### *"If I go silent, this speaks for me."*
