@@ -25,6 +25,7 @@ export interface SealEvents {
   'seal:created': { sealId: string; isDMS: boolean; ip: string };
   'seal:unlocked': { sealId: string; ip: string };
   'seal:deleted': { sealId: string };
+  'seal:exhausted': { sealId: string; viewCount: number };
   'pulse:received': { sealId: string; ip: string };
 }
 

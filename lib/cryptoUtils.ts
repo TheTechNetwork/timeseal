@@ -95,5 +95,5 @@ export function generateRandomBytes(length: number): Uint8Array {
 
 export function generateRandomString(length: number): string {
   const bytes = generateRandomBytes(length);
-  return arrayBufferToBase64(bytes.buffer).slice(0, length);
+  return arrayBufferToBase64(bytes.buffer as ArrayBuffer).slice(0, length);
 }

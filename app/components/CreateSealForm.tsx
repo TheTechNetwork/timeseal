@@ -561,7 +561,7 @@ export function CreateSealForm({
         <section aria-labelledby="seal-type-heading">
           <h2 id="seal-type-heading" className="sr-only">Seal Configuration</h2>
           <div className="space-y-4">
-          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1">
             <div className="text-xs text-neon-green/60 tooltip">
               Choose seal type
               <span className="tooltip-text">
@@ -569,9 +569,9 @@ export function CreateSealForm({
                 unlocks if you don&apos;t check in
               </span>
             </div>
-          </div>
+            </div>
 
-          <div className="flex items-center gap-2 p-3 bg-yellow-950/20 border border-yellow-400/30 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-yellow-950/20 border border-yellow-400/30 rounded-lg">
             <input
               type="checkbox"
               id="seed-phrase-toggle"
@@ -589,15 +589,14 @@ export function CreateSealForm({
                 if lost. Write it down securely!
               </span>
             </label>
-          </div>
+            </div>
 
-          <div className="flex items-center gap-2 p-3 bg-neon-green/5 border border-neon-green/20 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-neon-green/5 border border-neon-green/20 rounded-lg">
             <Input
               type="url"
               value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
+              onChange={setWebhookUrl}
               placeholder="https://hooks.zapier.com/... (optional)"
-              className="flex-1 text-sm"
             />
             <div className="text-xs text-neon-green/60 tooltip">
               🔔 Webhook
@@ -605,9 +604,9 @@ export function CreateSealForm({
                 Get notified when seal unlocks. Supports Discord, Slack, Zapier, IFTTT, or custom HTTPS endpoints.
               </span>
             </div>
-          </div>
+            </div>
 
-          <div className="flex space-x-4 bg-dark-bg/30 p-1 rounded-xl border border-neon-green/10">
+            <div className="flex space-x-4 bg-dark-bg/30 p-1 rounded-xl border border-neon-green/10">
             <button
               onClick={() => setSealType("timed")}
               className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === "timed" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
@@ -626,9 +625,9 @@ export function CreateSealForm({
               </span>
               <span className="tooltip-text">DEAD MAN&apos;S SWITCH</span>
             </button>
-          </div>
+            </div>
 
-          <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait">
             {sealType === "timed" ? (
               <motion.div
                 key="timed"
@@ -719,13 +718,14 @@ export function CreateSealForm({
                 </p>
               </motion.div>
             )}
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </section>
 
         <section aria-labelledby="submit-heading">
           <h2 id="submit-heading" className="sr-only">Create Seal</h2>
           <div className="flex justify-center pt-6">
-          <div className="tooltip">
+            <div className="tooltip">
             <span className="tooltip-text">
               {isCreating
                 ? "Encrypting your data with AES-256..."
@@ -749,6 +749,7 @@ export function CreateSealForm({
             >
               {isCreating ? "ENCRYPTING & SEALING..." : "CREATE TIME-SEAL"}
             </Button>
+            </div>
           </div>
         </section>
       </Card>

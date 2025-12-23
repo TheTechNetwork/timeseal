@@ -13,11 +13,11 @@ export function validateAPIRequest(
   allowedMethods: string[],
 ): Response | null {
   if (!validateHTTPMethod(request, allowedMethods)) {
-    return jsonResponse({ error: "Method not allowed" }, 405);
+    return jsonResponse({ error: "Method not allowed" }, { status: 405 });
   }
 
   if (!validateOrigin(request)) {
-    return jsonResponse({ error: "Invalid origin" }, 403);
+    return jsonResponse({ error: "Invalid origin" }, { status: 403 });
   }
 
   return null; // No error
@@ -31,7 +31,7 @@ export function checkValidation(
   statusCode: number = 400,
 ): Response | null {
   if (!validation.valid) {
-    return jsonResponse({ error: validation.error }, statusCode);
+    return jsonResponse({ error: validation.error }, { status: statusCode });
   }
   return null;
 }

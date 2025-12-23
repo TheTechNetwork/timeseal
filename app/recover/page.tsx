@@ -87,7 +87,7 @@ export default function RecoverPage() {
               <Input
                 label="SEAL ID"
                 value={sealId}
-                onChange={(e) => setSealId(e.target.value)}
+                onChange={setSealId}
                 placeholder="a1b2c3d4e5f6..."
               />
             </div>
