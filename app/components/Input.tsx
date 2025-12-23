@@ -22,7 +22,7 @@ export function Input({
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <label className="text-neon-green font-mono text-sm tracking-wide">
+        <label className="text-neon-green/70 font-mono text-sm">
           {label}
         </label>
       )}
@@ -35,7 +35,7 @@ export function Input({
         className={`cyber-input ${error ? "border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.2)]" : ""}`}
       />
       {error && (
-        <span className="text-red-500 text-xs font-mono tracking-wider">
+        <span className="text-red-400/70 text-xs font-mono">
           {error}
         </span>
       )}

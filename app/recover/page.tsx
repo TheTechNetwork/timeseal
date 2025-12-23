@@ -93,7 +93,7 @@ export default function RecoverPage() {
             </div>
 
             <div>
-              <label className="block text-sm mb-3 text-neon-green/80 font-bold">SEED PHRASE (12 WORDS)</label>
+              <label className="block text-sm mb-2 text-neon-green/70 font-mono">SEED PHRASE (12 WORDS)</label>
               <div className="grid grid-cols-3 gap-3">
                 {words.map((word, i) => (
                   <div key={i} className="relative">
@@ -104,7 +104,7 @@ export default function RecoverPage() {
                       type="text"
                       value={word}
                       onChange={(e) => handleWordChange(i, e.target.value)}
-                      className="cyber-input w-full pl-8 text-sm"
+                      className="w-full pl-8 px-4 py-3 bg-black/50 border-2 border-neon-green/30 rounded-xl text-neon-green font-mono focus:border-neon-green outline-none transition-colors text-sm"
                       placeholder="word"
                     />
                   </div>
@@ -116,60 +116,58 @@ export default function RecoverPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="border-2 border-red-500/50 bg-red-950/20 text-red-400 p-4 font-mono text-sm rounded-xl"
+                className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl"
               >
-                ⚠️ {error}
+                <p className="text-red-400/70 font-mono text-xs">⚠️ {error}</p>
               </motion.div>
             )}
 
-            <Button
+            <button
               onClick={handleRecover}
               disabled={loading || !sealId.trim() || words.filter(w => w).length < 12}
-              className="w-full"
+              className="w-full cyber-button py-3"
             >
               {loading ? 'RECOVERING...' : 'RECOVER VAULT LINK'}
-            </Button>
+            </button>
           </Card>
         ) : (
           <Card className="space-y-6">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="border-2 border-neon-green/50 bg-neon-green/5 p-6 rounded-xl"
+              className="p-6 bg-neon-green/10 border border-neon-green/30 rounded-xl"
             >
-              <p className="font-mono mb-4 text-neon-green">✅ Success! Your vault link:</p>
-              <div className="bg-dark-bg p-4 break-all font-mono text-sm text-neon-green/80 border border-neon-green/30 rounded-lg">
+              <p className="font-mono mb-4 text-neon-green/70 text-sm">✅ Success! Your vault link:</p>
+              <div className="bg-black/50 p-4 break-all font-mono text-xs text-neon-green/70 border border-neon-green/20 rounded-xl">
                 {vaultLink}
               </div>
             </motion.div>
 
             <div className="flex gap-4">
-              <Button
+              <button
                 onClick={handleCopy}
-                className="flex-1"
-                variant="secondary"
+                className="flex-1 cyber-button py-3"
               >
                 COPY LINK
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => window.location.href = vaultLink}
-                className="flex-1"
+                className="flex-1 cyber-button py-3"
               >
                 OPEN VAULT
-              </Button>
+              </button>
             </div>
 
-            <Button
+            <button
               onClick={() => {
                 setVaultLink('');
                 setSealId('');
                 setWords(Array(12).fill(''));
               }}
-              className="w-full"
-              variant="secondary"
+              className="w-full cyber-button py-3 bg-neon-green/10"
             >
               RECOVER ANOTHER
-            </Button>
+            </button>
           </Card>
         )}
       </div>

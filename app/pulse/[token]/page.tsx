@@ -146,7 +146,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 Renew to keep sealed or unlock immediately
               </p>
               <div className="mb-4">
-                <label className="block text-neon-green/70 text-sm mb-2">
+                <label className="block text-neon-green/70 font-mono text-sm mb-2">
                   Next Pulse Interval
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -161,7 +161,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                       const max = pulseUnit === "minutes" ? 60 : 30;
                       setPulseInterval(Math.max(min, Math.min(max, val)));
                     }}
-                    className="w-24 bg-black/50 border border-neon-green/30 rounded px-4 py-3 text-neon-green font-mono text-center text-xl focus:outline-none focus:border-neon-green/60"
+                    className="w-24 bg-black/50 border-2 border-neon-green/30 rounded-xl px-4 py-3 text-neon-green font-mono text-center text-xl focus:outline-none focus:border-neon-green transition-colors"
                   />
                   <select
                     value={pulseUnit}
@@ -173,13 +173,13 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                       if (newUnit === "days" && pulseInterval > 30)
                         setPulseInterval(30);
                     }}
-                    className="flex-1 bg-black/50 border border-neon-green/30 rounded px-4 py-3 text-neon-green font-mono focus:outline-none focus:border-neon-green/60 [&>option]:bg-black [&>option]:text-neon-green"
+                    className="flex-1 bg-black/50 border-2 border-neon-green/30 rounded-xl px-4 py-3 text-neon-green font-mono focus:outline-none focus:border-neon-green transition-colors [&>option]:bg-black [&>option]:text-neon-green"
                   >
                     <option value="minutes">Minutes</option>
                     <option value="days">Days</option>
                   </select>
                 </div>
-                <p className="text-neon-green/50 text-xs mt-2">
+                <p className="text-neon-green/50 font-mono text-xs mt-2">
                   Seal will unlock in {pulseInterval} {pulseUnit} if not renewed
                 </p>
               </div>

@@ -110,7 +110,7 @@ export default function GenerateSeedPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-4"
+              className="space-y-4 mt-8"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -122,7 +122,7 @@ export default function GenerateSeedPage() {
                     COPY
                   </button>
                 </div>
-                <div className="grid grid-cols-3 gap-2 p-4 bg-black/50 rounded-lg border border-neon-green/20">
+                <div className="grid grid-cols-3 gap-2 p-4 bg-black/50 rounded-xl border-2 border-neon-green/20">
                   {seedPhrase.split(' ').map((word, i) => (
                     <div key={i} className="text-neon-green font-mono text-sm">
                       {i + 1}. {word}
@@ -133,24 +133,49 @@ export default function GenerateSeedPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-neon-green/70 font-mono text-sm">KEY A (BASE64)</label>
+                  <label className="text-neon-green/70 font-mono text-sm">KEY A ADMIN LINK</label>
                   <button
-                    onClick={() => handleCopy(keyA, 'Key A')}
+                    onClick={() => handleCopy(`${window.location.origin}/dashboard#${keyA}`, 'Admin link')}
                     className="text-xs text-neon-green/70 hover:text-neon-green font-mono"
                   >
                     COPY
                   </button>
                 </div>
-                <div className="p-4 bg-black/50 rounded-lg border border-neon-green/20">
-                  <p className="text-neon-green font-mono text-xs break-all">{keyA}</p>
-                </div>
+                <a
+                  href={`/dashboard#${keyA}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 bg-black/50 rounded-xl border-2 border-neon-green/20 hover:border-neon-green/50 transition-colors group"
+                >
+                  <p className="text-neon-green/70 group-hover:text-neon-green font-mono text-xs break-all transition-colors">
+                    {window.location.origin}/dashboard#{keyA}
+                  </p>
+                </a>
               </div>
 
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <p className="text-red-400 font-mono text-xs">
+              <div className="p-4 bg-red-500/10 border-2 border-red-500/30 rounded-xl">
+                <p className="text-red-400/70 font-mono text-xs">
                   ⚠️ SECURITY WARNING: Write down your seed phrase and store it securely. Anyone with this phrase can recover your Key A.
                 </p>
               </div>
+
+              <button
+                onClick={() => {
+                  const words = seedPhrase.split(' ').map((word, i) => `${i + 1}. ${word}`).join('\n');
+                  const data = `# TIMESEAL SEED PHRASE BACKUP\n\n**Generated:** ${new Date().toISOString()}\n\n## 12-WORD SEED PHRASE\n\n${words}\n\n## KEY A ADMIN LINK\n\n${window.location.origin}/dashboard#${keyA}\n\n## SECURITY WARNING\n\n⚠️ **Write down your seed phrase and store it securely.**\n\n- Anyone with this phrase can recover your Key A\n- Never share or store digitally unencrypted\n- Keep in a safe place (safe, password manager, paper backup)`;
+                  const blob = new Blob([data], { type: 'text/markdown' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `timeseal-seed-${Date.now()}.md`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Seed phrase backup downloaded');
+                }}
+                className="w-full cyber-button py-3 bg-neon-green/10"
+              >
+                DOWNLOAD BACKUP
+              </button>
             </motion.div>
           )}
         </Card>

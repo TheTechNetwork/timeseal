@@ -438,11 +438,8 @@ export function CreateSealForm({
       <Card className="space-y-6">
         <section aria-labelledby="templates-heading">
           <div className="flex items-center justify-between mb-2">
-            <h2 id="templates-heading" className="text-sm text-neon-green/80 font-bold tooltip">
+            <h2 id="templates-heading" className="text-sm text-neon-green/70 font-mono">
               QUICK START TEMPLATES
-              <span className="tooltip-text">
-                Click a template to auto-fill the form with a common use case
-              </span>
             </h2>
           </div>
           <motion.div
@@ -461,12 +458,9 @@ export function CreateSealForm({
                   backgroundColor: "rgba(0, 255, 65, 0.1)",
                 }}
                 whileTap={{ scale: 0.95 }}
-                className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center tooltip"
-                title={t.name}
+                className="cyber-border p-3 transition-colors text-center h-full flex flex-col items-center justify-center"
+                title={`${t.name}: ${t.type === 'deadman' ? 'Dead Man\'s Switch' : 'Timed Release'} template`}
               >
-                <span className="tooltip-text">
-                  Click to use {t.name} template
-                </span>
                 <motion.div
                   className="mb-1"
                   whileHover={{

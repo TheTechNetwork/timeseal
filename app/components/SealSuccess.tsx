@@ -130,7 +130,7 @@ export function SealSuccess({
               your vault link if lost.
             </p>
 
-            <div className="bg-dark-bg p-5 border-2 border-yellow-400/30 rounded-lg">
+            <div className="bg-dark-bg p-5 border-2 border-yellow-400/30 rounded-xl">
               <div className="grid grid-cols-3 gap-4">
                 {seedPhrase
                   .split(" ")
@@ -149,13 +149,13 @@ export function SealSuccess({
               </div>
             </div>
 
-            <div className="bg-dark-bg p-3 border-2 border-yellow-400/30 rounded-lg">
+            <div className="bg-dark-bg p-3 border-2 border-yellow-400/30 rounded-xl">
               <p className="font-mono text-xs text-yellow-300/70">
                 Seal ID: <span className="text-neon-green">{sealId}</span>
               </p>
             </div>
 
-            <div className="space-y-2 text-sm font-mono text-yellow-300/70 bg-dark-bg/50 p-4 rounded-lg border border-yellow-400/20">
+            <div className="space-y-2 text-sm font-mono text-yellow-300/70 bg-dark-bg/50 p-4 rounded-xl border border-yellow-400/20">
               <p>⚠️ Anyone with these words can access your seal</p>
               <p>⚠️ Store securely (safe, password manager, paper backup)</p>
               <p>⚠️ Never share or store digitally unencrypted</p>

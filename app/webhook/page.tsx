@@ -72,10 +72,10 @@ export default function WebhookPage() {
         </svg>
       </motion.a>
 
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-[220px]">
         <motion.a
           href="/dashboard"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -84,7 +84,7 @@ export default function WebhookPage() {
 
         <motion.a
           href="/"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -93,7 +93,7 @@ export default function WebhookPage() {
 
         <motion.a
           href="/generate-seed"
-          className="flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -117,14 +117,20 @@ export default function WebhookPage() {
         </div>
 
         <Card className="p-6 space-y-6">
-          <div className="space-y-3">
-            <label className="text-neon-green font-mono text-sm font-bold">WEBHOOK URL (HTTPS ONLY)</label>
+          <div className="p-4 bg-neon-green/10 border border-neon-green/30 rounded-xl">
+            <p className="text-neon-green/70 font-mono text-xs">
+              ℹ️ HOW TO USE: Copy your webhook URL from Discord/Slack/Zapier, paste it below, then add it when creating a seal. You&apos;ll get notified when the seal unlocks.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-neon-green/70 font-mono text-sm">WEBHOOK URL (HTTPS ONLY)</label>
             <input
               type="url"
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
               placeholder="https://discord.com/api/webhooks/..."
-              className="w-full px-4 py-3 bg-black/50 border-2 border-neon-green/30 rounded-xl text-neon-green font-mono focus:border-neon-green outline-none"
+              className="w-full px-4 py-3 bg-black/50 border-2 border-neon-green/30 rounded-xl text-neon-green font-mono focus:border-neon-green outline-none transition-colors"
             />
           </div>
 
@@ -145,38 +151,38 @@ export default function WebhookPage() {
             </button>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-neon-green/20">
-            <h2 className="text-neon-green font-mono text-sm font-bold">SUPPORTED SERVICES</h2>
+          <div className="space-y-4 pt-6 border-t border-neon-green/20">
+            <h2 className="text-neon-green/70 font-mono text-sm">SUPPORTED SERVICES</h2>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-black/50 rounded-lg border border-neon-green/20">
-                <p className="text-neon-green font-mono text-xs font-bold">🎮 Discord</p>
+              <div className="p-4 bg-black/50 rounded-xl border border-neon-green/20">
+                <p className="text-neon-green font-mono text-xs">🎮 Discord</p>
                 <p className="text-neon-green/50 font-mono text-xs mt-1">Server webhooks</p>
               </div>
-              <div className="p-3 bg-black/50 rounded-lg border border-neon-green/20">
-                <p className="text-neon-green font-mono text-xs font-bold">💬 Slack</p>
+              <div className="p-4 bg-black/50 rounded-xl border border-neon-green/20">
+                <p className="text-neon-green font-mono text-xs">💬 Slack</p>
                 <p className="text-neon-green/50 font-mono text-xs mt-1">Incoming webhooks</p>
               </div>
-              <div className="p-3 bg-black/50 rounded-lg border border-neon-green/20">
-                <p className="text-neon-green font-mono text-xs font-bold">⚡ Zapier</p>
+              <div className="p-4 bg-black/50 rounded-xl border border-neon-green/20">
+                <p className="text-neon-green font-mono text-xs">⚡ Zapier</p>
                 <p className="text-neon-green/50 font-mono text-xs mt-1">5000+ integrations</p>
               </div>
-              <div className="p-3 bg-black/50 rounded-lg border border-neon-green/20">
-                <p className="text-neon-green font-mono text-xs font-bold">🔗 IFTTT</p>
+              <div className="p-4 bg-black/50 rounded-xl border border-neon-green/20">
+                <p className="text-neon-green font-mono text-xs">🔗 IFTTT</p>
                 <p className="text-neon-green/50 font-mono text-xs mt-1">SMS, email, IoT</p>
               </div>
             </div>
           </div>
 
-          <div className="p-4 bg-neon-green/10 border border-neon-green/30 rounded-lg">
+          <div className="p-4 bg-neon-green/10 border border-neon-green/30 rounded-xl">
             <p className="text-neon-green/70 font-mono text-xs">
               💡 TIP: Add your webhook URL when creating a seal. You&apos;ll receive a notification when it unlocks.
             </p>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="text-neon-green font-mono text-xs font-bold">WEBHOOK PAYLOAD EXAMPLE</h3>
-            <pre className="p-4 bg-black/50 rounded-lg border border-neon-green/20 overflow-x-auto">
-              <code className="text-neon-green font-mono text-xs">
+          <div className="space-y-2">
+            <h3 className="text-neon-green/70 font-mono text-sm">WEBHOOK PAYLOAD EXAMPLE</h3>
+            <pre className="p-4 bg-black/50 rounded-xl border border-neon-green/20 overflow-x-auto">
+              <code className="text-neon-green/70 font-mono text-xs">
 {`{
   "event": "seal_unlocked",
   "sealId": "abc123...",
@@ -186,8 +192,8 @@ export default function WebhookPage() {
             </pre>
           </div>
 
-          <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-yellow-400 font-mono text-xs">
+          <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+            <p className="text-yellow-400/70 font-mono text-xs">
               🔒 PRIVACY: Webhook URLs are encrypted with your seal&apos;s Key B. Only decryptable when the seal unlocks.
             </p>
           </div>
