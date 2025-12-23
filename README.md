@@ -590,18 +590,20 @@ wrangler secret put MASTER_ENCRYPTION_KEY
 
 - [API Reference](docs/API.md) - Complete REST API documentation
 - [Architecture Guide](docs/ARCHITECTURE.md) - Design patterns and abstractions
+- [Reusable Libraries](docs/REUSABLE-LIBRARIES.md) - **NEW:** Extracted library documentation
+- [Libraries Quick Reference](docs/LIBRARIES-QUICK-REF.md) - **NEW:** Quick reference cheat sheet
 - [Deployment Guide](docs/DEPLOYMENT.md) - Cloudflare setup instructions
 - [Security Documentation](docs/SECURITY.md) - Threat model and security controls
 - [Trust Assumptions](docs/TRUST-ASSUMPTIONS.md) - What you must trust to use TimeSeal
-- [Hardening Guide](docs/HARDENING.md) - **NEW:** Mitigations for highest-priority threats
-- [Self-Hosting Guide](docs/SELF-HOSTING.md) - **NEW:** Deploy your own instance
+- [Hardening Guide](docs/HARDENING.md) - Mitigations for highest-priority threats
+- [Self-Hosting Guide](docs/SELF-HOSTING.md) - Deploy your own instance
 - [Security Enhancements](docs/SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
 - [Key Rotation Guide](docs/KEY-ROTATION.md) - Master key rotation procedures
 - [Security Testing](docs/SECURITY-TESTING.md) - Penetration testing guide
 - [Audit Logging](docs/AUDIT-LOGGING.md) - Immutable audit trail for all operations
 - [Testing Guide](docs/TESTING.md) - Complete testing documentation
 - [Testing Infrastructure](docs/TESTING-INFRASTRUCTURE.md) - Test setup and configuration
-- [Transparency Reports](docs/TRANSPARENCY-REPORT-TEMPLATE.md) - **NEW:** Quarterly legal disclosure
+- [Transparency Reports](docs/TRANSPARENCY-REPORT-TEMPLATE.md) - Quarterly legal disclosure
 - [Changelog](docs/CHANGELOG.md) - Version history and changes
 - [TODO](docs/TODO.md) - Production readiness checklist
 
@@ -618,7 +620,15 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🔮 Roadmap
 
-**Recently Implemented (v0.7.0):**
+**Recently Implemented (v0.8.0):**
+- ✅ Reusable Libraries - Extracted 10 comprehensive libraries (~1,620 LOC)
+- ✅ Library Documentation - 4 comprehensive docs with examples
+- ✅ Code Refactoring - Eliminated duplication, improved maintainability
+- ✅ TypeScript Support - Full type safety across all libraries
+- ✅ Tree-Shakeable Imports - Optimized bundle size
+- ✅ Regression Testing - All 135 tests pass, zero breaking changes
+
+**Recently Implemented (v0.7.0):****
 - ✅ Privacy-First Analytics - Zero external dependencies, GDPR compliant
 - ✅ Seal Counter - Homepage displays total seals created (social proof)
 - ✅ Analytics Security - Rate limiting and input validation on endpoints

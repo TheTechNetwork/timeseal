@@ -1,5 +1,6 @@
 // Security Utilities
 import { logger } from './logger';
+import { hmacSign, hmacVerify, sha256 } from './cryptoUtils';
 
 interface SecurityEnv {
   NEXT_PUBLIC_APP_URL?: string;
@@ -110,20 +111,8 @@ function isSequential(id1: string, id2: string): boolean {
 
 export async function generatePulseToken(sealId: string, secret: string): Promise<string> {
   const data = `${sealId}:${Date.now()}:${crypto.randomUUID()}`;
-  const encoder = new TextEncoder();
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
-  const sigBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-  
-  return `${data}:${sigBase64}`;
+  const signature = await hmacSign(data, secret);
+  return `${data}:${signature}`;
 }
 
 export async function validatePulseToken(token: string, sealId: string, secret: string): Promise<boolean> {
@@ -138,29 +127,15 @@ export async function validatePulseToken(token: string, sealId: string, secret: 
   if (tokenAge > PULSE_TOKEN_WINDOW || tokenAge < 0) return false;
   
   const data = `${tokenSealId}:${timestamp}:${nonce}`;
-  const encoder = new TextEncoder();
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['verify']
-  );
-  
-  const sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
-  return await crypto.subtle.verify('HMAC', key, sigBytes, encoder.encode(data));
+  return await hmacVerify(data, signature, secret);
 }
 
 export async function getRequestFingerprint(request: Request): Promise<string> {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const ua = request.headers.get('user-agent') || '';
   const lang = request.headers.get('accept-language') || '';
-  
   const data = `${ip}:${ua}:${lang}`;
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
-  const hashArray = Array.from(new Uint8Array(hash));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  return (await sha256(data)).slice(0, 32);
 }
 
 export function sanitizeError(error: unknown): string {

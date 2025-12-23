@@ -1,157 +1,211 @@
-// Custom React Hooks for Reusability
-'use client';
+// React Hooks Library
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { useState, useEffect, useCallback } from 'react';
-
-// Countdown hook
-export function useCountdown(targetTime: number) {
-  const [timeLeft, setTimeLeft] = useState(targetTime - Date.now());
-  const [isExpired, setIsExpired] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const remaining = targetTime - Date.now();
-      setTimeLeft(remaining);
-      
-      if (remaining <= 0) {
-        setIsExpired(true);
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [targetTime]);
-
-  return { timeLeft, isExpired };
+export interface UseCountdownOptions {
+  onComplete?: () => void;
+  interval?: number;
+  autoStart?: boolean;
 }
 
-// API fetch hook
-export function useAPI<T>(url: string, options?: RequestInit) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useCountdown(unlockTime: number, options: UseCountdownOptions = {}) {
+  const { onComplete, interval = 1000, autoStart = true } = options;
+  const [timeRemaining, setTimeRemaining] = useState(Math.max(0, unlockTime - Date.now()));
+  const [isRunning, setIsRunning] = useState(autoStart);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const json = await response.json() as T;
-      setData(json);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
+  const stop = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-  }, [url, options]);
+    setIsRunning(false);
+  }, []);
+
+  const start = useCallback(() => {
+    if (intervalRef.current) return;
+    setIsRunning(true);
+  }, []);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    if (!isRunning) return;
 
-  return { data, loading, error, refetch };
-}
+    intervalRef.current = setInterval(() => {
+      const remaining = Math.max(0, unlockTime - Date.now());
+      setTimeRemaining(remaining);
 
-// Form validation hook
-export function useFormValidation<T extends Record<string, any>>(
-  initialValues: T,
-  validators: Partial<Record<keyof T, (value: any) => string | null>>
-) {
-  const [values, setValues] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
-
-  const setValue = useCallback((field: keyof T, value: any) => {
-    setValues(prev => ({ ...prev, [field]: value }));
-    
-    // Validate on change
-    const validator = validators[field];
-    if (validator) {
-      const error = validator(value);
-      setErrors(prev => ({ ...prev, [field]: error || undefined }));
-    }
-  }, [validators]);
-
-  const setTouchedField = useCallback((field: keyof T) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-  }, [setTouched]);
-
-  const validate = useCallback(() => {
-    const newErrors: Partial<Record<keyof T, string>> = {};
-    let isValid = true;
-
-    for (const field in validators) {
-      const validator = validators[field];
-      if (validator) {
-        const error = validator(values[field]);
-        if (error) {
-          newErrors[field] = error;
-          isValid = false;
-        }
+      if (remaining === 0) {
+        stop();
+        onComplete?.();
       }
-    }
+    }, interval);
 
-    setErrors(newErrors);
-    return isValid;
-  }, [values, validators]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [unlockTime, interval, isRunning, onComplete, stop]);
+
+  const isUnlocked = timeRemaining === 0;
 
   return {
-    values,
-    errors,
-    touched,
-    setValue,
-    setTouched: setTouchedField,
-    validate,
+    timeRemaining,
+    isUnlocked,
+    isRunning,
+    start,
+    stop,
   };
 }
 
-// Local storage hook
-export function useLocalStorage<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => {
+export interface UseIntervalOptions {
+  immediate?: boolean;
+}
+
+export function useInterval(callback: () => void, delay: number | null, options: UseIntervalOptions = {}) {
+  const { immediate = false } = options;
+  const savedCallback = useRef(callback);
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    if (delay === null) return;
+
+    if (immediate) {
+      savedCallback.current();
+    }
+
+    const id = setInterval(() => savedCallback.current(), delay);
+    return () => clearInterval(id);
+  }, [delay, immediate]);
+}
+
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+export function useThrottle<T>(value: T, limit: number): T {
+  const [throttledValue, setThrottledValue] = useState<T>(value);
+  const lastRan = useRef(Date.now());
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (Date.now() - lastRan.current >= limit) {
+        setThrottledValue(value);
+        lastRan.current = Date.now();
+      }
+    }, limit - (Date.now() - lastRan.current));
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, limit]);
+
+  return throttledValue;
+}
+
+export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void, () => void] {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') return initialValue;
-    
+
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch {
+    } catch (error) {
+      console.error(`Error loading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
 
-  const setStoredValue = useCallback((newValue: T | ((val: T) => T)) => {
+  const setValue = useCallback((value: T) => {
     try {
-      const valueToStore = newValue instanceof Function ? newValue(value) : newValue;
-      setValue(valueToStore);
-      
+      setStoredValue(value);
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        window.localStorage.setItem(key, JSON.stringify(value));
       }
     } catch (error) {
-      console.error('Error saving to localStorage:', error);
+      console.error(`Error setting localStorage key "${key}":`, error);
     }
-  }, [key, value]);
+  }, [key]);
 
-  return [value, setStoredValue] as const;
+  const removeValue = useCallback(() => {
+    try {
+      setStoredValue(initialValue);
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error(`Error removing localStorage key "${key}":`, error);
+    }
+  }, [key, initialValue]);
+
+  return [storedValue, setValue, removeValue];
 }
 
-// Copy to clipboard hook
-export function useCopyToClipboard() {
+export function useAsync<T>(asyncFunction: () => Promise<T>, immediate = true) {
+  const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [value, setValue] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const execute = useCallback(async () => {
+    setStatus('pending');
+    setValue(null);
+    setError(null);
+
+    try {
+      const response = await asyncFunction();
+      setValue(response);
+      setStatus('success');
+      return response;
+    } catch (error) {
+      setError(error as Error);
+      setStatus('error');
+      throw error;
+    }
+  }, [asyncFunction]);
+
+  useEffect(() => {
+    if (immediate) {
+      execute();
+    }
+  }, [execute, immediate]);
+
+  return { execute, status, value, error };
+}
+
+export function useCopyToClipboard(): [(text: string) => Promise<boolean>, boolean] {
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(async (text: string) => {
+    if (!navigator?.clipboard) {
+      console.warn('Clipboard not supported');
+      return false;
+    }
+
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      setCopied(false);
       return false;
     }
   }, []);
 
-  return { copied, copy };
+  return [copy, copied];
 }

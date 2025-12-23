@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTextScramble } from '@/lib/ui/hooks';
 
 interface DecryptedTextProps {
     text: string;
@@ -30,63 +31,14 @@ export default function DecryptedText({
     encryptedClassName = '',
     animateOn = 'hover',
 }: DecryptedTextProps) {
-    const [displayText, setDisplayText] = useState(text);
     const [isHovering, setIsHovering] = useState(false);
-    const [isScrambling, setIsScrambling] = useState(false);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    const availableChars = useOriginalCharsOnly
-        ? Array.from(new Set(text.split(''))).join('')
-        : characters;
-
-    const scramble = useCallback(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-
-        setIsScrambling(true);
-        let iteration = 0;
-
-        intervalRef.current = setInterval(() => {
-            setDisplayText((prevText) =>
-                text
-                    .split('')
-                    .map((char, index) => {
-                        if (char === ' ') return ' ';
-
-                        if (iteration >= maxIterations) {
-                            return char;
-                        }
-
-                        if (Math.random() < 0.1 * iteration) {
-                            return char;
-                        }
-
-                        return availableChars[Math.floor(Math.random() * availableChars.length)];
-                    })
-                    .join('')
-            );
-
-            if (iteration >= maxIterations) {
-                setDisplayText(text);
-                setIsScrambling(false);
-                if (intervalRef.current) clearInterval(intervalRef.current);
-            }
-
-            iteration += 1;
-        }, speed);
-    }, [text, speed, maxIterations, availableChars]);
-
-    useEffect(() => {
-        if (animateOn === 'view') {
-            scramble();
-        }
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [animateOn, scramble]);
+    const { displayText, scramble } = useTextScramble(text, {
+        speed,
+        maxIterations,
+        useOriginalCharsOnly,
+        characters,
+        animateOn,
+    });
 
     const handleMouseEnter = () => {
         if (animateOn === 'hover') {
