@@ -313,10 +313,40 @@ This limit is enforced at three layers:
 - D1 TEXT column limit is 1MB
 - 750KB binary = ~1MB base64 (safe margin)
 
-**For larger files:**
-- Split into multiple seals
-- Use compression before upload
-- Consider self-hosting with R2 storage
+**Workarounds for larger files:**
+
+1. **Compress before upload**
+   ```bash
+   # ZIP compression (often 50-90% reduction)
+   zip -9 document.zip large-file.pdf
+   # Result: 2MB PDF → 500KB ZIP (fits in 750KB limit)
+   ```
+
+2. **Split into multiple seals**
+   - Split large file into 700KB chunks
+   - Create separate seal for each chunk
+   - Share all vault links together
+   - Recipient combines chunks after unlock
+   ```bash
+   # Split 5MB file into 700KB chunks
+   split -b 700k large-video.mp4 chunk_
+   # Creates: chunk_aa, chunk_ab, chunk_ac, etc.
+   # Seal each chunk separately
+   ```
+
+3. **Use external storage + seal the link**
+   - Upload large file to cloud storage (Dropbox, Google Drive)
+   - Generate temporary download link
+   - Seal the download link (not the file)
+   - Recipient gets link after unlock
+
+4. **Self-host with R2 storage**
+   - Deploy your own TimeSeal instance
+   - Configure Cloudflare R2 for blob storage
+   - Supports files up to 5GB
+   - See [SELF-HOSTING.md](docs/SELF-HOSTING.md)
+
+**Recommended approach**: Compress first, then split if needed.
 
 ### How long do seals last?
 
@@ -329,6 +359,45 @@ This limit is enforced at three layers:
 - Database resource protection
 - Compliance with data retention policies
 - Prevents indefinite storage costs
+
+**Workarounds for longer durations:**
+
+1. **Use Dead Man's Switch for indefinite storage**
+   - Set 30-day pulse interval
+   - Pulse every 30 days to keep seal locked
+   - Seal unlocks automatically if you stop pulsing
+   - **Perfect for estate planning**: "If I die, unlock after 30 days of silence"
+   ```
+   Example: Crypto seed phrase
+   - Create DMS seal with 30-day interval
+   - Pulse monthly to keep locked
+   - If you die, auto-unlocks for beneficiary
+   - Effectively infinite duration while you're alive
+   ```
+
+2. **Chain multiple seals**
+   - Seal 1: Unlocks in 30 days, contains link to Seal 2
+   - Seal 2: Unlocks in 30 days, contains link to Seal 3
+   - Total: 60+ days with manual chaining
+   - **Use case**: Multi-stage reveals
+
+3. **Self-host with custom limits**
+   - Deploy your own instance
+   - Configure `MAX_DURATION_DAYS` to any value
+   - Remove auto-deletion cron job
+   - See [SELF-HOSTING.md](docs/SELF-HOSTING.md)
+   ```typescript
+   // In your self-hosted instance
+   const MAX_DURATION_DAYS = 365; // 1 year
+   ```
+
+4. **Use external scheduling + seal the trigger**
+   - Set up external reminder (calendar, cron job)
+   - Seal the access credentials
+   - External system triggers unlock at desired time
+   - **Use case**: 1-year+ time locks
+
+**Recommended approach**: Dead Man's Switch for long-term estate planning.
 
 ### Can someone guess my seal ID?
 
