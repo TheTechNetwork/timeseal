@@ -23,6 +23,8 @@ export default function HomePage() {
     pulseToken?: string;
     receipt?: any;
     keyA: string;
+    seedPhrase?: string;
+    sealId: string;
   } | null>(null);
 
   const triggerConfetti = () => {
@@ -68,7 +70,7 @@ export default function HomePage() {
     });
   }, []);
 
-  const handleSuccess = (data: { publicUrl: string; pulseUrl?: string; pulseToken?: string; receipt?: any; keyA: string }) => {
+  const handleSuccess = (data: { publicUrl: string; pulseUrl?: string; pulseToken?: string; receipt?: any; keyA: string; seedPhrase?: string; sealId: string }) => {
     setResult(data);
     triggerConfetti();
     
@@ -140,6 +142,8 @@ export default function HomePage() {
               pulseToken={result.pulseToken}
               receipt={result.receipt}
               keyA={result.keyA}
+              seedPhrase={result.seedPhrase}
+              sealId={result.sealId}
               onReset={handleReset}
             />
           ) : (

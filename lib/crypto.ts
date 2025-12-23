@@ -96,10 +96,11 @@ export async function encryptData(data: string | File, options?: { useSeedPhrase
     if (options?.useSeedPhrase) {
       const seed = await generateSeedPhrase();
       seedPhrase = seed.mnemonic;
+      const seedProtected = memory.protect(seedPhrase);
       const keyABuffer = base64ToArrayBuffer(seed.keyA);
       keyA = await crypto.subtle.importKey('raw', keyABuffer, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
-      const keys = await generateKeys();
-      keyB = keys.keyB;
+      keyB = (await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])) as CryptoKey;
+      seedPhrase = memory.retrieve(seedProtected);
     } else {
       const keys = await generateKeys();
       keyA = keys.keyA;

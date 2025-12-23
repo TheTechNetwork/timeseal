@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 import { recoverKeyA, validateSeedPhrase, formatSeedPhrase } from '@/lib/seedPhrase';
+import { Card } from '@/app/components/Card';
+import { Button } from '@/app/components/Button';
+import { Input } from '@/app/components/Input';
+import { BackgroundBeams } from '@/app/components/ui/background-beams';
+import { FloatingIcons } from '@/app/components/FloatingIcons';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function RecoverPage() {
   const [sealId, setSealId] = useState('');
@@ -35,8 +42,11 @@ export default function RecoverPage() {
       const keyA = await recoverKeyA(mnemonic);
       const link = `${window.location.origin}/vault/${sealId}#${keyA}`;
       setVaultLink(link);
+      toast.success('Vault link recovered successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Recovery failed');
+      const msg = err instanceof Error ? err.message : 'Recovery failed';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -44,80 +54,123 @@ export default function RecoverPage() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(vaultLink);
+    toast.success('Link copied to clipboard');
   };
 
   return (
-    <div className="min-h-screen bg-black text-green-400 p-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-mono mb-8">🔓 Recover Vault Link</h1>
+    <div className="min-h-screen flex flex-col items-center py-12 p-4 relative w-full overflow-x-hidden">
+      <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
+      <FloatingIcons />
+
+      <motion.a
+        href="/"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <span className="text-xs text-neon-green/70 font-mono group-hover:text-neon-green transition-colors">← HOME</span>
+      </motion.a>
+
+      <div className="max-w-2xl w-full relative z-10 my-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl sm:text-5xl font-bold glow-text pulse-glow mb-4">🔓 RECOVER VAULT</h1>
+          <p className="text-neon-green/70 text-sm">Rebuild your vault link from seed phrase</p>
+        </motion.div>
 
         {!vaultLink ? (
-          <div className="space-y-6">
+          <Card className="space-y-6">
             <div>
-              <label className="block mb-2 font-mono">Seal ID:</label>
-              <input
-                type="text"
+              <Input
+                label="SEAL ID"
                 value={sealId}
                 onChange={(e) => setSealId(e.target.value)}
-                className="w-full bg-black border border-green-400 text-green-400 p-3 font-mono"
-                placeholder="a1b2c3d4..."
+                placeholder="a1b2c3d4e5f6..."
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-mono">Seed Phrase (12 words):</label>
-              <div className="grid grid-cols-4 gap-2">
+              <label className="block text-sm mb-3 text-neon-green/80 font-bold">SEED PHRASE (12 WORDS)</label>
+              <div className="grid grid-cols-3 gap-3">
                 {words.map((word, i) => (
-                  <input
-                    key={i}
-                    type="text"
-                    value={word}
-                    onChange={(e) => handleWordChange(i, e.target.value)}
-                    className="bg-black border border-green-400 text-green-400 p-2 font-mono text-sm"
-                    placeholder={`${i + 1}.`}
-                  />
+                  <div key={i} className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-green/40 text-xs font-mono">
+                      {i + 1}.
+                    </span>
+                    <input
+                      type="text"
+                      value={word}
+                      onChange={(e) => handleWordChange(i, e.target.value)}
+                      className="cyber-input w-full pl-8 text-sm"
+                      placeholder="word"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
 
             {error && (
-              <div className="border border-red-500 bg-red-950 text-red-400 p-4 font-mono">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border-2 border-red-500/50 bg-red-950/20 text-red-400 p-4 font-mono text-sm rounded-xl"
+              >
                 ⚠️ {error}
-              </div>
+              </motion.div>
             )}
 
-            <button
+            <Button
               onClick={handleRecover}
-              disabled={loading}
-              className="w-full bg-green-400 text-black p-4 font-mono font-bold hover:bg-green-300 disabled:opacity-50"
+              disabled={loading || !sealId.trim() || words.filter(w => w).length < 12}
+              className="w-full"
             >
-              {loading ? 'Recovering...' : 'Recover Vault Link'}
-            </button>
-          </div>
+              {loading ? 'RECOVERING...' : 'RECOVER VAULT LINK'}
+            </Button>
+          </Card>
         ) : (
-          <div className="space-y-6">
-            <div className="border border-green-400 bg-green-950 p-6">
-              <p className="font-mono mb-4">✅ Success! Your vault link:</p>
-              <div className="bg-black p-4 break-all font-mono text-sm">
+          <Card className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="border-2 border-neon-green/50 bg-neon-green/5 p-6 rounded-xl"
+            >
+              <p className="font-mono mb-4 text-neon-green">✅ Success! Your vault link:</p>
+              <div className="bg-dark-bg p-4 break-all font-mono text-sm text-neon-green/80 border border-neon-green/30 rounded-lg">
                 {vaultLink}
               </div>
-            </div>
+            </motion.div>
 
             <div className="flex gap-4">
-              <button
+              <Button
                 onClick={handleCopy}
-                className="flex-1 bg-green-400 text-black p-4 font-mono font-bold hover:bg-green-300"
+                className="flex-1"
+                variant="secondary"
               >
-                Copy Link
-              </button>
-              <a
-                href={vaultLink}
-                className="flex-1 bg-green-400 text-black p-4 font-mono font-bold hover:bg-green-300 text-center"
+                COPY LINK
+              </Button>
+              <Button
+                onClick={() => window.location.href = vaultLink}
+                className="flex-1"
               >
-                Open Vault
-              </a>
+                OPEN VAULT
+              </Button>
             </div>
-          </div>
+
+            <Button
+              onClick={() => {
+                setVaultLink('');
+                setSealId('');
+                setWords(Array(12).fill(''));
+              }}
+              className="w-full"
+              variant="secondary"
+            >
+              RECOVER ANOTHER
+            </Button>
+          </Card>
         )}
       </div>
     </div>
