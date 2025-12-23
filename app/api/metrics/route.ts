@@ -4,7 +4,7 @@ import { handleMetricsRequest } from '@/lib/metrics';
 const METRICS_SECRET = process.env.METRICS_SECRET;
 
 export async function GET(request: NextRequest) {
-  if (!METRICS_SECRET || METRICS_SECRET === 'dev-secret') {
+  if (!METRICS_SECRET || METRICS_SECRET === '' || METRICS_SECRET === 'dev-secret') {
     return new Response('Metrics disabled', { status: 404 });
   }
   

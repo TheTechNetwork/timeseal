@@ -83,34 +83,47 @@ export class SealService {
 
     // Generate cryptographic receipt
     const blobHash = await this.hashBlob(request.encryptedBlob);
-    const receipt = await this.generateReceipt(sealId, blobHash, request.unlockTime, createdAt);
     
     // Calculate expiration
     const expiresAt = request.expiresAfterDays 
       ? request.unlockTime + (request.expiresAfterDays * 24 * 60 * 60 * 1000)
       : undefined;
 
-    // Create seal record first
-    await this.db.createSeal({
-      id: sealId,
-      unlockTime: request.unlockTime,
-      isDMS: request.isDMS || false,
-      pulseInterval: request.pulseInterval,
-      lastPulse: request.isDMS ? createdAt : undefined,
-      keyB: encryptedKeyB,
-      iv: request.iv,
-      pulseToken,
-      createdAt,
-      blobHash,
-      unlockMessage: request.unlockMessage,
-      expiresAt,
-      accessCount: 0,
-    });
+    // Create seal with transaction-like rollback
+    try {
+      // Create seal record first
+      await this.db.createSeal({
+        id: sealId,
+        unlockTime: request.unlockTime,
+        isDMS: request.isDMS || false,
+        pulseInterval: request.pulseInterval,
+        lastPulse: request.isDMS ? createdAt : undefined,
+        keyB: encryptedKeyB,
+        iv: request.iv,
+        pulseToken,
+        createdAt,
+        blobHash,
+        unlockMessage: request.unlockMessage,
+        expiresAt,
+        accessCount: 0,
+      });
 
-    // Then upload blob (D1BlobStorage needs the row to exist)
-    await storageCircuitBreaker.execute(() =>
-      withRetry(() => this.storage.uploadBlob(sealId, request.encryptedBlob, request.unlockTime), 3, 1000)
-    );
+      // Then upload blob (D1BlobStorage needs the row to exist)
+      await storageCircuitBreaker.execute(() =>
+        withRetry(() => this.storage.uploadBlob(sealId, request.encryptedBlob, request.unlockTime), 3, 1000)
+      );
+    } catch (error) {
+      // Rollback: delete database record if blob upload fails
+      try {
+        await this.db.deleteSeal(sealId);
+      } catch (rollbackError) {
+        logger.error('rollback_failed', rollbackError as Error, { sealId });
+      }
+      throw error;
+    }
+
+    // Generate receipt after successful creation
+    const receipt = await this.generateReceipt(sealId, blobHash, request.unlockTime, createdAt);
 
     auditSealCreated(sealId, ip, request.isDMS || false);
     this.auditLogger?.log({
@@ -198,14 +211,16 @@ export class SealService {
 
     const [sealId, timestamp, nonce] = parts;
 
-    const nonceValid = await checkAndStoreNonce(nonce, this.db);
-    if (!nonceValid) {
-      throw new Error('Replay attack detected');
-    }
-
+    // Validate token FIRST to prevent nonce exhaustion attacks
     const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    // Then check nonce
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
+      throw new Error('Replay attack detected');
     }
 
     const seal = await this.db.getSeal(sealId);
@@ -249,14 +264,15 @@ export class SealService {
 
     const [sealId, timestamp, nonce] = parts;
 
-    const nonceValid = await checkAndStoreNonce(nonce, this.db);
-    if (!nonceValid) {
-      throw new Error('Replay attack detected');
-    }
-
+    // Validate token FIRST
     const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
+      throw new Error('Replay attack detected');
     }
 
     const seal = await this.db.getSeal(sealId);
@@ -264,8 +280,20 @@ export class SealService {
       throw new Error(ErrorCode.SEAL_NOT_FOUND);
     }
 
-    await this.db.deleteSeal(sealId);
-    await this.storage.deleteBlob(sealId);
+    // Delete blob first, then database (reverse order for safety)
+    try {
+      await this.storage.deleteBlob(sealId);
+    } catch (storageError) {
+      logger.error('blob_delete_failed', storageError as Error, { sealId });
+      // Continue to delete database record even if blob deletion fails
+    }
+
+    try {
+      await this.db.deleteSeal(sealId);
+    } catch (dbError) {
+      logger.error('db_delete_failed', dbError as Error, { sealId });
+      throw dbError; // Throw DB error as it's more critical
+    }
 
     this.auditLogger?.log({
       timestamp: Date.now(),

@@ -12,6 +12,13 @@ export async function POST(request: NextRequest) {
       return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse token required');
     }
 
+    // Validate newInterval if provided
+    if (newInterval !== undefined) {
+      if (typeof newInterval !== 'number' || newInterval <= 0 || newInterval > 30) {
+        return createErrorResponse(ErrorCode.INVALID_INPUT, 'Pulse interval must be between 1 and 30 days');
+      }
+    }
+
     const sealService = container.sealService;
     const result = await sealService.pulseSeal(pulseToken, ip, newInterval);
 

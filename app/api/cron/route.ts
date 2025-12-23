@@ -4,7 +4,11 @@ import { jsonResponse } from "@/lib/apiHandler";
 export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET || "change-me";
+  const cronSecret = process.env.CRON_SECRET;
+  
+  if (!cronSecret || cronSecret === '' || cronSecret === 'change-me') {
+    return jsonResponse({ error: "CRON_SECRET not configured" }, 500);
+  }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
     return jsonResponse({ error: "Unauthorized" }, 401);

@@ -125,7 +125,7 @@ export default function HomePage() {
       // Ctrl/Cmd + Shift + K for copy pulse link
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'K' && result?.pulseToken && result?.pulseUrl) {
         e.preventDefault();
-        copyToClipboard(`${result.pulseUrl}/${result.pulseToken}`, 'Pulse Link');
+        copyToClipboard(`${result.pulseUrl}/${encodeURIComponent(result.pulseToken)}`, 'Pulse Link');
       }
     };
     window.addEventListener('keydown', handleKeyboard);
@@ -539,14 +539,14 @@ export default function HomePage() {
                       <div className="flex-1 tooltip">
                         <Input
                           label="PULSE LINK (KEEP SECRET)"
-                          value={`${result.pulseUrl}/${result.pulseToken}`}
+                          value={`${result.pulseUrl}/${encodeURIComponent(result.pulseToken)}`}
                           onChange={() => { }}
                           testId="pulse-token-input"
                         />
                         <span className="tooltip-text">PRIVATE link for Dead Man&apos;s Switch. Visit this URL to check in. Press Ctrl+Shift+K to copy.</span>
                       </div>
                       <Button
-                        onClick={() => copyToClipboard(`${result.pulseUrl}/${result.pulseToken}`, 'Link')}
+                        onClick={() => copyToClipboard(`${result.pulseUrl}/${encodeURIComponent(result.pulseToken || '')}`, 'Link')}
                         className="bg-neon-green/20 mb-[2px]"
                         title="Copy link (Ctrl+Shift+K)"
                         variant="secondary"

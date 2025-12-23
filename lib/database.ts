@@ -168,8 +168,15 @@ export class SealDatabase implements DatabaseProvider {
         'INSERT INTO nonces (nonce, expires_at) VALUES (?, ?)'
       ).bind(nonce, expiresAt).run();
       return result.success;
-    } catch {
-      return false; // Duplicate nonce = replay attack
+    } catch (error) {
+      // Distinguish between replay attacks and database errors
+      const err = error as Error;
+      if (err.message?.includes('UNIQUE')) {
+        console.warn('[SECURITY] Replay attack detected:', nonce);
+      } else {
+        console.error('[DB] Nonce storage failed:', err);
+      }
+      return false;
     }
   }
 }
@@ -207,23 +214,31 @@ export class MockDatabase implements DatabaseProvider {
   }
 
   async getSeal(id: string): Promise<SealRecord | null> {
-    return this.store.getSeals().get(id) || null;
+    const seal = this.store.getSeals().get(id);
+    if (seal) {
+      // Increment access count to match production behavior
+      seal.accessCount = (seal.accessCount || 0) + 1;
+      this.store.getSeals().set(id, seal);
+    }
+    return seal || null;
   }
 
   async updatePulse(id: string, timestamp: number): Promise<void> {
     const seal = this.store.getSeals().get(id);
-    if (seal) {
-      seal.lastPulse = timestamp;
-      this.store.getSeals().set(id, seal);
+    if (!seal) {
+      throw new Error(`Failed to update pulse for seal ${id}`);
     }
+    seal.lastPulse = timestamp;
+    this.store.getSeals().set(id, seal);
   }
 
   async updateUnlockTime(id: string, unlockTime: number): Promise<void> {
     const seal = this.store.getSeals().get(id);
-    if (seal) {
-      seal.unlockTime = unlockTime;
-      this.store.getSeals().set(id, seal);
+    if (!seal) {
+      throw new Error(`Failed to update unlock time for seal ${id}`);
     }
+    seal.unlockTime = unlockTime;
+    this.store.getSeals().set(id, seal);
   }
 
   async deleteSeal(id: string): Promise<void> {

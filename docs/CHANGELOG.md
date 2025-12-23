@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-01-16
+
+### Fixed
+- CRITICAL: Dead Man's Switch pulse bug (500 error on second pulse)
+- CRITICAL: Pulse token URL encoding (404 errors with special characters)
+- Public pulse URL security leak (removed from vault page)
+- Nonce validation DoS vulnerability (reordered after token validation)
+- Pulse interval calculation (removed incorrect 1000x multiplier)
+- Transaction safety in seal creation and burn operations
+- MockDatabase consistency with production behavior
+- Dropdown styling (blue highlight replaced with neon green)
+
+### Added
+- Comprehensive error logging with ErrorLogger utility
+- Collapsible debug panels in UI for error details
+- New pulse token generation after each successful pulse
+- URL encoding for pulse tokens in all display contexts
+- Transaction rollback mechanisms for database operations
+- Enhanced warrant canary page with detailed explanations
+- Input validation for pulse interval (1-30 days)
+
+### Removed
+- Admin canary update endpoint (incompatible with Cloudflare Workers)
+- Admin canary management page (unnecessary, auto-generates)
+- Public pulse URL display from vault page (security risk)
+
+### Security
+- Pulse tokens now properly URL-encoded to prevent routing exploits
+- Nonce validation moved after signature validation (prevents DoS)
+- Private pulse URLs no longer exposed on public vault page
+- Enhanced error context without leaking sensitive information
+
+### Documentation
+- Enhanced warrant canary page with comprehensive explanations
+- Updated README with warrant canary documentation
+- Added conversation summary documenting all fixes
+
 ## [0.6.0] - 2025-01-15
 
 ### Added

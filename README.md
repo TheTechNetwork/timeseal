@@ -194,6 +194,26 @@ sequenceDiagram
 
 See [HARDENING.md](docs/HARDENING.md) for full details.
 
+### 🕊️ Warrant Canary - Transparency by Design
+
+**What is it?** A warrant canary is a method to inform users that a service has NOT received secret government requests. If the canary disappears or stops updating, it signals potential compromise.
+
+**How it works:**
+- Visit [/canary](https://timeseal.dev/canary) to see live transparency status
+- Page auto-generates with current date on every visit
+- Lists all security checkpoints (no warrants, no gag orders, no data requests, etc.)
+- If page shows outdated date or returns error, assume compromise
+
+**Why it matters:** Some government requests come with gag orders preventing disclosure. By regularly stating we have NOT received such requests, we can signal compromise by simply stopping updates (which is legal even under gag orders).
+
+**Technical implementation:**
+- Server-side rendered on every request (no stored file to tamper with)
+- No database or manual updates required
+- Open source code publicly auditable
+- Distributed on Cloudflare Workers edge network
+
+**Verification:** Bookmark the canary page and check it monthly. The date should always be current.
+
 ---
 
 ### "Can I just change my computer's clock to unlock it early?"
@@ -332,7 +352,15 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🔮 Roadmap
 
-**Recently Implemented (v0.6.0):**
+**Recently Implemented (v0.6.1):**
+- ✅ Dead Man's Switch Pulse Fix - Resolved 500 error on repeated pulses
+- ✅ Pulse Token URL Encoding - Fixed 404 errors with special characters
+- ✅ Security Hardening - Removed public pulse URL exposure
+- ✅ Error Logging System - Comprehensive debugging with ErrorLogger
+- ✅ Transaction Safety - Rollback mechanisms for database operations
+- ✅ Warrant Canary Cleanup - Removed broken admin endpoints
+
+**Recently Implemented (v0.6.0):****
 - ✅ Security Hardening - Memory protection, extension detection, warrant canary
 - ✅ Built-in Warrant Canary - Auto-updating transparency at /canary
 - ✅ Security Dashboard - Real-time browser extension warnings

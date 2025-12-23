@@ -1,6 +1,8 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 :root {
   --neon-green: #00ff41;
@@ -9,7 +11,7 @@
 }
 
 body {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   background-color: var(--dark-bg);
   color: var(--dark-text);
 }
@@ -20,35 +22,35 @@ body {
     background: white;
     color: black;
   }
-  
+
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
   }
-  
+
   /* QR Code container */
   .qr-print-container {
     page-break-inside: avoid;
     text-align: center;
     padding: 2rem;
   }
-  
+
   .qr-print-container img {
     max-width: 300px;
     margin: 0 auto;
     border: 2px solid #000;
   }
-  
+
   .qr-print-label {
     font-size: 14pt;
     font-weight: bold;
     margin-top: 1rem;
     color: #000;
   }
-  
+
   /* Hide background effects */
   .relative > div:first-child {
     display: none;
@@ -57,15 +59,35 @@ body {
 
 /* Validation Feedback Animations */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes success-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 255, 65, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 255, 65, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 65, 0);
+  }
 }
 
 .input-error {
@@ -124,21 +146,38 @@ body {
 
 /* Cyber Button */
 .cyber-button {
+  /* stylelint-disable-next-line at-rule-no-unknown */
   @apply px-6 py-3 border-2 border-neon-green text-neon-green font-bold uppercase tracking-wider transition-all duration-300 hover:bg-neon-green hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0,255,65,0.5)] active:scale-95 rounded-xl;
 }
 
 /* Cyber Input */
 .cyber-input {
+  /* stylelint-disable-next-line at-rule-no-unknown */
   @apply w-full px-4 py-3 bg-dark-bg border-2 border-neon-green/30 text-neon-green font-mono focus:border-neon-green focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-all rounded-xl;
+}
+
+/* Select dropdown options */
+select option {
+  background-color: var(--dark-bg);
+  color: var(--neon-green);
+}
+
+select option:checked,
+select option:focus,
+select option:hover {
+  background-color: var(--neon-green) !important;
+  color: var(--dark-bg) !important;
 }
 
 /* Cyber Border */
 .cyber-border {
+  /* stylelint-disable-next-line at-rule-no-unknown */
   @apply border-2 border-neon-green/30 p-4 transition-all hover:border-neon-green/50 rounded-xl;
 }
 
 /* Cyber Card */
 .cyber-card {
+  /* stylelint-disable-next-line at-rule-no-unknown */
   @apply border-2 border-neon-green/30 transition-all rounded-xl;
   background: rgba(10, 10, 10, 0.6);
   backdrop-filter: blur(10px);
@@ -148,7 +187,9 @@ body {
 
 /* Glow Text */
 .glow-text {
-  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5), 0 0 20px rgba(0, 255, 65, 0.3);
+  text-shadow:
+    0 0 10px rgba(0, 255, 65, 0.5),
+    0 0 20px rgba(0, 255, 65, 0.3);
 }
 
 /* Pulse Glow */
@@ -157,18 +198,29 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.5), 0 0 10px rgba(0, 255, 65, 0.3);
+  0%,
+  100% {
+    text-shadow:
+      0 0 5px rgba(0, 255, 65, 0.5),
+      0 0 10px rgba(0, 255, 65, 0.3);
   }
   50% {
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.8), 0 0 20px rgba(0, 255, 65, 0.5), 0 0 30px rgba(0, 255, 65, 0.3);
+    text-shadow:
+      0 0 10px rgba(0, 255, 65, 0.8),
+      0 0 20px rgba(0, 255, 65, 0.5),
+      0 0 30px rgba(0, 255, 65, 0.3);
   }
 }
 
 /* Subtle Shimmer */
 @keyframes subtle-shimmer {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .animate-subtle-shimmer {

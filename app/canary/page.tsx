@@ -61,14 +61,28 @@ export default function CanaryPage() {
         </div>
 
         {/* Info */}
-        <div className="cyber-card p-6 bg-dark-bg/50">
+        <div className="cyber-card p-6 bg-dark-bg/50 mb-6">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-neon-green/60 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-neon-green/60 space-y-2">
-              <p><strong className="text-neon-green">How this works:</strong> This page is automatically generated. If you can see this page, TimeSeal infrastructure is operational and uncompromised.</p>
-              <p><strong className="text-neon-green">What to watch for:</strong> If this page returns an error, shows outdated information, or any checkmark is missing, assume compromise.</p>
-              <p><strong className="text-neon-green">Verification:</strong> This canary updates automatically with each page load. The date above should always be current.</p>
+              <p><strong className="text-neon-green">What is a Warrant Canary?</strong> A warrant canary is a method to inform users that a service has NOT received secret government requests (warrants, subpoenas, gag orders). If the canary disappears or stops updating, it signals potential compromise.</p>
+              <p><strong className="text-neon-green">How this works:</strong> This page is automatically generated on every visit with the current date. No manual updates needed. If you can see this page with today&apos;s date, TimeSeal infrastructure is operational and uncompromised.</p>
+              <p><strong className="text-neon-green">What to watch for:</strong> If this page returns an error, shows outdated information, any checkmark is missing, or the date is not current, assume compromise.</p>
+              <p><strong className="text-neon-green">Why it matters:</strong> Some government requests come with gag orders preventing disclosure. By regularly stating we have NOT received such requests, we can signal compromise by simply stopping updates (which is legal even under gag orders).</p>
+              <p><strong className="text-neon-green">Verification:</strong> Bookmark this page and check it monthly. The date should always be current when you visit.</p>
             </div>
+          </div>
+        </div>
+
+        {/* Technical Details */}
+        <div className="cyber-card p-6 bg-dark-bg/50">
+          <h3 className="text-lg font-bold text-neon-green mb-4">Technical Implementation</h3>
+          <div className="text-sm text-neon-green/60 space-y-2">
+            <p>• <strong className="text-neon-green">Auto-Generated:</strong> This page is rendered server-side on every request with the current timestamp</p>
+            <p>• <strong className="text-neon-green">No Database:</strong> No stored canary file that could be seized or tampered with</p>
+            <p>• <strong className="text-neon-green">Open Source:</strong> Code is publicly auditable on GitHub</p>
+            <p>• <strong className="text-neon-green">Edge Deployed:</strong> Runs on Cloudflare Workers distributed infrastructure</p>
+            <p>• <strong className="text-neon-green">Legal Compliance:</strong> Stopping updates is legal even under gag orders (we simply don&apos;t make false statements)</p>
           </div>
         </div>
 

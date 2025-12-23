@@ -21,9 +21,18 @@ export default function PulsePage({ params }: { params: { token: string } }) {
   useEffect(() => {
     const fetchSealInfo = async () => {
       try {
+        // Decode the token (Next.js may not fully decode complex tokens)
         const token = decodeURIComponent(params.token);
         setCurrentToken(token);
-        const sealId = token.split(":")[0];
+        
+        // Validate token format
+        const parts = token.split(":");
+        if (parts.length < 2) {
+          setStatus("error");
+          setMessage("Invalid pulse token format");
+          return;
+        }
+        const sealId = parts[0];
 
         const res = await fetch(`/api/seal/${sealId}`);
         const data = await res.json();
@@ -83,10 +92,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             pulseToken: currentToken,
-            newInterval:
-              pulseUnit === "minutes"
-                ? pulseInterval / (24 * 60)
-                : pulseInterval,
+            newInterval: pulseInterval,
           }),
         });
         const data = await res.json();
@@ -195,12 +201,14 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               </button>
             </div>
             <div className="flex gap-3 mb-2">
-              <a
-                href={`/v/${sealInfo?.id || ""}`}
-                className="cyber-button flex-1 bg-neon-green/10"
-              >
-                GO TO VAULT
-              </a>
+              {sealInfo?.id && (
+                <a
+                  href={`/v/${sealInfo.id}`}
+                  className="cyber-button flex-1 bg-neon-green/10"
+                >
+                  GO TO VAULT
+                </a>
+              )}
               <a href="/" className="cyber-button flex-1 bg-neon-green/10">
                 CREATE NEW SEAL
               </a>
