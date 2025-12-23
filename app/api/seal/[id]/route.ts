@@ -56,7 +56,7 @@ export async function GET(
             id: sealId,
             isLocked: true,
             unlockTime: metadata.unlockTime,
-            timeRemaining: metadata.unlockTime - Date.now(),
+            timeRemaining: Math.max(0, metadata.unlockTime - Date.now()),
             isDMS: metadata.isDMS,
           });
         }

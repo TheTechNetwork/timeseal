@@ -394,8 +394,6 @@ export default function HomePage() {
 
       const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string | { code: string; message: string; details?: string; debugInfo?: any } };
 
-      console.log('[CREATE-SEAL] Response:', response.status, data);
-
       if (data.success) {
         setEncryptionProgress(95);
         const origin = globalThis.window ? globalThis.window.location.origin : '';

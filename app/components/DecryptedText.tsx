@@ -81,6 +81,11 @@ export default function DecryptedText({
         if (animateOn === 'view') {
             scramble();
         }
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
     }, [animateOn, scramble]);
 
     const handleMouseEnter = () => {

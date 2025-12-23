@@ -122,8 +122,6 @@ function VaultPageClient({ id }: { id: string }) {
       const response = await fetch(`/api/seal/${id}`);
       const data = await response.json() as SealStatus & { encryptedBlob?: string; error?: string | { code: string; message: string; details?: string; debugInfo?: any } };
 
-      console.log('[VAULT] API Response:', response.status, data);
-
       if (response.ok) {
         setStatus(data);
 
@@ -199,10 +197,12 @@ function VaultPageClient({ id }: { id: string }) {
   };
 
   const calculateProgress = () => {
-    if (!status?.unlockTime) return 0;
-    const total = status.unlockTime - (status.unlockTime - (status.timeRemaining || 0));
-    const elapsed = total - (status.timeRemaining || 0);
-    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+    if (!status?.unlockTime || !status?.timeRemaining) return 0;
+    const now = Date.now();
+    const totalDuration = status.unlockTime - (now - status.timeRemaining);
+    const elapsed = totalDuration - status.timeRemaining;
+    if (totalDuration <= 0) return 100;
+    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
   };
 
   if (error) {
