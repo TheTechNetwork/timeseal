@@ -8,6 +8,12 @@ export interface TimeSeal {
   pulseToken?: string; // For dead man's switch
   pulseDuration?: number; // Duration in milliseconds
   isActive: boolean;
+  // Ephemeral seal fields
+  isEphemeral?: boolean;
+  maxViews?: number | null;
+  viewCount?: number;
+  firstViewedAt?: number | null;
+  firstViewerFingerprint?: string | null;
 }
 
 export interface CreateSealRequest {
@@ -17,6 +23,9 @@ export interface CreateSealRequest {
   unlockTime: number;
   pulseToken?: string;
   pulseDuration?: number;
+  // Ephemeral seal options
+  isEphemeral?: boolean;
+  maxViews?: number | null;
 }
 
 export interface SealStatus {
@@ -25,6 +34,13 @@ export interface SealStatus {
   unlockTime: number;
   keyB?: string;
   iv?: string;
+  // Ephemeral seal status
+  isEphemeral?: boolean;
+  viewCount?: number;
+  maxViews?: number | null;
+  remainingViews?: number | null;
+  isExhausted?: boolean;
+  firstViewedAt?: number | null;
 }
 
 export interface PulseResponse {

@@ -14,6 +14,7 @@ export interface DatabaseProvider {
   getExpiredDMS(): Promise<SealRecord[]>;
   checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }>;
   storeNonce(nonce: string, expiresAt: number): Promise<boolean>;
+  recordEphemeralView(sealId: string, fingerprint: string, timestamp: number): Promise<number>;
 }
 
 export interface SealRecord {
@@ -30,6 +31,12 @@ export interface SealRecord {
   unlockMessage?: string;
   expiresAt?: number;
   accessCount?: number;
+  // Ephemeral seal fields
+  isEphemeral?: boolean;
+  maxViews?: number | null;
+  viewCount?: number;
+  firstViewedAt?: number | null;
+  firstViewerFingerprint?: string | null;
 }
 
 // Production D1 Database
@@ -59,13 +66,19 @@ export class SealDatabase implements DatabaseProvider {
       unlockMessage: result.unlock_message ? String(result.unlock_message) : undefined,
       expiresAt: result.expires_at ? Number(result.expires_at) : undefined,
       accessCount: result.access_count ? Number(result.access_count) : 0,
+      // Ephemeral fields
+      isEphemeral: result.is_ephemeral === 1,
+      maxViews: result.max_views !== null ? Number(result.max_views) : null,
+      viewCount: result.view_count ? Number(result.view_count) : 0,
+      firstViewedAt: result.first_viewed_at ? Number(result.first_viewed_at) : null,
+      firstViewerFingerprint: result.first_viewer_fingerprint ? String(result.first_viewer_fingerprint) : null,
     };
   }
 
   async createSeal(data: SealRecord): Promise<void> {
     const result = await this.db.prepare(
-      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at, blob_hash, unlock_message, expires_at, access_count)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at, blob_hash, unlock_message, expires_at, access_count, is_ephemeral, max_views, view_count)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       data.id,
       data.unlockTime,
@@ -79,7 +92,10 @@ export class SealDatabase implements DatabaseProvider {
       data.blobHash || null,
       data.unlockMessage || null,
       data.expiresAt || null,
-      data.accessCount || 0
+      data.accessCount || 0,
+      data.isEphemeral ? 1 : 0,
+      data.maxViews !== undefined ? data.maxViews : null,
+      data.viewCount || 0
     ).run();
 
     if (!result.success) {
@@ -212,6 +228,22 @@ export class SealDatabase implements DatabaseProvider {
       return false;
     }
   }
+
+  async recordEphemeralView(sealId: string, fingerprint: string, timestamp: number): Promise<number> {
+    const result = await this.db.prepare(`
+      UPDATE seals 
+      SET view_count = view_count + 1,
+          first_viewed_at = COALESCE(first_viewed_at, ?),
+          first_viewer_fingerprint = COALESCE(first_viewer_fingerprint, ?)
+      WHERE id = ?
+      RETURNING view_count
+    `).bind(timestamp, fingerprint, sealId).first() as { view_count: number } | null;
+    
+    if (!result) {
+      throw new Error(`Failed to record view for seal ${sealId}`);
+    }
+    return result.view_count;
+  }
 }
 
 // Singleton pattern for global mock store
@@ -316,6 +348,21 @@ export class MockDatabase implements DatabaseProvider {
   async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
     // Mock always accepts (for dev)
     return true;
+  }
+
+  async recordEphemeralView(sealId: string, fingerprint: string, timestamp: number): Promise<number> {
+    const seal = this.store.getSeals().get(sealId);
+    if (!seal) {
+      throw new Error(`Failed to record view for seal ${sealId}`);
+    }
+    
+    seal.viewCount = (seal.viewCount || 0) + 1;
+    if (!seal.firstViewedAt) {
+      seal.firstViewedAt = timestamp;
+      seal.firstViewerFingerprint = fingerprint;
+    }
+    this.store.getSeals().set(sealId, seal);
+    return seal.viewCount;
   }
 }
 

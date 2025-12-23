@@ -1,14 +1,28 @@
 // Seal Service - Business Logic Layer
-import { StorageProvider } from './storage';
-import { DatabaseProvider } from './database';
-import { encryptKeyB, decryptKeyBWithFallback } from './keyEncryption';
-import { validateFileSize, validateUnlockTime, validatePulseInterval } from './validation';
-import { logger, auditSealCreated, auditSealAccessed } from './logger';
-import { metrics } from './metrics';
-import { ErrorCode } from './errors';
-import { storageCircuitBreaker, withRetry } from './circuitBreaker';
-import { generatePulseToken, validatePulseToken, checkAndStoreNonce } from './security';
-import { sealEvents } from './patterns/observer';
+import { StorageProvider } from "./storage";
+import { DatabaseProvider } from "./database";
+import { encryptKeyB, decryptKeyBWithFallback } from "./keyEncryption";
+import {
+  validateFileSize,
+  validateUnlockTime,
+  validatePulseInterval,
+} from "./validation";
+import { logger, auditSealCreated, auditSealAccessed } from "./logger";
+import { metrics } from "./metrics";
+import { ErrorCode } from "./errors";
+import { storageCircuitBreaker, withRetry } from "./circuitBreaker";
+import {
+  generatePulseToken,
+  validatePulseToken,
+  checkAndStoreNonce,
+} from "./security";
+import { sealEvents } from "./patterns/observer";
+import {
+  validateEphemeralConfig,
+  recordViewAndCheck,
+  getEphemeralStatus,
+  deleteIfExhausted,
+} from "./ephemeral";
 
 export interface CreateSealRequest {
   encryptedBlob: ArrayBuffer;
@@ -19,18 +33,27 @@ export interface CreateSealRequest {
   pulseInterval?: number;
   unlockMessage?: string;
   expiresAfterDays?: number;
+  // Ephemeral seal options
+  isEphemeral?: boolean;
+  maxViews?: number | null;
 }
 
 export interface SealMetadata {
   id: string;
   unlockTime: number;
   isDMS: boolean;
-  status: 'locked' | 'unlocked';
+  status: "locked" | "unlocked" | "exhausted";
   keyB?: string;
   iv?: string;
   blobHash?: string;
   unlockMessage?: string;
   accessCount?: number;
+  // Ephemeral seal metadata
+  isEphemeral?: boolean;
+  viewCount?: number;
+  maxViews?: number | null;
+  remainingViews?: number | null;
+  firstViewedAt?: number | null;
 }
 
 export interface SealReceipt {
@@ -41,21 +64,29 @@ export interface SealReceipt {
   signature: string;
 }
 
-import { AuditLogger, AuditEventType } from './auditLogger';
+import { AuditLogger, AuditEventType } from "./auditLogger";
 
 export class SealService {
   constructor(
     private storage: StorageProvider,
     private db: DatabaseProvider,
     private masterKey: string,
-    private auditLogger?: AuditLogger
+    private auditLogger?: AuditLogger,
   ) {
     if (!masterKey) {
-      throw new Error('SealService requires masterKey');
+      throw new Error("SealService requires masterKey");
     }
   }
 
-  async createSeal(request: CreateSealRequest, ip: string): Promise<{ sealId: string; iv: string; pulseToken?: string; receipt: SealReceipt }> {
+  async createSeal(
+    request: CreateSealRequest,
+    ip: string,
+  ): Promise<{
+    sealId: string;
+    iv: string;
+    pulseToken?: string;
+    receipt: SealReceipt;
+  }> {
     const sizeValidation = validateFileSize(request.encryptedBlob.byteLength);
     if (!sizeValidation.valid) {
       throw new Error(sizeValidation.error);
@@ -68,7 +99,7 @@ export class SealService {
 
     if (request.isDMS) {
       if (!request.pulseInterval) {
-        throw new Error('Dead Man\'s Switch requires pulse interval');
+        throw new Error("Dead Man's Switch requires pulse interval");
       }
       const pulseValidation = validatePulseInterval(request.pulseInterval);
       if (!pulseValidation.valid) {
@@ -76,18 +107,35 @@ export class SealService {
       }
     }
 
+    // Validate ephemeral configuration
+    if (request.isEphemeral) {
+      const ephemeralValidation = validateEphemeralConfig({
+        isEphemeral: request.isEphemeral,
+        maxViews: request.maxViews || null,
+      });
+      if (!ephemeralValidation.valid) {
+        throw new Error(ephemeralValidation.error);
+      }
+    }
+
     const sealId = this.generateSealId();
     const createdAt = Date.now();
-    const pulseToken = request.isDMS ? await generatePulseToken(sealId, this.masterKey) : undefined;
+    const pulseToken = request.isDMS
+      ? await generatePulseToken(sealId, this.masterKey)
+      : undefined;
 
-    const encryptedKeyB = await encryptKeyB(request.keyB, this.masterKey, sealId);
+    const encryptedKeyB = await encryptKeyB(
+      request.keyB,
+      this.masterKey,
+      sealId,
+    );
 
     // Generate cryptographic receipt
     const blobHash = await this.hashBlob(request.encryptedBlob);
-    
+
     // Calculate expiration
-    const expiresAt = request.expiresAfterDays 
-      ? request.unlockTime + (request.expiresAfterDays * 24 * 60 * 60 * 1000)
+    const expiresAt = request.expiresAfterDays
+      ? request.unlockTime + request.expiresAfterDays * 24 * 60 * 60 * 1000
       : undefined;
 
     // Create seal with transaction-like rollback
@@ -107,24 +155,42 @@ export class SealService {
         unlockMessage: request.unlockMessage,
         expiresAt,
         accessCount: 0,
+        // Ephemeral fields
+        isEphemeral: request.isEphemeral || false,
+        maxViews: request.maxViews !== undefined ? request.maxViews : null,
+        viewCount: 0,
       });
 
       // Then upload blob (D1BlobStorage needs the row to exist)
       await storageCircuitBreaker.execute(() =>
-        withRetry(() => this.storage.uploadBlob(sealId, request.encryptedBlob, request.unlockTime), 3, 1000)
+        withRetry(
+          () =>
+            this.storage.uploadBlob(
+              sealId,
+              request.encryptedBlob,
+              request.unlockTime,
+            ),
+          3,
+          1000,
+        ),
       );
     } catch (error) {
       // Rollback: delete database record if blob upload fails
       try {
         await this.db.deleteSeal(sealId);
       } catch (rollbackError) {
-        logger.error('rollback_failed', rollbackError as Error, { sealId });
+        logger.error("rollback_failed", rollbackError as Error, { sealId });
       }
       throw error;
     }
 
     // Generate receipt after successful creation
-    const receipt = await this.generateReceipt(sealId, blobHash, request.unlockTime, createdAt);
+    const receipt = await this.generateReceipt(
+      sealId,
+      blobHash,
+      request.unlockTime,
+      createdAt,
+    );
 
     auditSealCreated(sealId, ip, request.isDMS || false);
     this.auditLogger?.log({
@@ -132,22 +198,60 @@ export class SealService {
       eventType: AuditEventType.SEAL_CREATED,
       sealId,
       ip,
-      metadata: { isDMS: request.isDMS, unlockTime: request.unlockTime, blobHash },
+      metadata: {
+        isDMS: request.isDMS,
+        unlockTime: request.unlockTime,
+        blobHash,
+        isEphemeral: request.isEphemeral,
+      },
     });
     metrics.incrementSealCreated();
-    logger.info('seal_created', { sealId, isDMS: request.isDMS });
+    logger.info("seal_created", {
+      sealId,
+      isDMS: request.isDMS,
+      isEphemeral: request.isEphemeral,
+    });
 
     // Emit event for observers
-    sealEvents.emit('seal:created', { sealId, isDMS: request.isDMS || false, ip });
+    sealEvents.emit("seal:created", {
+      sealId,
+      isDMS: request.isDMS || false,
+      ip,
+    });
 
     return { sealId, iv: request.iv, pulseToken, receipt };
   }
 
-  async getSeal(sealId: string, ip: string): Promise<SealMetadata> {
+  async getSeal(
+    sealId: string,
+    ip: string,
+    fingerprint?: string,
+  ): Promise<SealMetadata> {
     const seal = await this.db.getSeal(sealId);
 
     if (!seal) {
       throw new Error(ErrorCode.SEAL_NOT_FOUND);
+    }
+
+    // Check if ephemeral and exhausted FIRST
+    const ephemeralStatus = getEphemeralStatus(
+      seal.isEphemeral || false,
+      seal.viewCount || 0,
+      seal.maxViews || null,
+      seal.firstViewedAt || null,
+    );
+
+    if (ephemeralStatus.isExhausted) {
+      return {
+        id: sealId,
+        unlockTime: seal.unlockTime,
+        isDMS: seal.isDMS,
+        status: "exhausted",
+        isEphemeral: true,
+        viewCount: ephemeralStatus.viewCount,
+        maxViews: ephemeralStatus.maxViews,
+        firstViewedAt: ephemeralStatus.firstViewedAt,
+      };
     }
 
     // Check time BEFORE any other operations to prevent timing attacks
@@ -156,7 +260,7 @@ export class SealService {
 
     // Add jitter for locked seals (already done in API route, but double-check here)
     if (!isUnlocked) {
-      auditSealAccessed(sealId, ip, 'locked');
+      auditSealAccessed(sealId, ip, "locked");
       this.auditLogger?.log({
         timestamp: now,
         eventType: AuditEventType.SEAL_ACCESS_DENIED,
@@ -169,52 +273,113 @@ export class SealService {
         id: sealId,
         unlockTime: seal.unlockTime,
         isDMS: seal.isDMS,
-        status: 'locked',
+        status: "locked",
         blobHash: seal.blobHash,
         accessCount: seal.accessCount,
+        isEphemeral: seal.isEphemeral,
+        maxViews: seal.maxViews || null,
+        remainingViews: ephemeralStatus.remainingViews,
       };
     }
 
-    // Only increment access count on unlock
+    // Record view and check if allowed (for ephemeral seals)
+    const viewCheck = await recordViewAndCheck(
+      this.db,
+      sealId,
+      fingerprint || "unknown",
+      seal.isEphemeral || false,
+      seal.viewCount || 0,
+      seal.maxViews || null,
+    );
+
+    if (!viewCheck.allowed) {
+      return {
+        id: sealId,
+        unlockTime: seal.unlockTime,
+        isDMS: seal.isDMS,
+        status: "exhausted",
+        isEphemeral: true,
+        viewCount: viewCheck.viewCount,
+        maxViews: viewCheck.maxViews,
+      };
+    }
+
+    // Increment access count for all seals (ephemeral uses viewCount, but track accessCount too)
     await this.db.incrementAccessCount(sealId);
 
     // Only decrypt if unlocked
-    const decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [this.masterKey]);
+    const decryptedKeyB = await decryptKeyBWithFallback(seal.keyB, sealId, [
+      this.masterKey,
+    ]);
     metrics.incrementSealUnlocked();
 
-    auditSealAccessed(sealId, ip, 'unlocked');
+    auditSealAccessed(sealId, ip, "unlocked");
     this.auditLogger?.log({
       timestamp: now,
       eventType: AuditEventType.SEAL_UNLOCKED,
       sealId,
       ip,
-      metadata: { unlockTime: seal.unlockTime },
+      metadata: { unlockTime: seal.unlockTime, isEphemeral: seal.isEphemeral },
     });
 
+    // Delete if exhausted
+    if (viewCheck.shouldDelete) {
+      // Delete blob first (idempotent)
+      try {
+        await this.storage.deleteBlob(sealId);
+      } catch (error) {
+        logger.error('blob_delete_failed', error as Error, { sealId });
+      }
+      
+      // Then delete database record
+      await deleteIfExhausted(
+        this.db,
+        sealId,
+        seal.isEphemeral || false,
+        viewCheck.viewCount,
+        viewCheck.maxViews,
+      );
+
+      sealEvents.emit("seal:exhausted", {
+        sealId,
+        viewCount: viewCheck.viewCount,
+      });
+    }
+
     // Emit event for observers
-    sealEvents.emit('seal:unlocked', { sealId, ip });
+    sealEvents.emit("seal:unlocked", { sealId, ip });
 
     return {
       id: sealId,
       unlockTime: seal.unlockTime,
       isDMS: seal.isDMS,
-      status: 'unlocked',
+      status: "unlocked",
       keyB: decryptedKeyB,
       iv: seal.iv,
       blobHash: seal.blobHash,
       unlockMessage: seal.unlockMessage,
       accessCount: seal.accessCount,
+      isEphemeral: seal.isEphemeral,
+      viewCount: viewCheck.viewCount,
+      maxViews: viewCheck.maxViews,
+      remainingViews: viewCheck.maxViews
+        ? viewCheck.maxViews - viewCheck.viewCount
+        : null,
     };
   }
 
   async getBlob(sealId: string): Promise<ArrayBuffer> {
     return await storageCircuitBreaker.execute(() =>
-      withRetry(() => this.storage.downloadBlob(sealId), 3, 1000)
+      withRetry(() => this.storage.downloadBlob(sealId), 3, 1000),
     );
   }
 
-  async pulseSeal(pulseToken: string, ip: string, newInterval?: number): Promise<{ newUnlockTime: number; newPulseToken: string }> {
-    const parts = pulseToken.split(':');
+  async pulseSeal(
+    pulseToken: string,
+    ip: string,
+    newInterval?: number,
+  ): Promise<{ newUnlockTime: number; newPulseToken: string }> {
+    const parts = pulseToken.split(":");
     if (parts.length !== 4) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
@@ -223,18 +388,26 @@ export class SealService {
 
     // Validate format strictly
     if (!/^[a-f0-9]{32}$/.test(sealId)) {
-      throw new Error('Invalid seal ID format');
+      throw new Error("Invalid seal ID format");
     }
     const ts = parseInt(timestamp, 10);
     if (isNaN(ts) || ts < 0 || ts.toString() !== timestamp) {
-      throw new Error('Invalid timestamp format');
+      throw new Error("Invalid timestamp format");
     }
-    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(nonce)) {
-      throw new Error('Invalid nonce format');
+    if (
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(
+        nonce,
+      )
+    ) {
+      throw new Error("Invalid nonce format");
     }
 
     // Validate token signature FIRST (cheap operation)
-    const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
+    const isValid = await validatePulseToken(
+      pulseToken,
+      sealId,
+      this.masterKey,
+    );
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
@@ -242,7 +415,7 @@ export class SealService {
     // THEN check nonce (expensive DB operation, only after signature validated)
     const nonceValid = await checkAndStoreNonce(nonce, this.db);
     if (!nonceValid) {
-      throw new Error('Replay attack detected');
+      throw new Error("Replay attack detected");
     }
 
     const seal = await this.db.getSeal(sealId);
@@ -253,10 +426,10 @@ export class SealService {
     const now = Date.now();
     const intervalToUse = newInterval
       ? newInterval * 24 * 60 * 60 * 1000
-      : (seal.pulseInterval || 0);
+      : seal.pulseInterval || 0;
 
     if (intervalToUse === 0) {
-      throw new Error('Pulse interval not configured');
+      throw new Error("Pulse interval not configured");
     }
 
     // Validate interval against max limit
@@ -272,8 +445,8 @@ export class SealService {
     try {
       await this.db.updatePulseAndUnlockTime(seal.id, now, newUnlockTime);
     } catch (error) {
-      logger.error('pulse_update_failed', error as Error, { sealId: seal.id });
-      throw new Error('Failed to update pulse');
+      logger.error("pulse_update_failed", error as Error, { sealId: seal.id });
+      throw new Error("Failed to update pulse");
     }
 
     metrics.incrementPulseReceived();
@@ -284,16 +457,16 @@ export class SealService {
       ip,
       metadata: { newUnlockTime },
     });
-    logger.info('pulse_received', { sealId: seal.id, newUnlockTime });
+    logger.info("pulse_received", { sealId: seal.id, newUnlockTime });
 
     // Emit event for observers
-    sealEvents.emit('pulse:received', { sealId: seal.id, ip });
+    sealEvents.emit("pulse:received", { sealId: seal.id, ip });
 
     return { newUnlockTime, newPulseToken };
   }
 
   async burnSeal(pulseToken: string, ip: string): Promise<void> {
-    const parts = pulseToken.split(':');
+    const parts = pulseToken.split(":");
     if (parts.length !== 4) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
@@ -301,7 +474,11 @@ export class SealService {
     const [sealId, timestamp, nonce] = parts;
 
     // Validate token signature FIRST (cheap operation)
-    const isValid = await validatePulseToken(pulseToken, sealId, this.masterKey);
+    const isValid = await validatePulseToken(
+      pulseToken,
+      sealId,
+      this.masterKey,
+    );
     if (!isValid) {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
@@ -309,7 +486,7 @@ export class SealService {
     // THEN check nonce (expensive DB operation)
     const nonceValid = await checkAndStoreNonce(nonce, this.db);
     if (!nonceValid) {
-      throw new Error('Replay attack detected');
+      throw new Error("Replay attack detected");
     }
 
     const seal = await this.db.getSeal(sealId);
@@ -321,7 +498,7 @@ export class SealService {
     try {
       await this.db.deleteSeal(sealId);
     } catch (dbError) {
-      logger.error('db_delete_failed', dbError as Error, { sealId });
+      logger.error("db_delete_failed", dbError as Error, { sealId });
       throw dbError; // Critical - don't proceed
     }
 
@@ -329,7 +506,7 @@ export class SealService {
       await this.storage.deleteBlob(sealId);
     } catch (storageError) {
       // Non-critical - blob orphaned but seal is gone
-      logger.error('blob_delete_failed', storageError as Error, { sealId });
+      logger.error("blob_delete_failed", storageError as Error, { sealId });
     }
 
     this.auditLogger?.log({
@@ -339,40 +516,51 @@ export class SealService {
       ip,
       metadata: { burned: true },
     });
-    logger.info('seal_burned', { sealId });
+    logger.info("seal_burned", { sealId });
 
     // Emit event for observers
-    sealEvents.emit('seal:deleted', { sealId });
+    sealEvents.emit("seal:deleted", { sealId });
   }
 
   private generateSealId(): string {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
-    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
   }
 
   private async hashBlob(blob: ArrayBuffer): Promise<string> {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', blob);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", blob);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  private async generateReceipt(sealId: string, blobHash: string, unlockTime: number, createdAt: number): Promise<SealReceipt> {
+  private async generateReceipt(
+    sealId: string,
+    blobHash: string,
+    unlockTime: number,
+    createdAt: number,
+  ): Promise<SealReceipt> {
     const data = `${sealId}:${blobHash}:${unlockTime}:${createdAt}`;
     const encoder = new TextEncoder();
-    
+
     const key = await crypto.subtle.importKey(
-      'raw',
+      "raw",
       encoder.encode(this.masterKey),
-      { name: 'HMAC', hash: 'SHA-256' },
+      { name: "HMAC", hash: "SHA-256" },
       false,
-      ['sign']
+      ["sign"],
     );
-    
-    const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+
+    const signature = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(data),
+    );
     const sigArray = Array.from(new Uint8Array(signature));
-    const sigHex = sigArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
+    const sigHex = sigArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
     return { sealId, blobHash, unlockTime, createdAt, signature: sigHex };
   }
 }

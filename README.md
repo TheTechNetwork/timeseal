@@ -128,6 +128,17 @@ sequenceDiagram
 
 ## 🎯 Use Cases
 
+### 🔥 The Confidential Sender
+**Scenario:** "I need to send a one-time password that self-destructs after the recipient reads it."
+
+**How it works:**
+1. Create ephemeral seal with maxViews=1
+2. Set unlock time to immediate or specific time
+3. Share vault link with recipient
+4. Recipient views content once
+5. Seal automatically deletes after first view
+6. No trace remains in database or storage
+
 ### 💀 The Crypto Holder
 **Scenario:** "I have my seed phrase in a Time-Seal. If I die, it unlocks for my wife after 30 days of silence. If I'm alive, I reset the timer."
 
@@ -478,6 +489,13 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 
 ## 🛡️ Security: Attack Scenarios
 
+### 🔒 Security Features (v0.9.0)
+
+**✅ Ephemeral Seals** - Self-destructing read-once messages with atomic view counting  
+**✅ Privacy-Preserving Tracking** - SHA-256 fingerprints, no PII stored  
+**✅ Atomic Operations** - Race-condition safe view recording  
+**✅ Complete Cleanup** - Blob and database deletion on exhaustion  
+
 ### 🔒 Security Features (v0.6.2)
 
 **✅ Replay Attack Prevention** - Nonce-first validation prevents concurrent token reuse  
@@ -690,6 +708,13 @@ See [LICENSE](LICENSE) for full terms.
 ---
 
 ## 🔮 Roadmap
+
+**Recently Implemented (v0.9.0):**
+- ✅ Ephemeral Seals - Self-destructing read-once messages
+- ✅ Atomic View Counting - Race-condition safe view tracking
+- ✅ Privacy-Preserving Fingerprints - SHA-256 hashed viewer tracking
+- ✅ Auto-Deletion - Blob and database cleanup on exhaustion
+- ✅ Modular Architecture - Reusable ephemeral library
 
 **Recently Implemented (v0.8.1):**
 - ✅ Observer Pattern - Event-driven seal lifecycle (fully integrated)

@@ -33,6 +33,21 @@ export async function POST(request: NextRequest) {
       const pulseInterval = formData.get("pulseInterval")
         ? parseInt(formData.get("pulseInterval") as string, 10)
         : undefined;
+      // Ephemeral seal options
+      const isEphemeral = formData.get("isEphemeral") === "true";
+      const maxViewsStr = formData.get("maxViews") as string | null;
+      let maxViews: number | null = null;
+      
+      if (maxViewsStr) {
+        const parsed = parseInt(maxViewsStr, 10);
+        if (isNaN(parsed)) {
+          return createErrorResponse(
+            ErrorCode.INVALID_INPUT,
+            "maxViews must be a valid number",
+          );
+        }
+        maxViews = parsed;
+      }
 
       if (!encryptedBlob || !keyB || !iv || !unlockTime || isNaN(unlockTime)) {
         return createErrorResponse(
@@ -60,6 +75,8 @@ export async function POST(request: NextRequest) {
           unlockTime,
           isDMS,
           pulseInterval,
+          isEphemeral,
+          maxViews,
         },
         ip,
       );
