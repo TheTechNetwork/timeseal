@@ -11,15 +11,18 @@ export default function PulsePage({ params }: { params: { token: string } }) {
     "loading" | "confirm" | "success" | "error"
   >("loading");
   const [message, setMessage] = useState("");
+  const [errorDetails, setErrorDetails] = useState<any>(null);
   const [sealInfo, setSealInfo] = useState<any>(null);
   const [pulseInterval, setPulseInterval] = useState(10);
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [currentToken, setCurrentToken] = useState("");
 
   useEffect(() => {
     const fetchSealInfo = async () => {
       try {
         const token = decodeURIComponent(params.token);
+        setCurrentToken(token);
         const sealId = token.split(":")[0];
 
         const res = await fetch(`/api/seal/${sealId}`);
@@ -41,6 +44,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
       } catch (err) {
         setStatus("error");
         setMessage("Failed to load seal information");
+        setErrorDetails({ error: err instanceof Error ? err.message : String(err) });
       }
     };
 
@@ -55,7 +59,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            pulseToken: decodeURIComponent(params.token),
+            pulseToken: currentToken,
           }),
         });
         const data = await res.json();
@@ -70,6 +74,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               ? data.error
               : data.error?.message || "Failed to unlock seal";
           setMessage(errorMsg);
+          setErrorDetails({ status: res.status, data });
           toast.error("Unlock failed");
         }
       } else {
@@ -77,7 +82,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            pulseToken: decodeURIComponent(params.token),
+            pulseToken: currentToken,
             newInterval:
               pulseUnit === "minutes"
                 ? pulseInterval / (24 * 60)
@@ -86,6 +91,9 @@ export default function PulsePage({ params }: { params: { token: string } }) {
         });
         const data = await res.json();
         if (res.ok) {
+          if (data.newPulseToken) {
+            setCurrentToken(data.newPulseToken);
+          }
           setStatus("success");
           setMessage(data.message || "Pulse renewed successfully");
           toast.success("Pulse renewed!");
@@ -96,12 +104,14 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               ? data.error
               : data.error?.message || "Failed to renew pulse";
           setMessage(errorMsg);
+          setErrorDetails({ status: res.status, data });
           toast.error("Renewal failed");
         }
       }
     } catch (err) {
       setStatus("error");
       setMessage("Network error occurred");
+      setErrorDetails({ error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
       toast.error("Network error");
     } finally {
       setIsUpdating(false);
@@ -216,9 +226,17 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 Next pulse required in {pulseInterval} {pulseUnit}
               </p>
             </Card>
-            <a href="/" className="cyber-button inline-block">
-              RETURN HOME
-            </a>
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => setStatus("confirm")}
+                className="cyber-button flex-1"
+              >
+                PULSE AGAIN
+              </button>
+              <a href="/" className="cyber-button flex-1 bg-neon-green/10">
+                RETURN HOME
+              </a>
+            </div>
           </>
         )}
 
@@ -229,11 +247,29 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               PULSE FAILED
             </h1>
             <Card className="mb-8 border-red-500/30">
-              <p className="text-red-400/90 font-mono">{message}</p>
+              <p className="text-red-400/90 font-mono mb-4">{message}</p>
+              {errorDetails && (
+                <details className="text-left">
+                  <summary className="text-red-400/60 text-xs cursor-pointer hover:text-red-400/80 mb-2">
+                    Debug Info (click to expand)
+                  </summary>
+                  <pre className="text-red-400/70 text-xs bg-black/30 p-3 rounded overflow-x-auto">
+                    {JSON.stringify(errorDetails, null, 2)}
+                  </pre>
+                </details>
+              )}
             </Card>
-            <a href="/" className="cyber-button inline-block">
-              RETURN HOME
-            </a>
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => { setStatus("confirm"); setErrorDetails(null); }}
+                className="cyber-button flex-1"
+              >
+                TRY AGAIN
+              </button>
+              <a href="/" className="cyber-button flex-1 bg-neon-green/10">
+                RETURN HOME
+              </a>
+            </div>
           </>
         )}
       </div>

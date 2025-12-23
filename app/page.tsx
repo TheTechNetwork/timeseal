@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import confetti from 'canvas-confetti';
 import dynamic from 'next/dynamic';
+import { ErrorLogger } from '@/lib/errorLogger';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then(mod => mod.Turnstile), { ssr: false });
 
@@ -390,7 +391,7 @@ export default function HomePage() {
       });
       setEncryptionProgress(90);
 
-      const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string | { code: string; message: string } };
+      const data = await response.json() as { success: boolean; publicUrl: string; pulseToken?: string; receipt?: any; error?: string | { code: string; message: string; details?: string; debugInfo?: any } };
 
       console.log('[CREATE-SEAL] Response:', response.status, data);
 
@@ -417,19 +418,34 @@ export default function HomePage() {
         toast.dismiss(loadingToast);
         // Handle both string and nested error object formats
         let errorMsg = 'Failed to create seal';
+        let debugInfo = null;
         if (data.error) {
           if (typeof data.error === 'string') {
             errorMsg = data.error;
-          } else if (typeof data.error === 'object' && data.error.message) {
-            errorMsg = data.error.message;
+          } else if (typeof data.error === 'object') {
+            errorMsg = data.error.message || errorMsg;
+            debugInfo = {
+              code: data.error.code,
+              details: data.error.details,
+              debugInfo: data.error.debugInfo,
+              status: response.status
+            };
           }
         }
+        console.error('[CREATE-SEAL] Error:', { errorMsg, debugInfo, fullResponse: data });
+        ErrorLogger.log(data.error, { component: 'CreateSeal', action: 'create', debugInfo });
         toast.error(errorMsg);
+        if (debugInfo) {
+          console.error('[CREATE-SEAL] Debug Info:', debugInfo);
+        }
       }
     } catch (error) {
       toast.dismiss(loadingToast);
       console.error('[CREATE-SEAL] Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      ErrorLogger.log(error, { component: 'CreateSeal', action: 'create', stack: errorStack });
+      console.error('[CREATE-SEAL] Stack:', errorStack);
       toast.error(`Failed to create seal: ${errorMessage}`);
     } finally {
       setIsCreating(false);

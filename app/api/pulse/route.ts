@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     return jsonResponse({
       success: true,
       newUnlockTime: result.newUnlockTime,
+      newPulseToken: result.newPulseToken,
       message: 'Pulse updated successfully',
     });
   }, { rateLimit: { limit: 20, window: 60000 } })(request);

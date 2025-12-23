@@ -2,6 +2,7 @@
 import { withRateLimit } from './rateLimit';
 import { handleError } from './errors';
 import { logger } from './logger';
+import { ErrorLogger } from './errorLogger';
 
 export interface HandlerContext {
   request: Request;
@@ -57,10 +58,24 @@ export const withErrorHandling: Middleware = async (ctx, next) => {
   try {
     return await next(ctx);
   } catch (error) {
-    logger.error('request_error', error as Error, {
+    const errorDetails = {
       url: ctx.request.url,
+      method: ctx.request.method,
       ip: ctx.ip,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    };
+    
+    logger.error('request_error', error as Error, errorDetails);
+    
+    // Enhanced error logging
+    ErrorLogger.log(error, {
+      component: 'API',
+      action: `${ctx.request.method} ${new URL(ctx.request.url).pathname}`,
+      ip: ctx.ip,
+      url: ctx.request.url,
     });
+    
     return handleError(error);
   }
 };

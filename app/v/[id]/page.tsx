@@ -9,6 +9,7 @@ import { BackgroundBeams } from '../../components/ui/background-beams';
 import { Card } from '../../components/Card';
 import { toast } from 'sonner';
 import { Lock, AlertTriangle, Hourglass, Copy, Download } from 'lucide-react';
+import { ErrorLogger } from '@/lib/errorLogger';
 
 interface SealStatus {
   id: string;
@@ -29,6 +30,7 @@ function VaultPageClient({ id }: { id: string }) {
   const [status, setStatus] = useState<SealStatus | null>(null);
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   useEffect(() => {
@@ -69,6 +71,7 @@ function VaultPageClient({ id }: { id: string }) {
       const keyA = globalThis.window.location.hash.substring(1);
       if (!keyA) {
         setError('Key A not found in URL. Invalid vault link.');
+        setErrorDetails({ reason: 'missing_key_a', url: globalThis.window.location.href });
         return;
       }
 
@@ -82,6 +85,7 @@ function VaultPageClient({ id }: { id: string }) {
 
       if (!blobData) {
         setError('Encrypted content not found');
+        setErrorDetails({ reason: 'missing_blob', sealId: id });
         return;
       }
 
@@ -98,20 +102,26 @@ function VaultPageClient({ id }: { id: string }) {
       try {
         const content = new TextDecoder('utf-8', { fatal: true }).decode(decrypted);
         setDecryptedContent(content);
-      } catch {
+      } catch (decodeErr) {
+        console.error('[VAULT] UTF-8 decode failed:', decodeErr);
+        ErrorLogger.log(decodeErr, { component: 'Vault', action: 'utf8_decode', sealId: id });
         setError('Decryption succeeded but content is corrupted');
+        setErrorDetails({ reason: 'utf8_decode_failed', error: decodeErr instanceof Error ? decodeErr.message : String(decodeErr) });
       }
     } catch (err) {
       console.error('[VAULT] Decryption failed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorStack = err instanceof Error ? err.stack : undefined;
+      ErrorLogger.log(err, { component: 'Vault', action: 'decrypt', sealId: id });
       setError(`Failed to decrypt message: ${errorMessage}`);
+      setErrorDetails({ reason: 'decryption_failed', error: errorMessage, stack: errorStack, sealId: id });
     }
   }, [id]);
 
   const fetchSealStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/seal/${id}`);
-      const data = await response.json() as SealStatus & { encryptedBlob?: string; error?: string | { code: string; message: string } };
+      const data = await response.json() as SealStatus & { encryptedBlob?: string; error?: string | { code: string; message: string; details?: string; debugInfo?: any } };
 
       console.log('[VAULT] API Response:', response.status, data);
 
@@ -125,20 +135,32 @@ function VaultPageClient({ id }: { id: string }) {
       } else {
         // Handle both string and nested error object formats
         let errorMsg = 'Seal not found';
+        let debugInfo = null;
         if (data.error) {
           if (typeof data.error === 'string') {
             errorMsg = data.error;
-          } else if (typeof data.error === 'object' && data.error.message) {
-            errorMsg = data.error.message;
+          } else if (typeof data.error === 'object') {
+            errorMsg = data.error.message || errorMsg;
+            debugInfo = {
+              code: data.error.code,
+              details: data.error.details,
+              debugInfo: data.error.debugInfo,
+              status: response.status
+            };
           }
         }
-        console.error('[VAULT] Error:', errorMsg, data);
+        console.error('[VAULT] Error:', errorMsg, debugInfo, data);
+        ErrorLogger.log(data.error, { component: 'Vault', action: 'fetchStatus', sealId: id, debugInfo });
         setError(errorMsg);
+        setErrorDetails(debugInfo);
       }
     } catch (err) {
       console.error('[VAULT] Fetch failed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorStack = err instanceof Error ? err.stack : undefined;
+      ErrorLogger.log(err, { component: 'Vault', action: 'fetchStatus', sealId: id });
       setError(`Failed to fetch seal: ${errorMessage}`);
+      setErrorDetails({ reason: 'fetch_failed', error: errorMessage, stack: errorStack, sealId: id });
     }
   }, [id, decryptMessage]);
 
@@ -192,7 +214,17 @@ function VaultPageClient({ id }: { id: string }) {
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
           <h1 className="text-2xl sm:text-3xl font-bold mb-4 glow-text text-red-500 px-2">VAULT ERROR</h1>
           <Card className="mb-8 border-red-500/30">
-            <p className="text-red-400/90 font-mono">{error}</p>
+            <p className="text-red-400/90 font-mono mb-4">{error}</p>
+            {errorDetails && (
+              <details className="text-left">
+                <summary className="text-red-400/60 text-xs cursor-pointer hover:text-red-400/80 mb-2">
+                  Debug Info (click to expand)
+                </summary>
+                <pre className="text-red-400/70 text-xs bg-black/30 p-3 rounded overflow-x-auto">
+                  {JSON.stringify(errorDetails, null, 2)}
+                </pre>
+              </details>
+            )}
           </Card>
           <a href="/" className="cyber-button inline-block hover:shadow-[0_0_30px_rgba(255,0,0,0.4)] hover:border-red-500/50">
             CREATE NEW SEAL

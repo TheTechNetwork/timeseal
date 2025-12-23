@@ -90,12 +90,15 @@ export function createErrorResponse(
   details?: string,
 ): Response {
   const error = ErrorMessages[code];
+  const isDev = process.env.NODE_ENV !== 'production';
+  
   return new Response(
     JSON.stringify({
       error: {
         code: error.code,
         message: error.userMessage,
         details,
+        ...(isDev && { debugInfo: { statusCode: error.statusCode, internalMessage: error.message } }),
       },
     }),
     {
@@ -107,15 +110,36 @@ export function createErrorResponse(
 
 export function handleError(error: unknown): Response {
   console.error("Error:", error);
+  const isDev = process.env.NODE_ENV !== 'production';
 
   if (error instanceof Error) {
     if (error.message.includes("not found")) {
-      return createErrorResponse(ErrorCode.SEAL_NOT_FOUND);
+      return createErrorResponse(ErrorCode.SEAL_NOT_FOUND, isDev ? error.message : undefined);
     }
     if (error.message.includes("decrypt")) {
-      return createErrorResponse(ErrorCode.DECRYPTION_FAILED);
+      return createErrorResponse(ErrorCode.DECRYPTION_FAILED, isDev ? error.message : undefined);
+    }
+    if (error.message.includes("Replay attack")) {
+      return createErrorResponse(ErrorCode.INVALID_INPUT, error.message);
+    }
+    // Return error message in dev mode
+    if (isDev) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: ErrorCode.INTERNAL_ERROR,
+            message: error.message,
+            stack: error.stack,
+            debugInfo: { type: error.constructor.name },
+          },
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
   }
 
-  return createErrorResponse(ErrorCode.INTERNAL_ERROR);
+  return createErrorResponse(ErrorCode.INTERNAL_ERROR, isDev ? String(error) : undefined);
 }
