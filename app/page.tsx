@@ -25,6 +25,7 @@ import { EncryptionProgress } from './components/EncryptionProgress';
 import { FloatingIcons } from './components/FloatingIcons';
 
 import { Bitcoin, ShieldAlert, Rocket, Gift, Scale, Paperclip, FileText, Trash2, AlertTriangle, Download } from 'lucide-react';
+import { SealCounter } from './components/SealCounter';
 
 interface Template {
   name: string;
@@ -630,6 +631,7 @@ export default function HomePage() {
                 <AnimatedTagline text='"If I go silent, this speaks for me."' />
                 <p className="text-xs text-neon-green/30 max-w-md mx-auto">Encrypt messages that unlock at a future date or after inactivity</p>
                 <p className="text-xs text-yellow-500/50 max-w-md mx-auto mt-2">⚠️ Seals auto-delete 30 days after unlock</p>
+                <SealCounter />
               </motion.div>
 
               <Card className="space-y-6">

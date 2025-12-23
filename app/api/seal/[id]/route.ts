@@ -68,6 +68,13 @@ export async function GET(
         const bytes = new Uint8Array(blob);
         const blobBase64 = btoa(String.fromCharCode(...bytes));
 
+        // Track analytics
+        try {
+          const { AnalyticsService } = await import('@/lib/analytics');
+          const analytics = new AnalyticsService(container.db);
+          await analytics.trackEvent({ eventType: 'seal_unlocked' });
+        } catch {}
+
         return jsonResponse({
           id: sealId,
           isLocked: false,

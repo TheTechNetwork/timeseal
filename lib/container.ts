@@ -1,38 +1,47 @@
 // Dependency Injection Container
-import { SealDatabase, MockDatabase } from './database';
-import { SealService } from './sealService';
-import { AuditLogger } from './auditLogger';
-import { createStorage } from './storage';
-import type { D1Database } from '@cloudflare/workers-types';
+import { SealDatabase } from "./database";
+import { SealService } from "./sealService";
+import { AuditLogger } from "./auditLogger";
+import { createStorage } from "./storage";
+import type { D1Database } from "@cloudflare/workers-types";
 
 interface CloudflareEnv {
-  DB?: D1Database;
-  MASTER_ENCRYPTION_KEY?: string;
+  DB: D1Database; // Required, not optional
+  MASTER_ENCRYPTION_KEY: string; // Required, not optional
 }
 
 export interface Container {
   sealService: SealService;
   storage: any;
-  database: any;
-  auditLogger: AuditLogger | undefined;
+  database: SealDatabase;
+  db: D1Database; // Always D1Database
+  auditLogger: AuditLogger;
 }
 
-export function createContainer(env?: CloudflareEnv): Container {
-  const masterKey = env?.MASTER_ENCRYPTION_KEY || process.env.MASTER_ENCRYPTION_KEY;
-  if (!masterKey) {
-    console.error('MASTER_ENCRYPTION_KEY not configured');
-    throw new Error('MASTER_ENCRYPTION_KEY not configured in environment');
+export function createContainer(env: CloudflareEnv): Container {
+  if (!env.MASTER_ENCRYPTION_KEY) {
+    throw new Error("MASTER_ENCRYPTION_KEY not configured in environment");
+  }
+
+  if (!env.DB) {
+    throw new Error("D1 database not configured in environment");
   }
 
   const storage = createStorage(env);
-  const database = env?.DB ? new SealDatabase(env.DB) : new MockDatabase();
-  const auditLogger = env?.DB ? new AuditLogger(env.DB) : undefined;
-  const sealService = new SealService(storage, database, masterKey, auditLogger);
+  const database = new SealDatabase(env.DB);
+  const auditLogger = new AuditLogger(env.DB);
+  const sealService = new SealService(
+    storage,
+    database,
+    env.MASTER_ENCRYPTION_KEY,
+    auditLogger,
+  );
 
   return {
     sealService,
     storage,
     database,
+    db: env.DB,
     auditLogger,
   };
 }

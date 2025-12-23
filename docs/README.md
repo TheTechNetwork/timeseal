@@ -23,6 +23,7 @@
 ## 📋 Project Management
 
 - **[TODO.md](TODO.md)** - Production readiness checklist
+- **[ANALYTICS.md](ANALYTICS.md)** - Privacy-first analytics setup
 
 ---
 

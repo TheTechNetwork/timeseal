@@ -21,7 +21,7 @@ export function createAPIRoute(
 ) {
   return async (request: NextRequest, routeParams?: any) => {
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const fingerprint = getRequestFingerprint(request);
+    const fingerprint = await getRequestFingerprint(request);
     const { env } = await getCloudflareContext<{ env: CloudflareEnv }>();
     
     const wrappedHandler = async () => {

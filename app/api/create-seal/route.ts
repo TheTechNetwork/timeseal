@@ -88,6 +88,13 @@ export async function POST(request: NextRequest) {
         ip,
       );
 
+      // Track analytics
+      try {
+        const { AnalyticsService } = await import('@/lib/analytics');
+        const analytics = new AnalyticsService(container.db);
+        await analytics.trackEvent({ eventType: 'seal_created' });
+      } catch {}
+
       return jsonResponse({
         success: true,
         sealId: result.sealId,

@@ -103,6 +103,23 @@ export default function RootLayout({
         <StructuredData />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#00ff41" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                if (typeof window === 'undefined') return;
+                window.trackEvent = function(type, data) {
+                  fetch('/api/analytics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventType: type, ...data })
+                  }).catch(function() {});
+                };
+                window.trackEvent('page_view', { path: window.location.pathname });
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={`${jetbrainsMono.className} min-h-screen bg-dark-bg text-dark-text overflow-x-hidden selection:bg-neon-green/30 selection:text-neon-green`}>
         <ScrollProgress />

@@ -35,13 +35,13 @@ export default function FAQPage() {
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">How do I create a seal?</h3>
-            <p className="text-neon-green/60 text-sm mb-2"><strong className="text-neon-green">Timed Release:</strong> Enter message/file, select "Timed Release", choose unlock date (up to 30 days), complete security check, save vault link.</p>
-            <p className="text-neon-green/60 text-sm"><strong className="text-neon-green">Dead Man&apos;s Switch:</strong> Same as above but select "Dead Man&apos;s Switch", set pulse interval, save both vault link (public) and pulse link (private).</p>
+            <p className="text-neon-green/60 text-sm mb-2"><strong className="text-neon-green">Timed Release:</strong> Enter message/file, select &quot;Timed Release&quot;, choose unlock date (up to 30 days), complete security check, save vault link.</p>
+            <p className="text-neon-green/60 text-sm"><strong className="text-neon-green">Dead Man&apos;s Switch:</strong> Same as above but select &quot;Dead Man&apos;s Switch&quot;, set pulse interval, save both vault link (public) and pulse link (private).</p>
           </div>
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">How does Dead Man&apos;s Switch work?</h3>
-            <p className="text-neon-green/60 text-sm">Set pulse interval (e.g., 7 days). Visit private pulse link before interval expires to reset timer. If you miss a pulse, seal auto-unlocks for recipient. Use pulse link to "burn" seal permanently.</p>
+            <p className="text-neon-green/60 text-sm">Set pulse interval (e.g., 7 days). Visit private pulse link before interval expires to reset timer. If you miss a pulse, seal auto-unlocks for recipient. Use pulse link to &quot;burn&quot; seal permanently.</p>
           </div>
 
           <div>
@@ -61,7 +61,7 @@ export default function FAQPage() {
 
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neon-green mb-2">Can I cancel or delete a seal?</h3>
-            <p className="text-neon-green/60 text-sm">Dead Man&apos;s Switch seals can be burned (permanently destroyed) using the pulse token. Timed seals cannot be deleted.</p>
+            <p className="text-neon-green/60 text-sm">Dead Man&apos;s Switch seals can be &quot;burned&quot; (permanently destroyed) using the pulse token. Timed seals cannot be deleted.</p>
           </div>
 
           <div>

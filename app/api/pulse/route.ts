@@ -22,6 +22,13 @@ export async function POST(request: NextRequest) {
     const sealService = container.sealService;
     const result = await sealService.pulseSeal(pulseToken, ip, newInterval);
 
+    // Track analytics
+    try {
+      const { AnalyticsService } = await import('@/lib/analytics');
+      const analytics = new AnalyticsService(container.db);
+      await analytics.trackEvent({ eventType: 'pulse_received' });
+    } catch {}
+
     return jsonResponse({
       success: true,
       newUnlockTime: result.newUnlockTime,

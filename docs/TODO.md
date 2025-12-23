@@ -31,10 +31,12 @@
 
 - [ ] **Production Deployment**: Deploy to production environment
 - [ ] **Domain Setup**: Configure custom domain with SSL
+- [ ] **Analytics Migration**: Run `wrangler d1 execute DB --file=migrations/003_analytics.sql`
 
 ## 🟡 High Priority (Should Fix Soon)
 
 - [x] **API Documentation**: Complete API reference created (docs/API.md)
+- [x] **Analytics**: Privacy-first analytics implemented (docs/ANALYTICS.md)
 - [ ] **Video Tutorials**: Screen recordings for common use cases
 
 ## 🟢 Nice to Have (Future Enhancements)
