@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { encryptData } from "@/lib/crypto";
 import { ensureIntegrity } from "@/lib/clientIntegrity";
 import { ErrorLogger } from "@/lib/errorLogger";
@@ -130,7 +132,7 @@ export function CreateSealForm({
 }: CreateSealFormProps) {
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [unlockDate, setUnlockDate] = useState("");
+  const [unlockDate, setUnlockDate] = useState<Date | null>(null);
   const [sealType, setSealType] = useState<"timed" | "deadman">("timed");
   const [pulseValue, setPulseValue] = useState(7);
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
@@ -183,7 +185,7 @@ export function CreateSealForm({
     // Auto-set unlock date for timed releases (24 hours from now)
     if (template.type === "timed") {
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      setUnlockDate(tomorrow.toISOString().slice(0, 16));
+      setUnlockDate(tomorrow);
     }
 
     toast.success(`Template applied: ${template.name}`);
@@ -225,15 +227,10 @@ export function CreateSealForm({
         return;
       }
 
-      const selectedTime = new Date(unlockDate).getTime();
+      const selectedTime = unlockDate.getTime();
       const now = Date.now();
       const minTime = now + 60000;
       const maxTime = now + 30 * 24 * 60 * 60 * 1000;
-
-      if (Number.isNaN(selectedTime)) {
-        toast.error("Invalid date format");
-        return;
-      }
 
       if (selectedTime <= now) {
         toast.error("Unlock time cannot be in the past or now");
@@ -292,7 +289,7 @@ export function CreateSealForm({
       let pulseDuration: number | undefined;
 
       if (sealType === "timed") {
-        unlockTime = new Date(unlockDate).getTime();
+        unlockTime = unlockDate!.getTime();
       } else {
         const pulseMinutes =
           pulseUnit === "minutes" ? pulseValue : pulseValue * 24 * 60;
@@ -597,7 +594,6 @@ export function CreateSealForm({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="relative z-50"
               >
                 <label
                   htmlFor="unlock-date"
@@ -610,14 +606,18 @@ export function CreateSealForm({
                   30 days.
                 </p>
                 <div className="relative">
-                  <input
-                    id="unlock-date"
-                    type="datetime-local"
-                    value={unlockDate}
-                    onChange={(e) => setUnlockDate(e.target.value)}
-                    min={new Date().toISOString().slice(0, 16)}
+                  <DatePicker
+                    selected={unlockDate}
+                    onChange={(date: Date | null) => setUnlockDate(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={15}
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                    minDate={new Date()}
+                    maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
                     className="cyber-input w-full pr-12"
-                    lang="en-US"
+                    calendarClassName="cyber-calendar"
+                    wrapperClassName="w-full"
                   />
                   <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neon-green pointer-events-none" />
                 </div>

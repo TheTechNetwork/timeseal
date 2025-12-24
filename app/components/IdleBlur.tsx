@@ -60,7 +60,7 @@ export function IdleBlur() {
           animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
           exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center cursor-none pointer-events-none"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center pointer-events-none"
         >
           <div className="text-center space-y-4">
             <motion.div

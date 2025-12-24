@@ -27,22 +27,6 @@ body {
   font-family: "JetBrains Mono", monospace;
   background-color: var(--dark-bg);
   color: var(--dark-text);
-  cursor: auto;
-}
-
-* {
-  cursor: inherit;
-}
-
-button, a, input, select, textarea {
-  cursor: pointer;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="datetime-local"],
-textarea {
-  cursor: text;
 }
 
 /* Print Styles for QR Codes */
@@ -185,22 +169,17 @@ textarea {
   @apply w-full px-4 py-3 bg-black/50 border-2 border-neon-green/30 text-neon-green font-mono focus:border-neon-green focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-colors rounded-xl;
 }
 
-/* Datetime input normalization */
-input[type="datetime-local"] {
-  color-scheme: dark;
+/* Datetime input - remove ALL native UI */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-inner-spin-button,
+input[type="datetime-local"]::-webkit-clear-button {
+  display: none;
   -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-}
-
-/* Hide native calendar icon */
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
 }
 
 input[type="datetime-local"]::-webkit-datetime-edit {
@@ -346,4 +325,58 @@ select option:hover {
 
 .animate-subtle-shimmer {
   animation: subtle-shimmer 3s ease-in-out infinite;
+}
+
+
+/* React DatePicker Custom Styling */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  background-color: var(--dark-bg) !important;
+  border: 2px solid rgba(0, 255, 65, 0.3) !important;
+  font-family: "JetBrains Mono", monospace !important;
+  border-radius: 12px !important;
+}
+
+.react-datepicker__header {
+  background-color: rgba(0, 255, 65, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.3) !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker__day-name {
+  color: var(--neon-green) !important;
+}
+
+.react-datepicker__day {
+  color: var(--dark-text) !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(0, 255, 65, 0.2) !important;
+  color: var(--neon-green) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--neon-green) !important;
+  color: var(--dark-bg) !important;
+}
+
+.react-datepicker__time-container {
+  border-left: 1px solid rgba(0, 255, 65, 0.3) !important;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: rgba(0, 255, 65, 0.2) !important;
+  color: var(--neon-green) !important;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: var(--neon-green) !important;
+  color: var(--dark-bg) !important;
 }
