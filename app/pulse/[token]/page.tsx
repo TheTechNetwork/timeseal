@@ -17,6 +17,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentToken, setCurrentToken] = useState("");
+  const [actionType, setActionType] = useState<"renew" | "unlock" | null>(null);
 
   useEffect(() => {
     const fetchSealInfo = async () => {
@@ -62,6 +63,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
 
   const handleAction = async (action: "renew" | "unlock") => {
     setIsUpdating(true);
+    setActionType(action);
     try {
       if (action === "unlock") {
         const res = await fetch("/api/burn", {
@@ -230,17 +232,23 @@ export default function PulsePage({ params }: { params: { token: string } }) {
             </h1>
             <Card className="mb-8 border-neon-green/30">
               <p className="text-neon-green/90 font-mono">{message}</p>
-              <p className="text-neon-green/60 text-sm mt-2">
-                Next pulse required in {pulseInterval} {pulseUnit}
-              </p>
+              {actionType === "renew" && (
+                <p className="text-neon-green/60 text-sm mt-2">
+                  Next pulse required in {pulseInterval} {pulseUnit}
+                </p>
+              )}
             </Card>
             <div className="flex gap-3 mb-4">
-              <button
-                onClick={() => setStatus("confirm")}
-                className="cyber-button flex-1"
-              >
-                PULSE AGAIN
-              </button>
+              {actionType === "renew" && (
+                <button
+                  onClick={() => {
+                    window.location.href = `/pulse/${encodeURIComponent(currentToken)}`;
+                  }}
+                  className="cyber-button flex-1"
+                >
+                  PULSE AGAIN
+                </button>
+              )}
               <a href="/" className="cyber-button flex-1 bg-neon-green/10">
                 RETURN HOME
               </a>

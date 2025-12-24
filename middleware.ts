@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
     "font-src 'self' data:; " +
     "connect-src 'self' https://challenges.cloudflare.com; " +
     "frame-src https://challenges.cloudflare.com; " +
+    "worker-src 'self' blob:; " +
     "frame-ancestors 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self'"

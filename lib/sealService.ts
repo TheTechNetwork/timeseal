@@ -331,7 +331,7 @@ export class SealService {
       try {
         await this.storage.deleteBlob(sealId);
       } catch (error) {
-        logger.error('blob_delete_failed', error as Error, { sealId });
+        logger.error("blob_delete_failed", error as Error, { sealId });
       }
 
       // Then delete database record
@@ -480,7 +480,7 @@ export class SealService {
       throw new Error(ErrorCode.INVALID_INPUT);
     }
 
-    const [sealId, timestamp, nonce] = parts;
+    const [sealId, , nonce] = parts;
 
     // Validate token signature FIRST (cheap operation)
     const isValid = await validatePulseToken(
