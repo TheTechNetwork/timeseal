@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- **PWA and Service Worker** - Eliminated to ensure reliable Turnstile operation
+  - Removed service worker registration from `lib/usePWA.ts`
+  - Service worker now uninstalls itself and clears all caches
+  - Removed offline functionality (incompatible with server-side time validation)
+  - Removed "Add to Home Screen" functionality
+  - Removed PWA install prompts and notifications
+
+### Fixed
+- CRITICAL: Service worker blocking Cloudflare Turnstile API requests
+- CRITICAL: Cache-related bugs causing Turnstile to disappear on refresh
+- Browser-specific caching issues (Brave, Firefox)
+
+### Changed
+- `lib/usePWA.ts` now unregisters service workers instead of registering them
+- `public/sw.js` replaced with uninstaller that removes all caches
+- Simplified architecture without PWA complexity
+
+### Security
+- More reliable Turnstile CAPTCHA loading across all browsers
+- Eliminated service worker as potential attack vector
+- Consistent behavior on Chrome, Brave, Firefox, Safari
+
+### Documentation
+- Updated `docs/MOBILE-OPTIMIZATIONS.md` to remove PWA/offline features
+- Added explanation of why PWA was removed (security-first design)
+
+### Benefits
+- ✅ Turnstile loads reliably on all browsers without refresh
+- ✅ No cache-related bugs across deploys
+- ✅ Simpler codebase (fewer moving parts)
+- ✅ Better security (fewer attack surfaces)
+- ❌ No offline dashboard access (acceptable tradeoff)
+
 ## [0.9.1] - 2025-01-18
 
 ### Added

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
 import dynamic from "next/dynamic";
@@ -30,7 +30,14 @@ import { triggerHaptic } from "@/lib/mobile";
 
 const Turnstile = dynamic(
   () => import("@marsidev/react-turnstile").then((mod) => mod.Turnstile),
-  { ssr: false },
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center p-4 text-neon-green/50 text-sm">
+        Loading security check...
+      </div>
+    ),
+  },
 );
 
 interface Template {
@@ -720,10 +727,12 @@ export function CreateSealForm({
             onError={() =>
               toast.error("Security verification failed. Please refresh.")
             }
+            onExpire={() => setTurnstileToken(null)}
             options={{
               theme: "dark",
               size: "flexible",
               appearance: "interaction-only",
+              refreshExpired: "auto",
             }}
             className="w-full"
           />
