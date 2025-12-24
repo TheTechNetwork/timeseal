@@ -31,7 +31,7 @@ import { triggerHaptic } from "@/lib/mobile";
 
 const Turnstile = dynamic(
   () => import("@marsidev/react-turnstile").then((mod) => mod.Turnstile),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center p-4 text-neon-green/50 text-sm">
@@ -60,7 +60,8 @@ const TEMPLATES: Template[] = [
     placeholder:
       "Seed phrase: ...\nWallet addresses: ...\nExchange accounts: ...",
     pulseDays: 30,
-    tooltip: "Auto-unlock crypto wallet info for beneficiaries if you stop checking in monthly",
+    tooltip:
+      "Auto-unlock crypto wallet info for beneficiaries if you stop checking in monthly",
   },
   {
     name: "Whistleblower",
@@ -71,7 +72,8 @@ const TEMPLATES: Template[] = [
     placeholder:
       "Evidence of wrongdoing...\nDocumentation...\nWitness contacts...",
     pulseDays: 7,
-    tooltip: "Release evidence automatically if you're silenced or can't check in weekly",
+    tooltip:
+      "Release evidence automatically if you're silenced or can't check in weekly",
   },
   {
     name: "Product Launch",
@@ -80,7 +82,8 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Product details...\nAccess codes...\nLaunch instructions...",
-    tooltip: "Schedule product reveal at exact launch time - builds anticipation with countdown",
+    tooltip:
+      "Schedule product reveal at exact launch time - builds anticipation with countdown",
   },
   {
     name: "Birthday Gift",
@@ -89,7 +92,8 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Happy Birthday! 🎉\n\nHere's your surprise...",
-    tooltip: "Send a message or gift that unlocks exactly at midnight on their birthday",
+    tooltip:
+      "Send a message or gift that unlocks exactly at midnight on their birthday",
   },
   {
     name: "Legal Hold",
@@ -98,7 +102,8 @@ const TEMPLATES: Template[] = [
     ),
     type: "timed",
     placeholder: "Contract terms...\nSettlement details...\nLegal documents...",
-    tooltip: "Lock legal documents until settlement date - ensures compliance and timing",
+    tooltip:
+      "Lock legal documents until settlement date - ensures compliance and timing",
   },
 ];
 
@@ -144,9 +149,33 @@ export function CreateSealForm({
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    const ALLOWED_EXTENSIONS = ['.txt', '.md'];
+    const ALLOWED_MIME_TYPES = ['text/plain', 'text/markdown'];
+    
     if (acceptedFiles?.length > 0) {
       const selectedFile = acceptedFiles[0];
       const maxSize = 750 * 1024;
+
+      // Check file extension if present
+      const fileName = selectedFile.name;
+      const hasExtension = fileName.includes('.');
+      const ext = hasExtension ? '.' + fileName.split('.').pop()?.toLowerCase() : '';
+      
+      // Validate: if has extension, must be allowed; if no extension, must be text MIME type
+      if (hasExtension && !ALLOWED_EXTENSIONS.includes(ext)) {
+        toast.error(
+          `File type not allowed: ${ext}. Allowed: .txt, .md`,
+        );
+        return;
+      }
+      
+      if (!hasExtension && !ALLOWED_MIME_TYPES.includes(selectedFile.type)) {
+        toast.error(
+          `File without extension must be plain text. Detected type: ${selectedFile.type || 'unknown'}`,
+        );
+        return;
+      }
+
       if (selectedFile.size > maxSize) {
         toast.error(
           `File too large: ${formatFileSize(selectedFile.size)} (max 750KB)`,
@@ -430,7 +459,10 @@ export function CreateSealForm({
         <p className="text-xs text-neon-green/30 max-w-md mx-auto">
           Encrypt messages that unlock at a future date or after inactivity
         </p>
-        <p className="text-xs text-yellow-500/50 max-w-md mx-auto mt-2" role="note">
+        <p
+          className="text-xs text-yellow-500/50 max-w-md mx-auto mt-2"
+          role="note"
+        >
           ⚠️ Seals auto-delete 30 days after unlock
         </p>
       </motion.div>
@@ -438,7 +470,10 @@ export function CreateSealForm({
       <Card className="space-y-6">
         <section aria-labelledby="templates-heading">
           <div className="flex items-center justify-between mb-2">
-            <h2 id="templates-heading" className="text-sm text-neon-green/70 font-mono">
+            <h2
+              id="templates-heading"
+              className="text-sm text-neon-green/70 font-mono"
+            >
               QUICK START TEMPLATES
             </h2>
           </div>
@@ -478,13 +513,19 @@ export function CreateSealForm({
         </section>
 
         <section aria-labelledby="message-heading">
-          <h2 id="message-heading" className="block text-sm mb-2 text-neon-green/80 tooltip">
+          <h2
+            id="message-heading"
+            className="block text-sm mb-2 text-neon-green/80 tooltip"
+          >
             MESSAGE OR FILE
             <span className="tooltip-text">
               Enter text message or upload a file (max 750KB). File takes
               priority if both provided.
             </span>
           </h2>
+          <p className="text-xs text-neon-green/50 mb-2">
+            💡 Tip: Only .txt and .md files accepted. For larger files (images, videos, documents), add hyperlinks in your message instead
+          </p>
           <textarea
             id="message-input"
             aria-labelledby="message-heading"
@@ -550,167 +591,171 @@ export function CreateSealForm({
         </section>
 
         <section aria-labelledby="seal-type-heading">
-          <h2 id="seal-type-heading" className="sr-only">Seal Configuration</h2>
+          <h2 id="seal-type-heading" className="sr-only">
+            Seal Configuration
+          </h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-1">
-            <div className="text-xs text-neon-green/60 tooltip">
-              Choose seal type
-              <span className="tooltip-text">
-                Timed Release: unlocks at specific date. Dead Man&apos;s Switch:
-                unlocks if you don&apos;t check in
-              </span>
-            </div>
+              <div className="text-xs text-neon-green/60 tooltip">
+                Choose seal type
+                <span className="tooltip-text">
+                  Timed Release: unlocks at specific date. Dead Man&apos;s
+                  Switch: unlocks if you don&apos;t check in
+                </span>
+              </div>
             </div>
 
             <div className="flex space-x-4 bg-dark-bg/30 p-1 rounded-xl border border-neon-green/10">
-            <button
-              onClick={() => setSealType("timed")}
-              className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === "timed" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
-            >
-              <span className="tooltip-text">
-                Unlock at a specific future date and time
-              </span>
-              TIMED RELEASE
-            </button>
-            <button
-              onClick={() => setSealType("deadman")}
-              className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === "deadman" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
-            >
-              <span className="tooltip-text">
-                Auto-unlock if you don&apos;t check in periodically
-              </span>
-              DEAD MAN&apos;S SWITCH
-            </button>
+              <button
+                onClick={() => setSealType("timed")}
+                className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === "timed" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
+              >
+                <span className="tooltip-text">
+                  Unlock at a specific future date and time
+                </span>
+                TIMED RELEASE
+              </button>
+              <button
+                onClick={() => setSealType("deadman")}
+                className={`flex-1 py-2 rounded text-sm font-bold transition-all tooltip ${sealType === "deadman" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
+              >
+                <span className="tooltip-text">
+                  Auto-unlock if you don&apos;t check in periodically
+                </span>
+                DEAD MAN&apos;S SWITCH
+              </button>
             </div>
 
             <AnimatePresence mode="wait">
-            {sealType === "timed" ? (
-              <motion.div
-                key="timed"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <label
-                  htmlFor="unlock-date"
-                  className="block text-sm mb-2 text-neon-green/80 font-bold"
+              {sealType === "timed" ? (
+                <motion.div
+                  key="timed"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
                 >
-                  UNLOCK DATE & TIME
-                </label>
-                <p className="text-xs text-neon-green/50 mb-2">
-                  Select when the seal will automatically unlock. Must be within
-                  30 days.
-                </p>
-                <div className="relative">
-                  <DatePicker
-                    selected={unlockDate}
-                    onChange={(date: Date | null) => setUnlockDate(date)}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={15}
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    minDate={new Date()}
-                    maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-                    className="cyber-input w-full pr-12"
-                    calendarClassName="cyber-calendar"
-                    wrapperClassName="w-full"
-                  />
-                  <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neon-green pointer-events-none" />
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="deadman"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <label
-                  htmlFor="pulse-value"
-                  className="block text-sm mb-2 text-neon-green/80 tooltip"
-                >
-                  PULSE INTERVAL
-                  <span className="tooltip-text">
-                    How often you must check in to keep the seal locked. Pinging
-                    is done via web from ANY device/location - just visit the
-                    pulse URL with your token.
-                  </span>
-                </label>
-                <div className="flex gap-2 items-center mb-2">
-                  <input
-                    id="pulse-value"
-                    type="number"
-                    value={pulseValue}
-                    onChange={(e) => {
-                      const val = Number.parseInt(e.target.value) || 1;
-                      const min = pulseUnit === "minutes" ? 5 : 1;
-                      const max = pulseUnit === "minutes" ? 60 : 30;
-                      setPulseValue(Math.max(min, Math.min(max, val)));
-                    }}
-                    min={pulseUnit === "minutes" ? 5 : 1}
-                    max={pulseUnit === "minutes" ? 60 : 30}
-                    className="cyber-input w-24 text-center"
-                  />
-                  <select
-                    value={pulseUnit}
-                    onChange={(e) => {
-                      const newUnit = e.target.value as "minutes" | "days";
-                      setPulseUnit(newUnit);
-                      if (newUnit === "minutes" && pulseValue < 5)
-                        setPulseValue(5);
-                      if (newUnit === "days" && pulseValue > 30)
-                        setPulseValue(30);
-                    }}
-                    className="cyber-input w-32"
+                  <label
+                    htmlFor="unlock-date"
+                    className="block text-sm mb-2 text-neon-green/80 font-bold"
                   >
-                    <option value="minutes">Minutes</option>
-                    <option value="days">Days</option>
-                  </select>
-                </div>
-                <p className="text-xs text-neon-green/50 mb-2">
-                  You must check in every{" "}
-                  <strong className="text-neon-green">
-                    {pulseValue} {pulseUnit}
-                  </strong>{" "}
-                  to keep the seal locked.
-                </p>
-                <p className="text-xs text-neon-green/40 border-l-2 border-neon-green/20 pl-2">
-                  💡 Pinging works from any device with internet - just visit
-                  the pulse URL. No local storage or specific device required.
-                </p>
-              </motion.div>
-            )}
+                    UNLOCK DATE & TIME
+                  </label>
+                  <p className="text-xs text-neon-green/50 mb-2">
+                    Select when the seal will automatically unlock. Must be
+                    within 30 days.
+                  </p>
+                  <div className="relative">
+                    <DatePicker
+                      selected={unlockDate}
+                      onChange={(date: Date | null) => setUnlockDate(date)}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={15}
+                      dateFormat="MMMM d, yyyy h:mm aa"
+                      minDate={new Date()}
+                      maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+                      className="cyber-input w-full pr-12"
+                      calendarClassName="cyber-calendar"
+                      wrapperClassName="w-full"
+                    />
+                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neon-green pointer-events-none" />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="deadman"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <label
+                    htmlFor="pulse-value"
+                    className="block text-sm mb-2 text-neon-green/80 tooltip"
+                  >
+                    PULSE INTERVAL
+                    <span className="tooltip-text">
+                      How often you must check in to keep the seal locked.
+                      Pinging is done via web from ANY device/location - just
+                      visit the pulse URL with your token.
+                    </span>
+                  </label>
+                  <div className="flex gap-2 items-center mb-2">
+                    <input
+                      id="pulse-value"
+                      type="number"
+                      value={pulseValue}
+                      onChange={(e) => {
+                        const val = Number.parseInt(e.target.value) || 1;
+                        const min = pulseUnit === "minutes" ? 5 : 1;
+                        const max = pulseUnit === "minutes" ? 60 : 30;
+                        setPulseValue(Math.max(min, Math.min(max, val)));
+                      }}
+                      min={pulseUnit === "minutes" ? 5 : 1}
+                      max={pulseUnit === "minutes" ? 60 : 30}
+                      className="cyber-input w-24 text-center"
+                    />
+                    <select
+                      value={pulseUnit}
+                      onChange={(e) => {
+                        const newUnit = e.target.value as "minutes" | "days";
+                        setPulseUnit(newUnit);
+                        if (newUnit === "minutes" && pulseValue < 5)
+                          setPulseValue(5);
+                        if (newUnit === "days" && pulseValue > 30)
+                          setPulseValue(30);
+                      }}
+                      className="cyber-input w-32"
+                    >
+                      <option value="minutes">Minutes</option>
+                      <option value="days">Days</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-neon-green/50 mb-2">
+                    You must check in every{" "}
+                    <strong className="text-neon-green">
+                      {pulseValue} {pulseUnit}
+                    </strong>{" "}
+                    to keep the seal locked.
+                  </p>
+                  <p className="text-xs text-neon-green/40 border-l-2 border-neon-green/20 pl-2">
+                    💡 Pinging works from any device with internet - just visit
+                    the pulse URL. No local storage or specific device required.
+                  </p>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </section>
 
         <section aria-labelledby="submit-heading">
-          <h2 id="submit-heading" className="sr-only">Create Seal</h2>
+          <h2 id="submit-heading" className="sr-only">
+            Create Seal
+          </h2>
           <div className="flex justify-center pt-6">
             <div className="tooltip">
-            <span className="tooltip-text">
-              {isCreating
-                ? "Encrypting your data with AES-256..."
-                : !message.trim() && !file
-                  ? "Enter a message or upload a file first"
-                  : sealType === "timed" && !unlockDate
-                    ? "Select an unlock date and time"
-                    : !turnstileToken
-                      ? "Complete security check below"
-                      : "Click to create your encrypted time-locked seal"}
-            </span>
-            <Button
-              onClick={handleCreateSeal}
-              disabled={
-                isCreating ||
-                (!message.trim() && !file) ||
-                (sealType === "timed" && !unlockDate) ||
-                !turnstileToken
-              }
-              className="text-lg shadow-[0_0_20px_rgba(0,255,65,0.2)]"
-            >
-              {isCreating ? "ENCRYPTING & SEALING..." : "CREATE TIME-SEAL"}
-            </Button>
+              <span className="tooltip-text">
+                {isCreating
+                  ? "Encrypting your data with AES-256..."
+                  : !message.trim() && !file
+                    ? "Enter a message or upload a file first"
+                    : sealType === "timed" && !unlockDate
+                      ? "Select an unlock date and time"
+                      : !turnstileToken
+                        ? "Complete security check below"
+                        : "Click to create your encrypted time-locked seal"}
+              </span>
+              <Button
+                onClick={handleCreateSeal}
+                disabled={
+                  isCreating ||
+                  (!message.trim() && !file) ||
+                  (sealType === "timed" && !unlockDate) ||
+                  !turnstileToken
+                }
+                className="text-lg shadow-[0_0_20px_rgba(0,255,65,0.2)]"
+              >
+                {isCreating ? "ENCRYPTING & SEALING..." : "CREATE TIME-SEAL"}
+              </Button>
             </div>
           </div>
         </section>

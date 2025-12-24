@@ -86,14 +86,15 @@ export async function saveSeals(seals: StoredSeal[]): Promise<void> {
   localStorage.setItem(STORAGE_KEY, encrypted);
 }
 
-// Load seals (decrypted)
+// Load seals (decrypted, sorted by most recent first)
 export async function loadSeals(): Promise<StoredSeal[]> {
   const encrypted = localStorage.getItem(STORAGE_KEY);
   if (!encrypted) return [];
   
   try {
     const decrypted = await decryptStorage(encrypted);
-    return JSON.parse(decrypted);
+    const seals = JSON.parse(decrypted) as StoredSeal[];
+    return seals.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
     console.error('Failed to decrypt seals:', error);
     return [];

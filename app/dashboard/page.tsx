@@ -188,13 +188,13 @@ ${seal.pulseUrl && seal.pulseToken ? '- Anyone with the pulse link can control t
                 animate={{ opacity: 1, y: 0 }}
               >
                 <Card className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0 w-full">
                       <div className="flex items-center gap-2 mb-2">
                         {seal.type === 'deadman' ? (
-                          <Shield className="w-4 h-4 text-yellow-500" />
+                          <Shield className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                         ) : (
-                          <Clock className="w-4 h-4 text-neon-green" />
+                          <Clock className="w-4 h-4 text-neon-green flex-shrink-0" />
                         )}
                         <span className="text-xs font-mono text-neon-green/50">
                           {seal.type === 'deadman' ? 'DEAD MAN\'S SWITCH' : 'TIMED RELEASE'}
@@ -205,8 +205,15 @@ ${seal.pulseUrl && seal.pulseToken ? '- Anyone with the pulse link can control t
                         ID: {seal.id}
                       </div>
                       
+                      <div className="text-xs text-neon-green/40 mb-2">
+                        Created: {new Date(seal.createdAt).toLocaleString()}
+                      </div>
+                      
                       <div className="text-xs text-neon-green/50 mb-3">
-                        {formatTimeLeft(seal.unlockTime)} remaining
+                        <span className={formatTimeLeft(seal.unlockTime) === 'UNLOCKED' ? 'font-bold text-neon-green' : ''}>
+                          {formatTimeLeft(seal.unlockTime)}
+                        </span>
+                        {formatTimeLeft(seal.unlockTime) !== 'UNLOCKED' && ' remaining'}
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -250,7 +257,8 @@ ${seal.pulseUrl && seal.pulseToken ? '- Anyone with the pulse link can control t
 
                     <button
                       onClick={() => deleteSeal(seal.id)}
-                      className="text-red-500 hover:text-red-400 transition-colors p-2"
+                      className="text-red-500 hover:text-red-400 transition-colors p-2 self-start sm:self-auto"
+                      aria-label="Delete seal"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

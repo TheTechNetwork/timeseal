@@ -144,39 +144,39 @@ function VaultPageClient({ id }: { id: string }) {
       try {
         const content = new TextDecoder('utf-8', { fatal: true }).decode(decrypted);
         setDecryptedContent(content);
-        
-        // Trigger confetti on successful unlock
-        if (typeof window !== 'undefined') {
-          const confetti = (await import('canvas-confetti')).default;
-          const duration = 2000;
-          const end = Date.now() + duration;
-          
-          (function frame() {
-            confetti({
-              particleCount: 3,
-              angle: 60,
-              spread: 55,
-              origin: { x: 0, y: 0.6 },
-              colors: ['#00ff41', '#ffffff', '#00ff41']
-            });
-            confetti({
-              particleCount: 3,
-              angle: 120,
-              spread: 55,
-              origin: { x: 1, y: 0.6 },
-              colors: ['#00ff41', '#ffffff', '#00ff41']
-            });
-            
-            if (Date.now() < end) {
-              requestAnimationFrame(frame);
-            }
-          })();
-        }
       } catch (decodeErr) {
         console.error('[VAULT] UTF-8 decode failed:', decodeErr);
         ErrorLogger.log(decodeErr, { component: 'Vault', action: 'utf8_decode', sealId: id });
         setError('Decryption succeeded but content is corrupted');
         setErrorDetails({ reason: 'utf8_decode_failed', error: decodeErr instanceof Error ? decodeErr.message : String(decodeErr) });
+      }
+      
+      // Trigger confetti on successful unlock
+      if (typeof window !== 'undefined') {
+        const confetti = (await import('canvas-confetti')).default;
+        const duration = 2000;
+        const end = Date.now() + duration;
+        
+        (function frame() {
+          confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.6 },
+            colors: ['#00ff41', '#ffffff', '#00ff41']
+          });
+          confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.6 },
+            colors: ['#00ff41', '#ffffff', '#00ff41']
+          });
+          
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        })();
       }
     } catch (err) {
       console.error('[VAULT] Decryption failed:', err);
@@ -253,10 +253,18 @@ function VaultPageClient({ id }: { id: string }) {
   const calculateProgress = () => {
     if (!status?.unlockTime || !status?.timeRemaining) return 0;
     const now = Date.now();
-    const totalDuration = status.unlockTime - (now - status.timeRemaining);
-    const elapsed = totalDuration - status.timeRemaining;
-    if (totalDuration <= 0) return 100;
-    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+    
+    // If already unlocked
+    if (now >= status.unlockTime) return 100;
+    
+    // Calculate when seal was created: unlockTime - initial timeRemaining
+    const creationTime = status.unlockTime - status.timeRemaining;
+    const totalDuration = status.unlockTime - creationTime;
+    const elapsed = now - creationTime;
+    
+    if (totalDuration <= 0) return 0;
+    const progress = (elapsed / totalDuration) * 100;
+    return Math.min(100, Math.max(0, progress));
   };
 
   if (error) {
@@ -372,11 +380,11 @@ function VaultPageClient({ id }: { id: string }) {
             transition={{ delay: 1.3 }}
           >
             <Card className="p-4 sm:p-6 md:p-8 mb-8 relative group">
-              <div className="absolute top-0 right-0 p-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-mono text-neon-green border border-neon-green/30 px-2 py-1 rounded">DECRYPTED</span>
+              <div className="absolute top-4 right-4 opacity-50 group-hover:opacity-100 transition-opacity z-10">
+                <span className="text-xs font-mono text-neon-green border border-neon-green/30 px-2 py-1 rounded bg-dark-bg/90 backdrop-blur-sm">DECRYPTED</span>
               </div>
               <div
-                className="whitespace-pre-wrap text-sm leading-relaxed break-words font-mono text-neon-green/90 select-text cursor-text"
+                className="whitespace-pre-wrap text-sm leading-relaxed break-words font-mono text-neon-green/90 select-text cursor-text pr-24"
                 style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
               >
                 {decryptedContent}
@@ -511,9 +519,9 @@ function VaultPageClient({ id }: { id: string }) {
             {new Date(status.unlockTime).toLocaleString()}
           </div>
 
-          <div className="text-xs text-neon-green/50 mb-2 uppercase tracking-widest">Time Remaining</div>
           {timeLeft > 0 ? (
             <>
+              <div className="text-xs text-neon-green/50 mb-2 uppercase tracking-widest">Time Remaining</div>
               <div className="text-2xl sm:text-3xl font-mono pulse-glow text-neon-green tabular-nums mb-3">
                 <DecryptedText
                   text={formatTimeLeft(timeLeft)}
@@ -534,7 +542,7 @@ function VaultPageClient({ id }: { id: string }) {
               <p className="text-xs text-neon-green/40 mt-2">{calculateProgress().toFixed(1)}% complete</p>
             </>
           ) : (
-            <div className="text-xl text-neon-green animate-pulse">Decrypting...</div>
+            <div className="text-2xl sm:text-3xl font-bold text-neon-green animate-pulse">UNLOCKED</div>
           )}
         </Card>
 
