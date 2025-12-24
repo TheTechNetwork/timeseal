@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
           event_type,
           country,
           timestamp
-        FROM analytics
+        FROM analytics_events
         WHERE event_type IN ('seal_created', 'seal_unlocked', 'pulse_received')
         ORDER BY timestamp DESC
         LIMIT 20

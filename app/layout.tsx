@@ -132,7 +132,9 @@ export default function RootLayout({
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ eventType: type, ...data })
-                  }).catch(function() {});
+                  }).catch(function(err) {
+                    console.error('[Analytics] Client tracking failed:', err);
+                  });
                 };
                 window.trackEvent('page_view', { path: window.location.pathname });
               })();

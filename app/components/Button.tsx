@@ -38,6 +38,8 @@ export function Button({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (props.disabled) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) return;
+
     const { clientX, clientY } = e;
 
     // Use cached rect if available, fallback to getBoundingClientRect if not
@@ -77,20 +79,20 @@ export function Button({
       whileHover={
         !props.disabled
           ? {
-              scale: 1.02,
-              boxShadow:
-                "0 0 25px rgba(0, 255, 65, 0.5), 0 0 50px rgba(0, 255, 65, 0.2)",
-              textShadow: "0 0 10px rgba(0, 255, 65, 0.8)",
-            }
+            scale: 1.02,
+            boxShadow:
+              "0 0 25px rgba(0, 255, 65, 0.5), 0 0 50px rgba(0, 255, 65, 0.2)",
+            textShadow: "0 0 10px rgba(0, 255, 65, 0.8)",
+          }
           : {}
       }
       whileTap={
         !props.disabled
           ? {
-              scale: 0.98,
-              boxShadow:
-                "0 0 30px rgba(0, 255, 65, 0.7), 0 0 60px rgba(0, 255, 65, 0.3)",
-            }
+            scale: 0.98,
+            boxShadow:
+              "0 0 30px rgba(0, 255, 65, 0.7), 0 0 60px rgba(0, 255, 65, 0.3)",
+          }
           : {}
       }
       className={`cyber-button ${variantStyles[variant]} ${className} ${!props.disabled && variant === "primary" ? "relative overflow-hidden" : ""}`}

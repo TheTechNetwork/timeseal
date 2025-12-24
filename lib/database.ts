@@ -193,17 +193,17 @@ export class SealDatabase implements DatabaseProvider {
 
   async checkRateLimit(key: string, limit: number, window: number): Promise<{ allowed: boolean; remaining: number }> {
     const now = Date.now();
-    const resetAt = now + window;
+    const windowStart = now;
 
     // Atomic upsert to prevent race conditions
     const result = await this.db.prepare(`
-      INSERT INTO rate_limits (key, count, reset_at)
+      INSERT INTO rate_limits (key, count, window_start)
       VALUES (?, 1, ?)
       ON CONFLICT(key) DO UPDATE SET
-        count = CASE WHEN reset_at <= ? THEN 1 ELSE count + 1 END,
-        reset_at = CASE WHEN reset_at <= ? THEN ? ELSE reset_at END
-      RETURNING count, reset_at
-    `).bind(key, resetAt, now, now, resetAt).first() as { count: number; reset_at: number } | null;
+        count = CASE WHEN window_start + ? <= ? THEN 1 ELSE count + 1 END,
+        window_start = CASE WHEN window_start + ? <= ? THEN ? ELSE window_start END
+      RETURNING count, window_start
+    `).bind(key, windowStart, window, now, window, now, windowStart).first() as { count: number; window_start: number } | null;
 
     if (!result) return { allowed: false, remaining: 0 };
     
@@ -215,7 +215,7 @@ export class SealDatabase implements DatabaseProvider {
   async storeNonce(nonce: string, expiresAt: number): Promise<boolean> {
     try {
       const result = await this.db.prepare(
-        'INSERT INTO nonces (nonce, expires_at) VALUES (?, ?)'
+        'INSERT INTO nonces (nonce, created_at) VALUES (?, ?)'
       ).bind(nonce, expiresAt).run();
       return result.success;
     } catch (error) {

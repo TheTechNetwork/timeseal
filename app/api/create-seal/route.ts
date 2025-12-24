@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
       const pulseInterval = formData.get("pulseInterval")
         ? parseInt(formData.get("pulseInterval") as string, 10)
         : undefined;
-      const encryptedWebhook = formData.get("encryptedWebhook") as string | null;
       // Ephemeral seal options
       const isEphemeral = formData.get("isEphemeral") === "true";
       const maxViewsStr = formData.get("maxViews") as string | null;
@@ -76,14 +75,18 @@ export async function POST(request: NextRequest) {
           unlockTime,
           isDMS,
           pulseInterval,
-          encryptedWebhook: encryptedWebhook || undefined,
           isEphemeral,
           maxViews,
         },
         ip,
       );
 
-      await trackAnalytics(container.db, 'seal_created');
+      // Track analytics (await to see errors in development)
+      try {
+        await trackAnalytics(container.db, 'seal_created');
+      } catch (err) {
+        console.error('[Create Seal] Analytics tracking failed:', err);
+      }
 
       return jsonResponse({
         success: true,

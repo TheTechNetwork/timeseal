@@ -44,11 +44,15 @@ export async function trackAnalytics(
   eventType: 'page_view' | 'seal_created' | 'seal_unlocked' | 'pulse_received',
 ): Promise<void> {
   try {
+    console.log('[Analytics] trackAnalytics called with eventType:', eventType);
     const { AnalyticsService } = await import("./analytics");
     const analytics = new AnalyticsService(db);
+    console.log('[Analytics] AnalyticsService instantiated, calling trackEvent');
     await analytics.trackEvent({ eventType });
-  } catch {
+    console.log('[Analytics] trackEvent completed successfully');
+  } catch (error) {
     // Silently fail - analytics should never break the app
+    console.error('[Analytics] trackAnalytics failed:', error);
   }
 }
 

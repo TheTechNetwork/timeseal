@@ -20,6 +20,8 @@ export function Card({ children, className = '', title }: Readonly<CardProps>) {
     }
 
     function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+        if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) return;
+
         const rect = rectRef.current || currentTarget.getBoundingClientRect();
         const { left, top } = rect;
         mouseX.set(clientX - left);
