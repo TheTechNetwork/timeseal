@@ -15,7 +15,6 @@ import { Button } from "./Button";
 import { Input } from "./Input";
 import DecryptedText from "./DecryptedText";
 import { AnimatedTagline } from "./AnimatedTagline";
-import { SealCounter } from "./SealCounter";
 import {
   Bitcoin,
   ShieldAlert,
@@ -434,7 +433,6 @@ export function CreateSealForm({
         <p className="text-xs text-yellow-500/50 max-w-md mx-auto mt-2" role="note">
           ⚠️ Seals auto-delete 30 days after unlock
         </p>
-        <SealCounter />
       </motion.div>
 
       <Card className="space-y-6">
