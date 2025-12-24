@@ -474,6 +474,58 @@ export class SealService {
     return { newUnlockTime, newPulseToken };
   }
 
+  async unlockSeal(pulseToken: string, ip: string): Promise<void> {
+    const parts = pulseToken.split(":");
+    if (parts.length !== 4) {
+      throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    const [sealId, , nonce] = parts;
+
+    // Validate token signature FIRST (cheap operation)
+    const isValid = await validatePulseToken(
+      pulseToken,
+      sealId,
+      this.masterKey,
+    );
+    if (!isValid) {
+      throw new Error(ErrorCode.INVALID_INPUT);
+    }
+
+    // THEN check nonce (expensive DB operation)
+    const nonceValid = await checkAndStoreNonce(nonce, this.db);
+    if (!nonceValid) {
+      throw new Error("Replay attack detected");
+    }
+
+    const seal = await this.db.getSeal(sealId);
+    if (!seal || !seal.isDMS) {
+      throw new Error(ErrorCode.SEAL_NOT_FOUND);
+    }
+
+    const now = Date.now();
+
+    // Set unlock time to now (immediate unlock)
+    try {
+      await this.db.updatePulseAndUnlockTime(seal.id, now, now);
+    } catch (error) {
+      logger.error("unlock_update_failed", error as Error, { sealId: seal.id });
+      throw new Error("Failed to unlock seal");
+    }
+
+    this.auditLogger?.log({
+      timestamp: now,
+      eventType: AuditEventType.SEAL_UNLOCKED,
+      sealId,
+      ip,
+      metadata: { unlockedEarly: true },
+    });
+    logger.info("seal_unlocked_early", { sealId });
+
+    // Emit event for observers
+    sealEvents.emit("seal:unlocked", { sealId, ip });
+  }
+
   async burnSeal(pulseToken: string, ip: string): Promise<void> {
     const parts = pulseToken.split(":");
     if (parts.length !== 4) {

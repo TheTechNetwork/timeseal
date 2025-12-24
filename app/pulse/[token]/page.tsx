@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BackgroundBeams } from "@/app/components/ui/background-beams";
 import { Card } from "@/app/components/Card";
-import { CheckCircle, XCircle, Loader2, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Clock, RefreshCw, Unlock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PulsePage({ params }: { params: { token: string } }) {
@@ -17,16 +17,14 @@ export default function PulsePage({ params }: { params: { token: string } }) {
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentToken, setCurrentToken] = useState("");
-  const [actionType, setActionType] = useState<"renew" | "unlock" | null>(null);
+  const [actionType, setActionType] = useState<"renew" | "unlock" | "delete" | null>(null);
 
   useEffect(() => {
     const fetchSealInfo = async () => {
       try {
-        // Decode the token (Next.js may not fully decode complex tokens)
         const token = decodeURIComponent(params.token);
         setCurrentToken(token);
         
-        // Validate token format
         const parts = token.split(":");
         if (parts.length < 2) {
           setStatus("error");
@@ -61,29 +59,42 @@ export default function PulsePage({ params }: { params: { token: string } }) {
     fetchSealInfo();
   }, [params.token]);
 
-  const handleAction = async (action: "renew" | "unlock") => {
+  const handleAction = async (action: "renew" | "unlock" | "delete") => {
     setIsUpdating(true);
     setActionType(action);
     try {
-      if (action === "unlock") {
+      if (action === "delete") {
         const res = await fetch("/api/burn", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pulseToken: currentToken,
-          }),
+          body: JSON.stringify({ pulseToken: currentToken }),
         });
         const data = await res.json();
         if (res.ok) {
           setStatus("success");
-          setMessage("Seal unlocked and burned permanently");
+          setMessage("Seal deleted permanently");
+          toast.success("Seal deleted!");
+        } else {
+          setStatus("error");
+          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to delete seal";
+          setMessage(errorMsg);
+          setErrorDetails({ status: res.status, data });
+          toast.error("Delete failed");
+        }
+      } else if (action === "unlock") {
+        const res = await fetch("/api/unlock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pulseToken: currentToken }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setStatus("success");
+          setMessage("Seal unlocked immediately. Visit vault to access content.");
           toast.success("Seal unlocked!");
         } else {
           setStatus("error");
-          const errorMsg =
-            typeof data.error === "string"
-              ? data.error
-              : data.error?.message || "Failed to unlock seal";
+          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to unlock seal";
           setMessage(errorMsg);
           setErrorDetails({ status: res.status, data });
           toast.error("Unlock failed");
@@ -92,10 +103,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
         const res = await fetch("/api/pulse", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pulseToken: currentToken,
-            newInterval: pulseInterval,
-          }),
+          body: JSON.stringify({ pulseToken: currentToken, newInterval: pulseInterval }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -107,10 +115,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           toast.success("Pulse renewed!");
         } else {
           setStatus("error");
-          const errorMsg =
-            typeof data.error === "string"
-              ? data.error
-              : data.error?.message || "Failed to renew pulse";
+          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to renew pulse";
           setMessage(errorMsg);
           setErrorDetails({ status: res.status, data });
           toast.error("Renewal failed");
@@ -145,7 +150,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
             </h1>
             <Card className="mb-6 border-yellow-500/30">
               <p className="text-yellow-400/90 font-mono text-sm mb-4">
-                Renew to keep sealed or unlock immediately
+                Renew to keep sealed, unlock now, or delete forever
               </p>
               <div className="mb-4">
                 <label className="block text-neon-green/70 font-mono text-sm mb-2">
@@ -186,22 +191,32 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 </p>
               </div>
             </Card>
-            <div className="flex gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <button
                 onClick={() => handleAction("renew")}
                 disabled={isUpdating}
-                className="cyber-button flex-1 bg-neon-green/20 hover:bg-neon-green/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="cyber-button bg-neon-green/20 hover:bg-neon-green/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
               >
-                {isUpdating ? "PROCESSING..." : "RENEW"}
+                <RefreshCw className="w-4 h-4" />
+                <span className="whitespace-nowrap">{isUpdating && actionType === "renew" ? "PROCESSING..." : "RENEW PULSE"}</span>
               </button>
               <button
                 onClick={() => handleAction("unlock")}
                 disabled={isUpdating}
-                className="cyber-button flex-1 bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="cyber-button bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
               >
-                {isUpdating ? "PROCESSING..." : "UNLOCK NOW"}
+                <Unlock className="w-4 h-4" />
+                <span className="whitespace-nowrap">{isUpdating && actionType === "unlock" ? "PROCESSING..." : "UNLOCK NOW"}</span>
               </button>
             </div>
+            <button
+              onClick={() => handleAction("delete")}
+              disabled={isUpdating}
+              className="cyber-button w-full bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed mb-4 flex items-center justify-center gap-2 h-12"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="whitespace-nowrap">{isUpdating && actionType === "delete" ? "PROCESSING..." : "DELETE SEAL FOREVER"}</span>
+            </button>
             <div className="flex gap-3 mb-2">
               {sealInfo?.id && (
                 <a
@@ -228,7 +243,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           <>
             <CheckCircle className="w-16 h-16 text-neon-green mx-auto mb-6" />
             <h1 className="text-3xl font-bold mb-4 glow-text text-neon-green">
-              PULSE UPDATED
+              {actionType === "delete" ? "SEAL DELETED" : actionType === "unlock" ? "SEAL UNLOCKED" : "PULSE UPDATED"}
             </h1>
             <Card className="mb-8 border-neon-green/30">
               <p className="text-neon-green/90 font-mono">{message}</p>
@@ -239,6 +254,14 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               )}
             </Card>
             <div className="flex gap-3 mb-4">
+              {actionType === "unlock" && sealInfo?.id && (
+                <a
+                  href={`/v/${sealInfo.id}`}
+                  className="cyber-button flex-1"
+                >
+                  GO TO VAULT
+                </a>
+              )}
               {actionType === "renew" && (
                 <button
                   onClick={() => {
@@ -260,7 +283,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           <>
             <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
             <h1 className="text-3xl font-bold mb-4 glow-text text-red-500">
-              PULSE FAILED
+              OPERATION FAILED
             </h1>
             <Card className="mb-8 border-red-500/30">
               <p className="text-red-400/90 font-mono mb-4">{message}</p>
