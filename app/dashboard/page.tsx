@@ -38,6 +38,25 @@ export default function DashboardPage() {
       .then(setSeals)
       .catch(() => toast.error("Failed to load saved seals"))
       .finally(() => setIsLoading(false));
+
+    // Listen for storage changes from other tabs/windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'timeseal_links') {
+        loadSeals().then(setSeals).catch(() => {});
+      }
+    };
+
+    // Listen for focus to reload seals (catches same-tab changes)
+    const handleFocus = () => {
+      loadSeals().then(setSeals).catch(() => {});
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

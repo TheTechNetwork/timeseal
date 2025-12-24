@@ -90,6 +90,14 @@ export default function PulsePage({ params }: { params: { token: string } }) {
         });
         const data = await res.json();
         if (res.ok) {
+          // Update localStorage to mark seal as destroyed
+          const parts = currentToken.split(":");
+          const sealId = parts[0];
+          const { loadSeals, saveSeals } = await import('@/lib/encryptedStorage');
+          const seals = await loadSeals();
+          const updatedSeals = seals.map(s => s.id === sealId ? { ...s, unlockTime: -1 } : s);
+          await saveSeals(updatedSeals);
+          
           setStatus("success");
           setMessage("Seal deleted permanently");
           toast.success("Seal deleted!");
