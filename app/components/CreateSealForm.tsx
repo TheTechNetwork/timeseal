@@ -117,6 +117,48 @@ const TEMPLATES: Template[] = [
     tooltip:
       "Lock legal documents until settlement date - ensures compliance and timing",
   },
+  {
+    name: "Scavenger Hunt",
+    icon: (
+      <Gift className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />
+    ),
+    type: "timed",
+    placeholder: "Clue #1: Look where the sun rises...\nNext seal: [link]",
+    tooltip:
+      "Create multi-stage reveals - each seal unlocks the next clue at scheduled times",
+  },
+  {
+    name: "Course Content",
+    icon: (
+      <Calendar className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />
+    ),
+    type: "timed",
+    placeholder: "Week 1 Lesson: Introduction...\nAssignment: ...\nNext lesson unlocks in 7 days",
+    tooltip:
+      "Drip educational content over time - perfect for online courses and training programs",
+  },
+  {
+    name: "Emergency Backup",
+    icon: (
+      <ShieldAlert className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />
+    ),
+    type: "deadman",
+    placeholder: "Emergency contacts: ...\nAccount recovery codes: ...\nImportant instructions: ...",
+    pulseDays: 14,
+    tooltip:
+      "Auto-share critical info with trusted contacts if you can't check in for 2 weeks",
+  },
+  {
+    name: "Shared Secret",
+    icon: (
+      <ShieldAlert className="w-6 h-6 text-neon-green drop-shadow-[0_0_5px_rgba(0,255,65,0.5)]" />
+    ),
+    type: "ephemeral",
+    placeholder: "API Key: ...\nValid until: ...\nUse immediately and securely",
+    maxViews: 1,
+    tooltip:
+      "Share sensitive credentials that vanish after one view - no trace left behind",
+  },
 ];
 
 const containerVariants = {
