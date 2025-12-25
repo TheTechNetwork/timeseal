@@ -97,18 +97,22 @@ sequenceDiagram
     participant D1_DB
 
     Note over User, Browser: Phase A: Sealing
-    User->>Browser: Enters Secret + Time
+    User->>Browser: Select Template (Optional)
+    Browser->>Browser: Auto-fill settings
+    User->>Browser: Enters Secret + Time/Mode
     Browser->>Browser: Generate Key A + Key B
     Browser->>Browser: Encrypt Secret (Key A + Key B)
-    Browser->>API: Send EncryptedBlob + Key B + Time
-    API->>D1_DB: Store Blob + Key B + Time
-    API-->>Browser: Return Seal ID
-    Browser-->>User: Show Link (#KeyA)
+    Browser->>API: Send EncryptedBlob + Key B + Time + Mode
+    API->>API: Validate (20h buffer for timezones)
+    API->>D1_DB: Store Blob + Key B + Time + Metadata
+    API-->>Browser: Return Seal ID + Pulse Token (if DMS)
+    Browser->>Browser: Encrypt & Save to Local Vault (Optional)
+    Browser-->>User: Show Link (#KeyA) + Options (Copy/Download/Save)
 
     Note over User, Browser: Phase B: Waiting (Seal Active)
     User->>Browser: Opens Link (#KeyA)
     Browser->>API: Request Seal Status
-    API->>D1_DB: Check Time
+    API->>D1_DB: Check Time + View Count (if Ephemeral)
     D1_DB-->>API: Locked
     API-->>Browser: Status 403: "LOCKED" (Key B Withheld)
     Browser-->>User: Show Countdown Timer ⏳
@@ -116,12 +120,16 @@ sequenceDiagram
     Note over User, Browser: Phase C: Unlocking (Seal Broken)
     User->>Browser: Opens Link (After Time)
     Browser->>API: Request Seal Status
-    API->>D1_DB: Check Time
-    D1_DB-->>API: Unlocked
-    API-->>Browser: Status 200: Return Key B
+    API->>D1_DB: Check Time + Increment View Count
+    D1_DB-->>API: Unlocked + Key B
+    API-->>Browser: Status 200: Return Key B + Encrypted Blob
     Browser->>Browser: Combine Key A + Key B
     Browser->>Browser: Decrypt Secret
-    Browser-->>User: Display Decrypted Message �
+    Browser-->>User: Display Decrypted Message 🎉
+    
+    Note over API, D1_DB: Auto-Cleanup (Background)
+    API->>D1_DB: Delete if maxViews reached (Ephemeral)
+    API->>D1_DB: Delete 30 days after unlock (All types)
 ```
 
 ---
@@ -156,7 +164,7 @@ sequenceDiagram
 **Scenario:** "I have evidence. If I am arrested and can't click the reset button, the evidence goes public automatically."
 
 **How it works:**
-1. Upload sensitive documents to a Dead Man's Switch seal
+1. Upload sensitive files to a Dead Man's Switch seal
 2. Set pulse interval to 7 days
 3. Share the public vault link with journalists/activists
 4. Pulse every week to keep evidence locked
@@ -178,7 +186,7 @@ sequenceDiagram
 **Scenario:** "I want to send a birthday message that unlocks exactly at midnight on their birthday."
 
 **How it works:**
-1. Write personal message or upload video
+1. Write personal message or upload file
 2. Set unlock time to birthday midnight
 3. Send vault link in advance
 4. Recipient sees countdown until birthday
@@ -189,7 +197,7 @@ sequenceDiagram
 **Scenario:** "I need to ensure this contract becomes active only after the settlement date."
 
 **How it works:**
-1. Seal legal documents with specific unlock date
+1. Seal legal files with specific unlock date
 2. Share vault link with all parties
 3. Documents remain cryptographically locked
 4. Auto-unlock when settlement period expires
@@ -219,7 +227,7 @@ sequenceDiagram
 ### How do I create a seal?
 
 **Quick Start with Templates (Recommended):**
-1. Visit [timeseal.dev](https://timeseal.dev)
+1. Visit the TimeSeal website
 2. Click a template button to auto-configure your seal:
    - **One-Time Password** - Ephemeral seal (1 view, instant unlock)
    - **Crypto Inheritance** - Dead Man's Switch (30-day pulse)
@@ -244,7 +252,7 @@ sequenceDiagram
 **Manual Configuration:**
 
 **Timed Release:**
-1. Visit [timeseal.dev](https://timeseal.dev)
+1. Visit the TimeSeal website
 2. Enter your message or upload a file (max 750KB)
 3. Select "TIMED" mode
 4. Choose unlock date and time (up to 30 days)
@@ -334,7 +342,7 @@ sequenceDiagram
 - Encryption key stored in your browser only
 - No server-side storage of your vault links
 - Data persists in localStorage until you clear it
-- Access saved seals at [/dashboard](https://timeseal.dev/dashboard)
+- Access saved seals at /dashboard
 
 **Best practices:**
 - Use all three methods for important seals
@@ -345,7 +353,7 @@ sequenceDiagram
 
 ### How do I access my saved seals?
 
-1. Visit [/dashboard](https://timeseal.dev/dashboard)
+1. Visit /dashboard
 2. See all seals saved in your browser
 3. Click any seal to open vault page
 4. Delete seals you no longer need
@@ -530,7 +538,7 @@ Receipts contain HMAC-SHA256 signatures:
 1. Download receipt JSON after creating seal
 2. Use `/api/verify-receipt` endpoint:
 ```bash
-curl -X POST https://timeseal.dev/api/verify-receipt \
+curl -X POST https://timeseal.teycir-932.workers.dev/api/verify-receipt \
   -H "Content-Type: application/json" \
   -d @receipt.json
 ```
@@ -551,7 +559,7 @@ curl -X POST https://timeseal.dev/api/verify-receipt \
 - ✅ Source code available for inspection
 - ✅ Converts to Apache 2.0 after 4 years
 
-Contact for commercial licensing: license@timeseal.dev
+Contact for commercial licensing: [https://teycirbensoltane.tn](https://teycirbensoltane.tn)
 
 ### How do I self-host Time-Seal?
 
@@ -584,22 +592,22 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 1. **Create seals in reverse order** (last stage first):
    ```
    Stage 3 (Final): Create seal with final content
-   → Get vault link: https://timeseal.dev/vault/xyz789#keyC
+   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC
    
    Stage 2 (Middle): Create seal with:
-   - Content: "Stage 2 complete. Next: https://timeseal.dev/vault/xyz789#keyC"
+   - Content: "Stage 2 complete. Next: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC"
    - Unlock time: 7 days from now
-   → Get vault link: https://timeseal.dev/vault/abc456#keyB
+   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB
    
    Stage 1 (First): Create seal with:
-   - Content: "Stage 1 complete. Next: https://timeseal.dev/vault/abc456#keyB"
+   - Content: "Stage 1 complete. Next: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB"
    - Unlock time: Today (immediate)
-   → Get vault link: https://timeseal.dev/vault/def123#keyA
+   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/def123#keyA
    ```
 
 2. **Share only the first vault link** with recipients:
    ```
-   https://timeseal.dev/vault/def123#keyA
+   https://timeseal.teycir-932.workers.dev/vault/def123#keyA
    ```
 
 3. **Recipients experience the chain**:
@@ -701,7 +709,7 @@ Stage 4 (Week 4): "Final Exam [link]"
 
 **✅ Memory Protection** - Key A obfuscated in browser memory to prevent casual inspection  
 **✅ Extension Detection** - Warns users about browser extensions that could access keys  
-**✅ Warrant Canary** - Live transparency status at [/canary](https://timeseal.dev/canary)  
+**✅ Warrant Canary** - Live transparency status at /canary  
 **✅ Self-Hosting** - Deploy your own instance to eliminate infrastructure trust  
 
 See [HARDENING.md](docs/HARDENING.md) for full details.
@@ -711,7 +719,7 @@ See [HARDENING.md](docs/HARDENING.md) for full details.
 **What is it?** A warrant canary is a method to inform users that a service has NOT received secret government requests. If the canary disappears or stops updating, it signals potential compromise.
 
 **How it works:**
-- Visit [/canary](https://timeseal.dev/canary) to see live transparency status
+- Visit /canary to see live transparency status
 - Page auto-generates with current date on every visit
 - Lists all security checkpoints (no warrants, no gag orders, no data requests, etc.)
 - If page shows outdated date or returns error, assume compromise
@@ -981,6 +989,5 @@ See [TODO.md](docs/TODO.md) for complete checklist.
 
 **Built with 💚 and 🔒 by [Teycir Ben Soltane](https://teycirbensoltane.tn)**
 
-*Time-Seal: Where cryptography meets inevitability.*
 
 </div>
