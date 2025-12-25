@@ -25,22 +25,22 @@ export default function CanaryPage() {
         </motion.div>
 
         {/* Status Card */}
-        <div className="cyber-card p-6 mb-6 border-neon-green/50">
-          <div className="flex items-center gap-3 mb-4">
-            <CheckCircle className="w-6 h-6 text-neon-green" />
-            <h2 className="text-xl font-bold text-neon-green">STATUS: OPERATIONAL</h2>
+        <div className="cyber-card p-6 mb-6 border-neon-green bg-neon-green/5">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <CheckCircle className="w-10 h-10 text-neon-green animate-pulse" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-neon-green glow-text">STATUS: OPERATIONAL</h2>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-4 text-sm mb-4">
+          <div className="grid md:grid-cols-2 gap-4 text-base mb-6 bg-black/30 p-4 rounded-lg border border-neon-green/30">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-neon-green/60" />
-              <span className="text-neon-green/60">Last Updated:</span>
-              <span className="text-neon-green font-mono">{today.toISOString().split('T')[0]}</span>
+              <Calendar className="w-5 h-5 text-neon-green" />
+              <span className="text-neon-green/80 font-bold">Last Updated:</span>
+              <span className="text-neon-green font-mono text-lg">{today.toISOString().split('T')[0]}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-neon-green/60" />
-              <span className="text-neon-green/60">Next Check:</span>
-              <span className="text-neon-green font-mono">{nextMonth.toISOString().split('T')[0]}</span>
+              <Calendar className="w-5 h-5 text-neon-green" />
+              <span className="text-neon-green/80 font-bold">Next Check:</span>
+              <span className="text-neon-green font-mono text-lg">{nextMonth.toISOString().split('T')[0]}</span>
             </div>
           </div>
 
@@ -60,24 +60,24 @@ export default function CanaryPage() {
             </p>
           </div>
 
-          <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
-            <p className="text-xs text-yellow-500/70 mb-2 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" />
-              <strong>Live Verification Test:</strong>
+          <div className="p-6 bg-yellow-500/10 border-2 border-yellow-500/40 rounded-lg">
+            <p className="text-base text-yellow-500 mb-3 flex items-center gap-2 font-bold">
+              <RefreshCw className="w-5 h-5" />
+              🔍 VERIFY THIS CANARY IS LIVE:
             </p>
-            <p className="text-xs text-yellow-500/60 mb-2">
-              Refresh this page multiple times and watch the timestamp change. Each refresh generates a new timestamp proving the canary is live.
+            <p className="text-sm text-yellow-500/80 mb-4">
+              Click the button below multiple times and watch the timestamp change. Each refresh generates a NEW timestamp proving this canary is actively updating.
             </p>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 onClick={() => window.location.reload()}
-                className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-500 hover:bg-yellow-500/20 transition-colors font-mono flex items-center gap-1"
+                className="px-6 py-3 bg-yellow-500/20 border-2 border-yellow-500 rounded-lg text-base text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all font-mono font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.6)]"
               >
-                <RefreshCw className="w-3 h-3" />
-                REFRESH NOW
+                <RefreshCw className="w-5 h-5" />
+                REFRESH & VERIFY
               </button>
-              <span className="text-xs text-yellow-500/50 flex items-center gap-1">
-                <span>←</span> Click to verify timestamp updates
+              <span className="text-sm text-yellow-500/70 text-center sm:text-left">
+                ← Timestamp should update on every click
               </span>
             </div>
           </div>
