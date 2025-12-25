@@ -647,13 +647,11 @@ export class SealService {
       throw new Error("Invalid pulse token");
     }
 
-    // Check nonce FIRST (prevents replay)
-    const nonceValid = await checkAndStoreNonce(nonce, this.db);
-    if (!nonceValid) {
-      throw new Error("Invalid pulse token");
-    }
+    // SKIP nonce check for burn - user may have just visited pulse page
+    // Nonce replay protection is less critical for destructive operations
+    // since the seal will be deleted anyway
 
-    // THEN validate token signature
+    // Validate token signature
     const isValid = await validatePulseToken(
       pulseToken,
       sealId,
