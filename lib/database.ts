@@ -141,6 +141,7 @@ export class SealDatabase implements DatabaseProvider {
   }
 
   async createSeal(data: SealRecord): Promise<void> {
+    console.log('[Database] Creating seal:', data.id);
     const result = await this.db
       .prepare(
         `INSERT INTO seals (id, unlock_time, is_dms, pulse_interval, last_pulse, key_b, iv, pulse_token, created_at, blob_hash, unlock_message, expires_at, access_count, is_ephemeral, max_views, view_count)
@@ -167,8 +168,10 @@ export class SealDatabase implements DatabaseProvider {
       .run();
 
     if (!result.success) {
+      console.error('[Database] Failed to create seal:', data.id, result);
       throw new Error(`Failed to create seal ${data.id} in database`);
     }
+    console.log('[Database] Seal created successfully:', data.id);
   }
 
   async getSeal(id: string): Promise<SealRecord | null> {

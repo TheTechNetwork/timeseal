@@ -24,17 +24,24 @@ export interface Container {
 }
 
 export function createContainer(env: CloudflareEnv): Container {
+  console.log('[Container] Creating container');
   if (!env.MASTER_ENCRYPTION_KEY) {
+    console.error('[Container] MASTER_ENCRYPTION_KEY missing');
     throw new Error("MASTER_ENCRYPTION_KEY not configured in environment");
   }
 
   if (!env.DB) {
+    console.error('[Container] DB missing');
     throw new Error("D1 database not configured in environment");
   }
 
+  console.log('[Container] Creating storage');
   const storage = createStorage(env);
+  console.log('[Container] Creating database');
   const database = new SealDatabase(env.DB);
+  console.log('[Container] Creating audit logger');
   const auditLogger = new AuditLogger(env.DB);
+  console.log('[Container] Creating seal service');
   const sealService = new SealService(
     storage,
     database,
@@ -42,6 +49,7 @@ export function createContainer(env: CloudflareEnv): Container {
     auditLogger,
   );
 
+  console.log('[Container] Container created successfully');
   return {
     sealService,
     storage,

@@ -4,6 +4,7 @@ import { validateHTTPMethod, validateOrigin } from "./security";
 import { ValidationResult } from "./validation";
 import { NextRequest } from "next/server";
 import { BASE64_CHUNK_SIZE } from "./constants";
+import { ErrorTracker } from './errorTracker';
 
 /**
  * Standard API security checks (HTTP method + origin validation)
@@ -39,8 +40,6 @@ export function checkValidation(
 /**
  * Track analytics event (non-blocking)
  */
-import { ErrorTracker } from './errorTracker';
-
 export async function trackAnalytics(
   db: any,
   eventType: 'page_view' | 'seal_created' | 'seal_unlocked' | 'pulse_received' | 'seal_deleted',

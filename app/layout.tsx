@@ -152,6 +152,7 @@ export default function RootLayout({
         <SecurityDashboard />
         <Toaster
           position="top-center"
+          gap={12}
           toastOptions={{
             style: {
               background: '#050505',

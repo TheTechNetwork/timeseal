@@ -16,7 +16,9 @@ export class D1BlobStorage implements StorageProvider {
   constructor(private db: D1Database) {}
 
   async uploadBlob(sealId: string, data: ArrayBuffer, unlockTime: number): Promise<void> {
+    console.log('[D1Storage] Uploading blob:', sealId, 'Size:', data.byteLength);
     if (data.byteLength > MAX_UPLOAD_SIZE) {
+      console.error('[D1Storage] Blob too large:', data.byteLength);
       throw new Error(`File exceeds maximum size of ${MAX_UPLOAD_SIZE / 1024 / 1024}MB`);
     }
 
@@ -29,18 +31,25 @@ export class D1BlobStorage implements StorageProvider {
       binary += String.fromCharCode(...chunk);
     }
     const base64 = btoa(binary);
+    console.log('[D1Storage] Base64 encoded, length:', base64.length);
     
     await this.db.prepare(
       'UPDATE seals SET encrypted_blob = ? WHERE id = ?'
     ).bind(base64, sealId).run();
+    console.log('[D1Storage] Blob uploaded successfully');
   }
 
   async downloadBlob(sealId: string): Promise<ArrayBuffer> {
+    console.log('[D1Storage] Downloading blob:', sealId);
     const result = await this.db.prepare(
       'SELECT encrypted_blob FROM seals WHERE id = ?'
     ).bind(sealId).first<{ encrypted_blob: string }>();
     
-    if (!result?.encrypted_blob) throw new Error('Blob not found');
+    if (!result?.encrypted_blob) {
+      console.error('[D1Storage] Blob not found:', sealId);
+      throw new Error('Blob not found');
+    }
+    console.log('[D1Storage] Blob found, decoding');
     
     // Chunked decoding to avoid stack overflow
     const binary = atob(result.encrypted_blob);
@@ -52,6 +61,7 @@ export class D1BlobStorage implements StorageProvider {
         bytes[j] = binary.charCodeAt(j);
       }
     }
+    console.log('[D1Storage] Blob decoded, size:', bytes.length);
     return bytes.buffer;
   }
 

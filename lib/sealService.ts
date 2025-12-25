@@ -232,7 +232,7 @@ export class SealService {
 
       return { sealId, iv: request.iv, pulseToken, receipt };
     } catch (error) {
-      ErrorTracker.trackError(error as Error, {
+      await ErrorTracker.trackError(error as Error, {
         action: 'create_seal',
         sealId,
         isDMS: request.isDMS,

@@ -1,74 +1,131 @@
-// Error Tracking with Winston (MIT License)
-import { createLogger, format, transports } from 'winston';
-
-const { combine, timestamp, json, errors } = format;
-
-// Create logger instance
-const logger = createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: combine(
-    errors({ stack: true }),
-    timestamp(),
-    json()
-  ),
-  defaultMeta: { service: 'timeseal' },
-  transports: [
-    // Console output
-    new transports.Console({
-      format: format.simple(),
-    }),
-  ],
-});
-
-// Add file transport in production
-if (process.env.NODE_ENV === 'production') {
-  logger.add(new transports.File({ 
-    filename: 'logs/error.log', 
-    level: 'error',
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-  }));
-  
-  logger.add(new transports.File({ 
-    filename: 'logs/combined.log',
-    maxsize: 5242880,
-    maxFiles: 5,
-  }));
-}
+// Error Tracking - Environment-aware logging
+// Uses Winston (MIT) in development, console in production (Cloudflare Workers)
 
 export interface ErrorContext {
   sealId?: string;
   ip?: string;
   userId?: string;
   action?: string;
+  component?: string;
+  eventType?: string;
   [key: string]: any;
+}
+
+// Check if we're in Cloudflare Workers environment
+const isCloudflareWorkers =
+  typeof globalThis.caches !== "undefined" && typeof process === "undefined";
+
+// Lazy-load Winston only in Node.js environment
+let winstonLogger: any = null;
+
+async function getLogger() {
+  if (isCloudflareWorkers) {
+    return null; // Use console in Workers
+  }
+
+  if (!winstonLogger) {
+    try {
+      const { createLogger, format, transports } = await import("winston");
+      const { combine, timestamp, json, errors } = format;
+
+      winstonLogger = createLogger({
+        level: process.env.LOG_LEVEL || "info",
+        format: combine(errors({ stack: true }), timestamp(), json()),
+        defaultMeta: { service: "timeseal" },
+        transports: [
+          new transports.Console({
+            format: format.simple(),
+          }),
+        ],
+      });
+
+      // Add file transport in production Node.js
+      if (process.env.NODE_ENV === "production") {
+        winstonLogger.add(
+          new transports.File({
+            filename: "logs/error.log",
+            level: "error",
+            maxsize: 5242880, // 5MB
+            maxFiles: 5,
+          }),
+        );
+
+        winstonLogger.add(
+          new transports.File({
+            filename: "logs/combined.log",
+            maxsize: 5242880,
+            maxFiles: 5,
+          }),
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "[ErrorTracker] Winston not available, falling back to console",
+      );
+      return null;
+    }
+  }
+
+  return winstonLogger;
 }
 
 export class ErrorTracker {
   static trackError(error: Error, context?: ErrorContext) {
-    logger.error('Application error', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      ...context,
+    getLogger().then(logger => {
+      const errorData = {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        ...context,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (logger) {
+        logger.error("Application error", errorData);
+      } else {
+        console.error("[ErrorTracker]", errorData);
+      }
     });
   }
 
   static trackWarning(message: string, context?: ErrorContext) {
-    logger.warn(message, context);
+    getLogger().then(logger => {
+      if (logger) {
+        logger.warn(message, context);
+      } else {
+        console.warn("[ErrorTracker]", message, context);
+      }
+    });
   }
 
   static trackInfo(message: string, context?: ErrorContext) {
-    logger.info(message, context);
+    getLogger().then(logger => {
+      if (logger) {
+        logger.info(message, context);
+      } else {
+        console.log("[ErrorTracker]", message, context);
+      }
+    });
   }
 
-  static trackMetric(metric: string, value: number, context?: ErrorContext) {
-    logger.info('Metric', {
-      metric,
-      value,
-      ...context,
+  static trackMetric(
+    metric: string,
+    value: number,
+    context?: ErrorContext,
+  ) {
+    getLogger().then(logger => {
+      const metricData = {
+        metric,
+        value,
+        ...context,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (logger) {
+        logger.info("Metric", metricData);
+      } else {
+        console.log("[ErrorTracker] Metric:", metricData);
+      }
     });
   }
 }
-
-export default logger;
