@@ -128,6 +128,8 @@ sequenceDiagram
 
 ## 🎯 Use Cases
 
+**💡 Quick Start Templates:** Time-Seal now includes 10 pre-configured templates for common scenarios. Click any template button on the homepage to auto-fill settings and get started instantly.
+
 ### 🔥 The Confidential Sender
 **Scenario:** "I need to send a one-time password that self-destructs after the recipient reads it."
 
@@ -215,6 +217,31 @@ sequenceDiagram
 - No way to manipulate server time without infrastructure access
 
 ### How do I create a seal?
+
+**Quick Start with Templates (Recommended):**
+1. Visit [timeseal.dev](https://timeseal.dev)
+2. Click a template button to auto-configure your seal:
+   - **One-Time Password** - Ephemeral seal (1 view, instant unlock)
+   - **Crypto Inheritance** - Dead Man's Switch (30-day pulse)
+   - **Whistleblower** - Dead Man's Switch (7-day pulse)
+   - **Product Launch** - Timed release (24 hours)
+   - **Birthday Gift** - Timed release (24 hours)
+   - **Legal Hold** - Timed release (24 hours)
+   - **Scavenger Hunt** - Timed release with chained clues
+   - **Course Content** - Timed release for drip content
+   - **Emergency Backup** - Dead Man's Switch (14-day pulse)
+   - **Shared Secret** - Ephemeral seal (1 view, instant unlock)
+3. Template auto-fills message placeholder and settings
+4. Customize message/file and timing as needed
+5. Complete security check (Cloudflare Turnstile)
+6. Click "Create Time-Seal"
+7. Choose how to save the vault link:
+   - **COPY** - Copy to clipboard
+   - **DOWNLOAD** - Save markdown file with links
+   - **SAVE** - Encrypt and store in browser vault
+8. Share vault link with recipient
+
+**Manual Configuration:**
 
 **Timed Release:**
 1. Visit [timeseal.dev](https://timeseal.dev)
