@@ -547,6 +547,7 @@ export function CreateSealForm({
         onProgressChange(100);
         await new Promise((resolve) => setTimeout(resolve, 300));
         toast.dismiss(loadingToast);
+        await new Promise((resolve) => setTimeout(resolve, 100));
         toast.success("Seal created successfully!");
         onSuccess({
           publicUrl,

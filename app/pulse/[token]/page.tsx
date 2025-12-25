@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { BackgroundBeams } from "@/app/components/ui/background-beams";
 import { Card } from "@/app/components/Card";
-import { CheckCircle, XCircle, Loader2, Clock, RefreshCw, Unlock, Trash2 } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Clock,
+  RefreshCw,
+  Unlock,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function PulsePage({ params }: { params: { token: string } }) {
@@ -17,14 +25,16 @@ export default function PulsePage({ params }: { params: { token: string } }) {
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentToken, setCurrentToken] = useState("");
-  const [actionType, setActionType] = useState<"renew" | "unlock" | "delete" | null>(null);
+  const [actionType, setActionType] = useState<
+    "renew" | "unlock" | "delete" | null
+  >(null);
 
   useEffect(() => {
     const fetchSealInfo = async () => {
       try {
         const token = decodeURIComponent(params.token);
         setCurrentToken(token);
-        
+
         const parts = token.split(":");
         if (parts.length < 2) {
           setStatus("error");
@@ -53,10 +63,12 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           // Note: We can't include keyA in redirect as we don't have it from pulse token
           if (!data.isLocked) {
             setStatus("error");
-            setMessage("This seal is already unlocked. Use your original vault link to access the content.");
+            setMessage(
+              "This seal is already unlocked. Use your original vault link to access the content.",
+            );
             return;
           }
-          
+
           const daysRemaining = Math.max(
             1,
             Math.floor((data.unlockTime - Date.now()) / (1000 * 60 * 60 * 24)),
@@ -71,7 +83,9 @@ export default function PulsePage({ params }: { params: { token: string } }) {
       } catch (err) {
         setStatus("error");
         setMessage("Failed to load seal information");
-        setErrorDetails({ error: err instanceof Error ? err.message : String(err) });
+        setErrorDetails({
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     };
 
@@ -93,17 +107,23 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           // Update localStorage to mark seal as destroyed
           const parts = currentToken.split(":");
           const sealId = parts[0];
-          const { loadSeals, saveSeals } = await import('@/lib/encryptedStorage');
+          const { loadSeals, saveSeals } =
+            await import("@/lib/encryptedStorage");
           const seals = await loadSeals();
-          const updatedSeals = seals.map(s => s.id === sealId ? { ...s, unlockTime: -1 } : s);
+          const updatedSeals = seals.map((s) =>
+            s.id === sealId ? { ...s, unlockTime: -1 } : s,
+          );
           await saveSeals(updatedSeals);
-          
+
           setStatus("success");
           setMessage("Seal deleted permanently");
           toast.success("Seal deleted!");
         } else {
           setStatus("error");
-          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to delete seal";
+          const errorMsg =
+            typeof data.error === "string"
+              ? data.error
+              : data.error?.message || "Failed to delete seal";
           setMessage(errorMsg);
           setErrorDetails({ status: res.status, data });
           toast.error("Delete failed");
@@ -116,26 +136,46 @@ export default function PulsePage({ params }: { params: { token: string } }) {
         });
         const data = await res.json();
         if (res.ok) {
+          // Update localStorage to mark seal as unlocked (revoked)
+          const parts = currentToken.split(":");
+          const sealId = parts[0];
+          const { loadSeals, saveSeals } =
+            await import("@/lib/encryptedStorage");
+          const seals = await loadSeals();
+          const updatedSeals = seals.map((s) =>
+            s.id === sealId ? { ...s, unlockTime: Date.now() } : s,
+          );
+          await saveSeals(updatedSeals);
+
           setStatus("success");
-          setMessage("Seal unlocked immediately. Visit vault to access content.");
+          setMessage(
+            "Seal unlocked immediately. Visit vault to access content.",
+          );
           toast.success("Seal unlocked!");
         } else {
           setStatus("error");
-          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to unlock seal";
+          const errorMsg =
+            typeof data.error === "string"
+              ? data.error
+              : data.error?.message || "Failed to unlock seal";
           setMessage(errorMsg);
           setErrorDetails({ status: res.status, data });
           toast.error("Unlock failed");
         }
       } else {
         // Convert interval to milliseconds
-        const intervalMs = pulseUnit === "minutes" 
-          ? pulseInterval * 60 * 1000 
-          : pulseInterval * 24 * 60 * 60 * 1000;
-        
+        const intervalMs =
+          pulseUnit === "minutes"
+            ? pulseInterval * 60 * 1000
+            : pulseInterval * 24 * 60 * 60 * 1000;
+
         const res = await fetch("/api/pulse", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pulseToken: currentToken, newInterval: intervalMs }),
+          body: JSON.stringify({
+            pulseToken: currentToken,
+            newInterval: intervalMs,
+          }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -147,7 +187,10 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           toast.success("Pulse renewed!");
         } else {
           setStatus("error");
-          const errorMsg = typeof data.error === "string" ? data.error : data.error?.message || "Failed to renew pulse";
+          const errorMsg =
+            typeof data.error === "string"
+              ? data.error
+              : data.error?.message || "Failed to renew pulse";
           setMessage(errorMsg);
           setErrorDetails({ status: res.status, data });
           toast.error("Renewal failed");
@@ -156,7 +199,10 @@ export default function PulsePage({ params }: { params: { token: string } }) {
     } catch (err) {
       setStatus("error");
       setMessage("Network error occurred");
-      setErrorDetails({ error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
+      setErrorDetails({
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
       toast.error("Network error");
     } finally {
       setIsUpdating(false);
@@ -170,7 +216,9 @@ export default function PulsePage({ params }: { params: { token: string } }) {
         {status === "loading" && (
           <>
             <Loader2 className="w-16 h-16 text-neon-green mx-auto mb-6 animate-spin" />
-            <h1 className="text-2xl sm:text-3xl font-bold mb-4 glow-text">LOADING PULSE</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-4 glow-text">
+              LOADING PULSE
+            </h1>
           </>
         )}
 
@@ -230,7 +278,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 className="cyber-button bg-neon-green/20 hover:bg-neon-green/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
               >
                 <RefreshCw className="w-4 h-4" />
-                <span className="whitespace-nowrap">{isUpdating && actionType === "renew" ? "PROCESSING..." : "RENEW PULSE"}</span>
+                <span className="whitespace-nowrap">
+                  {isUpdating && actionType === "renew"
+                    ? "PROCESSING..."
+                    : "RENEW PULSE"}
+                </span>
               </button>
               <button
                 onClick={() => handleAction("unlock")}
@@ -238,7 +290,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 className="cyber-button bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
               >
                 <Unlock className="w-4 h-4" />
-                <span className="whitespace-nowrap">{isUpdating && actionType === "unlock" ? "PROCESSING..." : "UNLOCK NOW"}</span>
+                <span className="whitespace-nowrap">
+                  {isUpdating && actionType === "unlock"
+                    ? "PROCESSING..."
+                    : "UNLOCK NOW"}
+                </span>
               </button>
             </div>
             <button
@@ -247,7 +303,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
               className="cyber-button w-full bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed mb-4 flex items-center justify-center gap-2 h-12"
             >
               <Trash2 className="w-4 h-4" />
-              <span className="whitespace-nowrap">{isUpdating && actionType === "delete" ? "PROCESSING..." : "DELETE SEAL FOREVER"}</span>
+              <span className="whitespace-nowrap">
+                {isUpdating && actionType === "delete"
+                  ? "PROCESSING..."
+                  : "DELETE SEAL FOREVER"}
+              </span>
             </button>
             <div className="flex gap-3 mb-2">
               <a href="/" className="cyber-button flex-1 bg-neon-green/10">
@@ -267,7 +327,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
           <>
             <CheckCircle className="w-16 h-16 text-neon-green mx-auto mb-6" />
             <h1 className="text-2xl sm:text-3xl font-bold mb-4 glow-text text-neon-green">
-              {actionType === "delete" ? "SEAL DELETED" : actionType === "unlock" ? "SEAL UNLOCKED" : "PULSE UPDATED"}
+              {actionType === "delete"
+                ? "SEAL DELETED"
+                : actionType === "unlock"
+                  ? "SEAL UNLOCKED"
+                  : "PULSE UPDATED"}
             </h1>
             <Card className="mb-8 border-neon-green/30">
               <p className="text-neon-green/90 font-mono">{message}</p>
