@@ -2,6 +2,7 @@
 // Warns users about extensions that could access Key A from memory
 
 declare const chrome: any;
+declare const browser: any;
 
 export interface SecurityWarning {
   severity: 'low' | 'medium' | 'high';
@@ -12,11 +13,21 @@ export interface SecurityWarning {
 export function detectSuspiciousExtensions(): SecurityWarning[] {
   const warnings: SecurityWarning[] = [];
   
+  // Chrome/Chromium-based (Chrome, Edge, Opera, Brave)
   if (typeof chrome !== 'undefined' && chrome.runtime) {
     warnings.push({
       severity: 'medium',
       message: 'Browser extensions detected',
       recommendation: 'Disable extensions or use incognito mode for sensitive seals',
+    });
+  }
+  
+  // Firefox (uses browser.runtime instead of chrome.runtime)
+  if (typeof browser !== 'undefined' && browser.runtime) {
+    warnings.push({
+      severity: 'medium',
+      message: 'Browser extensions detected',
+      recommendation: 'Disable extensions or use private browsing for sensitive seals',
     });
   }
   
