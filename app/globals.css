@@ -35,6 +35,7 @@ body {
   background-color: var(--dark-bg);
   color: var(--dark-text);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* Noise Texture Overlay */

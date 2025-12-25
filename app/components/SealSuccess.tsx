@@ -110,7 +110,7 @@ export function SealSuccess({
         </p>
       </motion.div>
 
-      <Card className="space-y-6">
+      <Card className="space-y-8">
         {sealType === "ephemeral" && (
           <div className="p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-xl mb-6">
             <p className="text-yellow-500 text-sm font-bold mb-2">
@@ -171,7 +171,7 @@ export function SealSuccess({
                 sent to server). Press Ctrl+K to copy.
               </span>
             </div>
-            <div className="flex gap-4 text-sm font-mono">
+            <div className="flex flex-wrap gap-4 text-sm font-mono">
               <button
                 onClick={() => copyToClipboard(publicUrl, "Link")}
                 className="text-neon-green hover:text-neon-green/80 underline"
@@ -196,7 +196,7 @@ export function SealSuccess({
                 check in. Press Ctrl+Shift+K to copy.
               </span>
             </div>
-            <div className="flex gap-4 text-sm font-mono">
+            <div className="flex flex-wrap gap-4 text-sm font-mono">
               <button
                 onClick={() =>
                   copyToClipboard(

@@ -13,6 +13,10 @@ import { SecurityDashboard } from '@/components/SecurityDashboard'
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'] })
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
   themeColor: '#0a0a0a',
 }
 

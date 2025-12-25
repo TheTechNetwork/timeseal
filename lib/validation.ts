@@ -123,7 +123,9 @@ export function validateUnlockTime(unlockTime: number): ValidationResult {
     };
   }
 
-  const maxUnlockTime = now + MAX_DURATION_DAYS * 24 * 60 * 60 * 1000;
+  // Add 20-hour buffer for timezone differences, network latency, and clock drift
+  const BUFFER_MS = 20 * 60 * 60 * 1000; // 20 hours
+  const maxUnlockTime = now + (MAX_DURATION_DAYS * 24 * 60 * 60 * 1000) + BUFFER_MS;
   if (unlockTime > maxUnlockTime) {
     return {
       valid: false,
@@ -143,7 +145,9 @@ export function validatePulseInterval(interval: number): ValidationResult {
     return { valid: false, error: "Pulse interval must be at least 5 minutes" };
   }
 
-  if (interval > MAX_PULSE_INTERVAL) {
+  // Add 20-hour buffer for timezone differences, network latency, and clock drift
+  const BUFFER_MS = 20 * 60 * 60 * 1000; // 20 hours
+  if (interval > MAX_PULSE_INTERVAL + BUFFER_MS) {
     return { valid: false, error: "Pulse interval cannot exceed 30 days" };
   }
 

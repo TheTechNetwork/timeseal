@@ -17,6 +17,9 @@ const ENCRYPTION_KEY_NAME = 'timeseal_storage_key';
 
 // Generate or retrieve encryption key for localStorage
 async function getStorageKey(): Promise<CryptoKey> {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    throw new Error('localStorage not available');
+  }
   const stored = localStorage.getItem(ENCRYPTION_KEY_NAME);
   
   if (stored) {
@@ -82,6 +85,9 @@ async function decryptStorage(encrypted: string): Promise<string> {
 
 // Save seals (encrypted)
 export async function saveSeals(seals: StoredSeal[]): Promise<void> {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    throw new Error('localStorage not available');
+  }
   const json = JSON.stringify(seals);
   const encrypted = await encryptStorage(json);
   localStorage.setItem(STORAGE_KEY, encrypted);
@@ -89,6 +95,9 @@ export async function saveSeals(seals: StoredSeal[]): Promise<void> {
 
 // Load seals (decrypted, sorted by most recent first)
 export async function loadSeals(): Promise<StoredSeal[]> {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return [];
+  }
   const encrypted = localStorage.getItem(STORAGE_KEY);
   if (!encrypted) return [];
   

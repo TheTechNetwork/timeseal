@@ -59,6 +59,16 @@ describe('Validation', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toContain('cannot exceed 30 days');
     });
+
+    it('should accept 30-day interval with buffer', () => {
+      const result = validatePulseInterval(30 * 24 * 3600 * 1000); // Exactly 30 days
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept slightly over 30 days (within 20h buffer)', () => {
+      const result = validatePulseInterval((30 * 24 + 10) * 3600 * 1000); // 30 days + 10 hours
+      expect(result.valid).toBe(true);
+    });
   });
 
   describe('sanitizeInput', () => {

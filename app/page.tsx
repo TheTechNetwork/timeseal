@@ -141,7 +141,7 @@ export default function HomePage() {
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <motion.a
           href="/dashboard"
-          className="flex items-center justify-center gap-2 px-3 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group"
+          className="flex items-center justify-center gap-2 px-3 py-2 bg-dark-bg/80 backdrop-blur-sm border-2 border-neon-green/30 rounded-xl hover:border-neon-green transition-all group touch-manipulation"
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)' }}
           whileTap={{ scale: 0.95 }}
           aria-label="View your saved TimeSeal vaults"
