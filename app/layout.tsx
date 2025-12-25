@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://timeseal.dev'),
+  metadataBase: new URL('https://timeseal.teycir-932.workers.dev'),
   title: {
     default: 'TimeSeal - Cryptographic Time-Locked Vault & Dead Man\'s Switch',
     template: '%s | TimeSeal'
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://timeseal.dev',
+    url: 'https://timeseal.teycir-932.workers.dev',
     title: 'TimeSeal - Cryptographic Time-Locked Vault & Dead Man\'s Switch',
     description: 'Create cryptographically enforced time-locked vaults. Encrypt messages that unlock automatically at a future date or after inactivity. Zero-trust, edge-native encryption with split-key architecture.',
     siteName: 'TimeSeal',
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   alternates: {
-    canonical: 'https://timeseal.dev',
+    canonical: 'https://timeseal.teycir-932.workers.dev',
   },
   icons: {
     icon: [

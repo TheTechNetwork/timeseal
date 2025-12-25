@@ -7,7 +7,7 @@ export function StructuredData() {
     name: "TimeSeal - Cryptographic Time-Locked Vault",
     applicationCategory: "SecurityApplication",
     operatingSystem: "Web",
-    url: "https://timeseal.dev",
+    url: "https://timeseal.teycir-932.workers.dev",
     offers: {
       "@type": "Offer",
       price: "0",
@@ -27,11 +27,11 @@ export function StructuredData() {
       "Ephemeral seals with self-destruct",
       "Privacy-preserving analytics",
     ],
-    screenshot: "https://timeseal.dev/explainerimage.png",
+    screenshot: "https://timeseal.teycir-932.workers.dev/explainerimage.png",
     author: {
       "@type": "Organization",
       name: "TimeSeal",
-      url: "https://timeseal.dev",
+      url: "https://timeseal.teycir-932.workers.dev",
     },
     datePublished: "2024-01-01",
     dateModified: "2024-12-20",
@@ -94,8 +94,8 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "TimeSeal",
-    url: "https://timeseal.dev",
-    logo: "https://timeseal.dev/favicon.svg",
+    url: "https://timeseal.teycir-932.workers.dev",
+    logo: "https://timeseal.teycir-932.workers.dev/favicon.svg",
     description: "Zero-trust cryptographic time-locked vault and dead man's switch platform",
     sameAs: [
       "https://github.com/teycir/timeseal",
