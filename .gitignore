@@ -46,3 +46,13 @@ next-env.d.ts
 logs/
 backups/
 *.log
+
+# Shell scripts with secrets (security)
+scripts/setup-secrets.sh
+scripts/setup-turnstile.sh
+scripts/setup-cloudflare.sh
+scripts/migrate-prod.sh
+scripts/backup-db.sh
+scripts/deploy.sh
+*.backup
+*.bak
