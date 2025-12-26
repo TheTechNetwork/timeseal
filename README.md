@@ -11,7 +11,7 @@
 
 ![Time-Seal Animation](public/timeseal_ascii.svg)
 
-### *"If I go silent, this speaks for me."*
+### _"If I go silent, this speaks for me."_
 
 [Create a Seal](https://timeseal.teycir-932.workers.dev) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
 
@@ -28,6 +28,7 @@
 ![Time-Seal Architecture](public/explainerimage.png)
 
 ### Why is this different?
+
 > most "future message" apps contain "trust me bro" promises. Time-Seal is **Cryptographically Enforced** at the Edge.
 
 ---
@@ -39,6 +40,7 @@
 </div>
 
 ### 🔒 Layer 1: The Vault (Encrypted D1 Database Storage)
+
 > **Triple-Layer Encryption**
 
 **All seals are encrypted in the database with multiple security layers:**
@@ -61,25 +63,31 @@
    - ❌ NO plaintext content ever stored
 
 **What an attacker with database access CANNOT do:**
+
 - Decrypt without Key A (in URL hash, never sent to server)
 - Decrypt without master encryption key (environment secret)
 - Modify unlock time (cryptographically signed)
 - Access content before unlock time (server enforces time-lock)
 
 ### 🤝 Layer 2: The Handshake (Split-Key Crypto)
+
 > **Trust-Minimized**
-We use a Split-Key architecture to ensure no single party can decrypt the data early.
-*   **Key A (User):** Stored in the URL hash. Never sent to the server.
-*   **Key B (Server):** Stored in D1 database inside the secure enclave.
-*   **The Check:** The server refuses to release Key B until `Now > Unlock_Time`.
+> We use a Split-Key architecture to ensure no single party can decrypt the data early.
+
+- **Key A (User):** Stored in the URL hash. Never sent to the server.
+- **Key B (Server):** Stored in D1 database inside the secure enclave.
+- **The Check:** The server refuses to release Key B until `Now > Unlock_Time`.
 
 ### 💓 Layer 3: The Pulse (Dead Man's Switch)
+
 > **Automated Release**
-If used as a Dead Man's Switch, the user must click a private "Pulse Link" periodically. If they fail to check in, the seal unlocks automatically for the recipient.
+> If used as a Dead Man's Switch, the user must click a private "Pulse Link" periodically. If they fail to check in, the seal unlocks automatically for the recipient.
 
 ### 🗑️ Layer 4: Auto-Cleanup (Database Protection)
+
 > **30-Day Retention**
-Seals are automatically deleted 30 days after unlock time via scheduled cron job. This ensures:
+> Seals are automatically deleted 30 days after unlock time via scheduled cron job. This ensures:
+
 - Maximum seal duration: 30 days (configurable limit)
 - Post-unlock retention: 30 days
 - Total maximum lifetime: 60 days
@@ -126,7 +134,7 @@ sequenceDiagram
     Browser->>Browser: Combine Key A + Key B
     Browser->>Browser: Decrypt Secret
     Browser-->>User: Display Decrypted Message 🎉
-    
+
     Note over API, D1_DB: Auto-Cleanup (Background)
     API->>D1_DB: Delete if maxViews reached (Ephemeral)
     API->>D1_DB: Delete 30 days after unlock (All types)
@@ -139,9 +147,11 @@ sequenceDiagram
 **💡 Quick Start Templates:** Time-Seal now includes 10 pre-configured templates for common scenarios. Click any template button on the homepage to auto-fill settings and get started instantly.
 
 ### 🔥 The Confidential Sender
+
 **Scenario:** "I need to send a one-time password that self-destructs after the recipient reads it."
 
 **How it works:**
+
 1. Create ephemeral seal with maxViews=1
 2. Set unlock time to immediate or specific time
 3. Share vault link with recipient
@@ -150,9 +160,11 @@ sequenceDiagram
 6. No trace remains in database or storage
 
 ### 💀 The Crypto Holder
+
 **Scenario:** "I have my seed phrase in a Time-Seal. If I die, it unlocks for my wife after 30 days of silence. If I'm alive, I reset the timer."
 
 **How it works:**
+
 1. Create a Dead Man's Switch seal with your seed phrase
 2. Set pulse interval to 30 days
 3. Share the public vault link with your wife
@@ -161,9 +173,11 @@ sequenceDiagram
 6. If you die/disappear, the seal auto-unlocks for your wife
 
 ### 🕵️ The Whistleblower
+
 **Scenario:** "I have evidence. If I am arrested and can't click the reset button, the evidence goes public automatically."
 
 **How it works:**
+
 1. Upload sensitive files to a Dead Man's Switch seal
 2. Set pulse interval to 7 days
 3. Share the public vault link with journalists/activists
@@ -172,9 +186,11 @@ sequenceDiagram
 6. Creates accountability and protection
 
 ### 🚀 The Marketer
+
 **Scenario:** "I'm dropping a limited edition product. The link is public now, but nobody can buy until the timer hits zero."
 
 **How it works:**
+
 1. Create timed release seal with product details/access codes
 2. Set exact launch date and time
 3. Share vault link publicly on social media
@@ -183,9 +199,11 @@ sequenceDiagram
 6. Creates viral marketing buzz
 
 ### 🎁 The Gift Giver
+
 **Scenario:** "I want to send a birthday message that unlocks exactly at midnight on their birthday."
 
 **How it works:**
+
 1. Write personal message or upload file
 2. Set unlock time to birthday midnight
 3. Send vault link in advance
@@ -194,9 +212,11 @@ sequenceDiagram
 6. Creates magical surprise experience
 
 ### 🏛️ The Legal Professional
+
 **Scenario:** "I need to ensure this contract becomes active only after the settlement date."
 
 **How it works:**
+
 1. Seal legal files with specific unlock date
 2. Share vault link with all parties
 3. Documents remain cryptographically locked
@@ -211,6 +231,7 @@ sequenceDiagram
 ### How does Time-Seal prevent early access?
 
 **Split-Key Architecture:**
+
 1. Your browser generates two random keys: Key A and Key B
 2. Both keys are needed to decrypt your content
 3. Key A stays in your browser (in the URL hash)
@@ -219,6 +240,7 @@ sequenceDiagram
 6. Without both keys, decryption is mathematically impossible
 
 **Server-Side Time Enforcement:**
+
 - All time checks happen on Cloudflare's servers (not your computer)
 - Your local clock is completely irrelevant
 - Cloudflare uses NTP-synchronized time across global network
@@ -227,6 +249,7 @@ sequenceDiagram
 ### How do I create a seal?
 
 **Quick Start with Templates (Recommended):**
+
 1. Visit the TimeSeal website
 2. Click a template button to auto-configure your seal:
    - **One-Time Password** - Ephemeral seal (1 view, instant unlock)
@@ -252,8 +275,9 @@ sequenceDiagram
 **Manual Configuration:**
 
 **Timed Release:**
+
 1. Visit the TimeSeal website
-2. Enter your message or upload a file (max 750KB)
+2. Enter your message or upload a file (max 560KB)
 3. Select "TIMED" mode
 4. Choose unlock date and time (up to 30 days)
 5. Complete security check (Cloudflare Turnstile)
@@ -265,6 +289,7 @@ sequenceDiagram
 8. Share vault link with recipient
 
 **Dead Man's Switch:**
+
 1. Follow steps 1-2 above
 2. Select "DEADMAN" mode
 3. Set pulse interval (how often you check in)
@@ -276,6 +301,7 @@ sequenceDiagram
 7. Visit pulse link before interval expires to keep seal locked
 
 **Ephemeral (Self-Destructing):**
+
 1. Follow steps 1-2 above
 2. Select "EPHEMERAL" mode
 3. Set max views (1-100, default: 1 for read-once)
@@ -296,22 +322,26 @@ sequenceDiagram
 ### How does Dead Man's Switch work?
 
 **Setup:**
+
 - You set a pulse interval (e.g., 7 days)
 - Seal unlocks if you don't check in within that time
 - You get a private pulse link to reset the timer
 
 **Checking In:**
+
 1. Visit your private pulse link (from any device)
 2. Click "Pulse" button
 3. Timer resets for another interval
 4. Repeat before each interval expires
 
 **If You Miss a Pulse:**
+
 - Seal automatically unlocks at the deadline
 - Recipient can access content with vault link
 - Cannot be reversed once unlocked
 
 **Burning a Seal:**
+
 - Use pulse link to permanently delete seal
 - Content destroyed immediately
 - Cannot be recovered
@@ -338,6 +368,7 @@ sequenceDiagram
    - Unique encryption key per browser
 
 **Encrypted Local Storage:**
+
 - Your seals are encrypted with AES-GCM-256
 - Encryption key stored in your browser only
 - No server-side storage of your vault links
@@ -345,6 +376,7 @@ sequenceDiagram
 - Access saved seals at /dashboard
 
 **Best practices:**
+
 - Use all three methods for important seals
 - Store markdown files in encrypted cloud storage
 - Keep vault links in password manager
@@ -363,11 +395,13 @@ sequenceDiagram
 ### What happens if I lose the vault link?
 
 **Lost forever.** Key A is in the URL hash. Without it:
+
 - Server cannot decrypt (doesn't have Key A)
 - You cannot decrypt (don't have the link)
 - No recovery mechanism exists (by design)
 
 **Best practices:**
+
 - Save vault links in password manager
 - Email to yourself (encrypted email recommended)
 - Print QR code for physical backup
@@ -378,6 +412,7 @@ sequenceDiagram
 **Timed Release:** ❌ No. Cannot be deleted once created.
 
 **Dead Man's Switch:** ✅ Yes. Use pulse link to "burn" the seal:
+
 1. Visit your private pulse link
 2. Click "Burn Seal" button
 3. Confirm deletion
@@ -386,18 +421,21 @@ sequenceDiagram
 ### How secure is the URL hash?
 
 **Very secure by design:**
+
 - URL hash (#KeyA) is never sent to server
 - Only visible in your browser
 - HTTPS protects it in transit
 - Treat vault links like passwords
 
 **Risks to be aware of:**
+
 - Visible in browser history
 - Visible in bookmarks
 - May appear in referrer logs if you click links from vault page
 - Browser extensions can access it
 
 **Mitigation:**
+
 - Use incognito/private browsing for sensitive seals
 - Clear browser history after use
 - Check for browser extensions (we warn you)
@@ -405,61 +443,33 @@ sequenceDiagram
 
 ### What are the file size limits?
 
-**Maximum file size: 750KB**
+**Maximum file size: 560KB (before encryption)**
 
-This limit is enforced at three layers:
-1. **UI validation** - Prevents upload before encryption
-2. **API validation** - Rejects oversized requests
-3. **Database storage** - Cloudflare D1 column limit
+After encryption, the file becomes ~750KB which fits within the 1MB database limit.
 
-**Why 750KB?**
-- Base64 encoding adds ~33% overhead
+**Why 560KB?**
+
+- Encryption adds ~33% overhead (560KB → 750KB)
+- Base64 encoding adds another ~33% (750KB → 1MB)
 - D1 TEXT column limit is 1MB
-- 750KB binary = ~1MB base64 (safe margin)
 
-**Workarounds for larger files:**
+**Supported file types:** Only .txt and .md files
 
-1. **Compress before upload**
-   ```bash
-   # ZIP compression (often 50-90% reduction)
-   zip -9 document.zip large-file.pdf
-   # Result: 2MB PDF → 500KB ZIP (fits in 750KB limit)
-   ```
+**For larger files:**
 
-2. **Split into multiple seals**
-   - Split large file into 700KB chunks
-   - Create separate seal for each chunk
-   - Share all vault links together
-   - Recipient combines chunks after unlock
-   ```bash
-   # Split 5MB file into 700KB chunks
-   split -b 700k large-video.mp4 chunk_
-   # Creates: chunk_aa, chunk_ab, chunk_ac, etc.
-   # Seal each chunk separately
-   ```
-
-3. **Use external storage + seal the link**
-   - Upload large file to cloud storage (Dropbox, Google Drive)
-   - Generate temporary download link
-   - Seal the download link (not the file)
-   - Recipient gets link after unlock
-
-4. **Self-host with R2 storage**
-   - Deploy your own TimeSeal instance
-   - Configure Cloudflare R2 for blob storage
-   - Supports files up to 5GB
-   - See [SELF-HOSTING.md](docs/SELF-HOSTING.md)
-
-**Recommended approach**: Compress first, then split if needed.
+- Use external storage (Proton Drive, Dropbox, Google Drive) and seal the download link
+- Self-host with R2 storage (up to 5GB)
 
 ### How long do seals last?
 
 **Maximum seal duration: 30 days**
+
 - Unlock time cannot be more than 30 days in future
 - Seals auto-delete 30 days after unlock
 - Total maximum lifetime: 60 days (30 + 30)
 
 **Why the limit?**
+
 - Database resource protection
 - Compliance with data retention policies
 - Prevents indefinite storage costs
@@ -471,6 +481,7 @@ This limit is enforced at three layers:
    - Pulse every 30 days to keep seal locked
    - Seal unlocks automatically if you stop pulsing
    - **Perfect for estate planning**: "If I die, unlock after 30 days of silence"
+
    ```
    Example: Crypto seed phrase
    - Create DMS seal with 30-day interval
@@ -491,6 +502,7 @@ This limit is enforced at three layers:
    - Configure `MAX_DURATION_DAYS` to any value
    - Remove auto-deletion cron job
    - See [SELF-HOSTING.md](docs/SELF-HOSTING.md)
+
    ```typescript
    // In your self-hosted instance
    const MAX_DURATION_DAYS = 365; // 1 year
@@ -507,12 +519,14 @@ This limit is enforced at three layers:
 ### Can someone guess my seal ID?
 
 **Extremely unlikely:**
+
 - Seal IDs are 32 hex characters (16 bytes)
 - Cryptographically random (not sequential)
 - 2^128 possible combinations
 - Would take billions of years to guess
 
 **Even if they guess it:**
+
 - They can see the countdown timer
 - They cannot decrypt without Key A (in your vault link)
 - Content remains encrypted
@@ -520,12 +534,14 @@ This limit is enforced at three layers:
 ### What if Cloudflare goes down?
 
 **Your seal is safe:**
+
 - Encrypted data stored in D1 database
 - Countdown pauses during outage
 - Resumes when service restored
 - No data loss
 
 **What you cannot do during outage:**
+
 - Create new seals
 - Check seal status
 - Unlock seals (even if time has passed)
@@ -537,14 +553,17 @@ Receipts contain HMAC-SHA256 signatures:
 
 1. Download receipt JSON after creating seal
 2. Use `/api/verify-receipt` endpoint:
+
 ```bash
 curl -X POST https://timeseal.teycir-932.workers.dev/api/verify-receipt \
   -H "Content-Type: application/json" \
   -d @receipt.json
 ```
+
 3. Response confirms seal authenticity
 
 **Receipt contains:**
+
 - Seal ID
 - Blob hash (SHA-256)
 - Unlock time
@@ -554,6 +573,7 @@ curl -X POST https://timeseal.teycir-932.workers.dev/api/verify-receipt \
 ### Can I use Time-Seal for commercial purposes?
 
 **License: Business Source License (BSL)**
+
 - ✅ Free for non-commercial use
 - ❌ Commercial use requires license
 - ✅ Source code available for inspection
@@ -566,12 +586,14 @@ Contact for commercial licensing: [https://teycirbensoltane.tn](https://teycirbe
 See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 
 **Requirements:**
+
 - Cloudflare account (free tier works)
 - Cloudflare Workers
 - Cloudflare D1 database
 - Node.js 18+
 
 **Benefits:**
+
 - Full control over infrastructure
 - No trust in third-party service
 - Custom retention policies
@@ -582,6 +604,7 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 **Manual chaining** lets you create multi-stage reveals without a dedicated feature. Each seal unlocks to reveal the next seal's link.
 
 **Use cases:**
+
 - 📰 Journalist: Release evidence in stages
 - 🎓 Educator: Drip course content over time
 - 🎁 Marketer: Build suspense with staged product reveals
@@ -590,15 +613,16 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 **Step-by-step:**
 
 1. **Create seals in reverse order** (last stage first):
+
    ```
    Stage 3 (Final): Create seal with final content
    → Get vault link: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC
-   
+
    Stage 2 (Middle): Create seal with:
    - Content: "Stage 2 complete. Next: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC"
    - Unlock time: 7 days from now
    → Get vault link: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB
-   
+
    Stage 1 (First): Create seal with:
    - Content: "Stage 1 complete. Next: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB"
    - Unlock time: Today (immediate)
@@ -606,6 +630,7 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
    ```
 
 2. **Share only the first vault link** with recipients:
+
    ```
    https://timeseal.teycir-932.workers.dev/vault/def123#keyA
    ```
@@ -624,6 +649,7 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 - **Track with receipts**: Save receipts for all stages to verify chain integrity
 
 **Example: Whistleblower evidence release**
+
 ```
 Stage 1 (Immediate): "I have evidence of corruption. More in 48 hours."
 Stage 2 (2 days): "Here are the documents: [link to files]. Final analysis in 7 days."
@@ -631,6 +657,7 @@ Stage 3 (7 days): "Full investigation report with sources and timeline."
 ```
 
 **Example: Educational course**
+
 ```
 Stage 1 (Week 1): "Lesson 1: Introduction to Cryptography [content]"
 Stage 2 (Week 2): "Lesson 2: Symmetric Encryption [content]"
@@ -639,6 +666,7 @@ Stage 4 (Week 4): "Final Exam [link]"
 ```
 
 **Limitations:**
+
 - Manual process (no automated chaining UI)
 - Must create seals in reverse order
 - Each stage needs separate vault link
@@ -655,7 +683,7 @@ Stage 4 (Week 4): "Final Exam [link]"
 **✅ Ephemeral Seals** - Self-destructing read-once messages with atomic view counting  
 **✅ Privacy-Preserving Tracking** - SHA-256 fingerprints, no PII stored  
 **✅ Atomic Operations** - Race-condition safe view recording  
-**✅ Complete Cleanup** - Blob and database deletion on exhaustion  
+**✅ Complete Cleanup** - Blob and database deletion on exhaustion
 
 ### 🔒 Security Features (v0.6.2)
 
@@ -666,11 +694,12 @@ Stage 4 (Week 4): "Final Exam [link]"
 **✅ Collision-Resistant Fingerprinting** - SHA-256 hashed fingerprints for rate limiting  
 **✅ Memory Leak Protection** - Automatic cleanup of concurrent request tracker  
 **✅ Accurate Access Metrics** - Only counts successful unlocks, not locked checks  
-**✅ File Size Enforcement** - 750KB limit enforced at all layers (UI, validation, storage)  
+**✅ File Size Enforcement** - 750KB limit enforced at all layers (UI, validation, storage)
 
 ### 🛡️ Defense Layers
 
 **Layer 1: Cryptographic Defenses**
+
 - AES-GCM-256 encryption (client + server)
 - Split-key architecture (Key A never leaves browser)
 - HMAC-signed pulse tokens with nonce replay protection
@@ -678,12 +707,14 @@ Stage 4 (Week 4): "Final Exam [link]"
 - SHA-256 blob hashing for integrity verification
 
 **Layer 2: Time-Lock Enforcement**
+
 - Server-side time validation (client clock irrelevant)
 - Cloudflare NTP-synchronized timestamps
 - Atomic database operations prevent race conditions
 - Random jitter (0-100ms) prevents timing attacks
 
 **Layer 3: Access Control**
+
 - Rate limiting with SHA-256 fingerprinting (IP + UA + Lang)
 - Database-backed nonce storage (replay detection)
 - Cloudflare Turnstile bot protection
@@ -691,6 +722,7 @@ Stage 4 (Week 4): "Final Exam [link]"
 - Strict input validation and sanitization
 
 **Layer 4: Operational Security**
+
 - Immutable audit logging (all access tracked)
 - Transaction rollback on failures
 - Circuit breakers with retry logic
@@ -703,14 +735,14 @@ Stage 4 (Week 4): "Final Exam [link]"
 **✅ Privacy-First Design** - No server storage of user's vault links  
 **✅ AES-GCM-256 Encryption** - Unique key per browser, stored locally  
 **✅ Manual Save Control** - User decides what to store  
-**✅ Simplified Security** - No seed phrase complexity, pure random keys  
+**✅ Simplified Security** - No seed phrase complexity, pure random keys
 
 ### 🔒 Hardening Features (v0.6.0)
 
 **✅ Memory Protection** - Key A obfuscated in browser memory to prevent casual inspection  
 **✅ Extension Detection** - Warns users about browser extensions that could access keys  
 **✅ Warrant Canary** - Live transparency status at /canary  
-**✅ Self-Hosting** - Deploy your own instance to eliminate infrastructure trust  
+**✅ Self-Hosting** - Deploy your own instance to eliminate infrastructure trust
 
 See [HARDENING.md](docs/HARDENING.md) for full details.
 
@@ -719,6 +751,7 @@ See [HARDENING.md](docs/HARDENING.md) for full details.
 **What is it?** A warrant canary is a method to inform users that a service has NOT received secret government requests. If the canary disappears or stops updating, it signals potential compromise.
 
 **How it works:**
+
 - Visit /canary to see live transparency status
 - Page auto-generates with current date on every visit
 - Lists all security checkpoints (no warrants, no gag orders, no data requests, etc.)
@@ -727,6 +760,7 @@ See [HARDENING.md](docs/HARDENING.md) for full details.
 **Why it matters:** Some government requests come with gag orders preventing disclosure. By regularly stating we have NOT received such requests, we can signal compromise by simply stopping updates (which is legal even under gag orders).
 
 **Technical implementation:**
+
 - Server-side rendered on every request (no stored file to tamper with)
 - No database or manual updates required
 - Open source code publicly auditable
@@ -737,16 +771,21 @@ See [HARDENING.md](docs/HARDENING.md) for full details.
 ---
 
 ### "Can I just change my computer's clock to unlock it early?"
+
 **❌ NO.** The unlock time is checked on the **server**, not your computer. Your local clock is irrelevant.
 
 ### "What if I hack the server and change the time there?"
+
 **❌ NO.** Time-Seal runs on Cloudflare Workers—you don't have root access. The time comes from Cloudflare's NTP-synchronized infrastructure.
 
 ### "Can I intercept the API request and modify the unlock time?"
+
 **❌ NO.** The unlock time is stored in the database when you create the seal. API requests can't modify it.
 
 ### "What if I steal Key B from the database?"
+
 **❌ NO.** Key B is encrypted with a master key before storage. Even if you steal the encrypted Key B from the database, you still need:
+
 1. The master encryption key (environment secret, not in database)
 2. Key A (stored in the URL hash, never sent to server)
 3. Both decrypted keys to decrypt the content
@@ -754,66 +793,82 @@ See [HARDENING.md](docs/HARDENING.md) for full details.
 **Database breach impact:** Attacker gets encrypted blobs and encrypted keys, but cannot decrypt without master key and Key A.
 
 ### "Can I brute-force the encryption?"
+
 **❌ NO.** AES-GCM-256 with cryptographically random keys. Would take billions of years with current technology.
 
 ### "What if I find the seal ID and try to access it?"
+
 **✅ YES, BUT...** You can see the countdown timer, but you **cannot decrypt** without:
+
 - Key A (in the URL hash)
 - Key B (server releases only after unlock time)
 
 ### "Can I bypass rate limits by rotating IPs or using VPNs?"
+
 **⚠️ HARDER.** Rate limiting uses SHA-256 hashed browser fingerprinting (IP + User-Agent + Language), making simple IP rotation ineffective. You'd need to change your entire browser signature. Fingerprints are collision-resistant and stored in D1 database.
 
 ### "Can I use timing attacks to detect the exact unlock time?"
+
 **❌ NO.** Server responses include random jitter (0-100ms delay) to prevent timing-based information leakage.
 
 ### "Can rate limits be bypassed in serverless environments?"
+
 **❌ NO.** Rate limits are stored in D1 database, persisting across all Cloudflare Worker instances. In-memory bypass is impossible.
 
 ### "Why is there no user authentication?"
+
 **✅ BY DESIGN.** Authentication adds attack vectors (credential theft, phishing, password breaches, session hijacking). TimeSeal uses cryptography-only security: possession of the vault link (Key A) is the authentication. No passwords to steal, no accounts to hack.
 
 ### "Can I replay old API requests to trick the server?"
+
 **❌ NO.** Pulse tokens include cryptographic nonces stored in D1 database with strict format validation:
+
 - Nonce checked FIRST (atomic operation prevents race conditions)
 - Token signature validated SECOND (HMAC-SHA256)
 - Replay attacks detected across all worker instances and rejected
 - Malformed tokens rejected before processing
 
 ### "What if Cloudflare goes down?"
+
 **⏸️ PAUSED.** Your seal remains locked in the database. When Cloudflare comes back online, the countdown resumes.
 
 ### "Can the admin/creator decrypt my seal early?"
+
 **❌ NO.** Not even the creator can decrypt early. The server enforces the time-lock mathematically.
 
 ### "What if I lose the vault link?"
+
 **💀 LOST FOREVER.** Key A is in the URL hash. No Key A = No decryption. **Save your links securely.**
 
 ### "Is Key A in the URL hash secure?"
+
 **✅ YES, BY DESIGN.** The URL hash is never sent to the server (unlike query parameters). HTTPS protects it in transit. Browser history/bookmarks are your responsibility—treat vault links like passwords. This is the tradeoff for zero-trust, no-authentication security. Alternative approaches (server-side key storage, password protection) would defeat the entire architecture.
 
 ### "Can I delete or cancel a seal after creating it?"
+
 - **Timed Release:** ❌ NO. Cannot be deleted once created.
 - **Dead Man's Switch:** ✅ YES. Use the pulse token to burn the seal permanently.
 
 ### "Can I spam seal creation with bots?"
+
 **❌ NO.** Cloudflare Turnstile (CAPTCHA alternative) validates all seal creation requests. Bot traffic is blocked at the edge before reaching the API.
 
 ### "Can I inject malicious HTML/JavaScript into seals?"
+
 **✅ SAFE.** All decrypted content is rendered as plain text or safe file downloads. No HTML parsing or script execution occurs in the vault viewer.
 
 ---
 
 ## 🛠️ Tech Stack
 
-*   **Frontend:** `Next.js 14` (App Router)
-*   **Runtime:** `Cloudflare Workers`
-*   **Database:** `Cloudflare D1` (SQLite)
-*   **Storage:** `Cloudflare D1` (Encrypted Blobs)
-*   **Crypto:** `Web Crypto API` (Native AES-GCM)
-*   **Bot Protection:** `Cloudflare Turnstile` (CAPTCHA-less verification)
-*   **Security:** Browser Fingerprinting, Rate Limiting, Input Validation, XSS Prevention
-*   **Styling:** `Tailwind CSS` (Cipher-punk Theme)
+- **Frontend:** `Next.js 14` (App Router)
+- **Runtime:** `Cloudflare Workers`
+- **Database:** `Cloudflare D1` (SQLite)
+- **Storage:** `Cloudflare D1` (Encrypted Blobs)
+- **Crypto:** `Web Crypto API` (Native AES-GCM)
+- **Bot Protection:** `Cloudflare Turnstile` (CAPTCHA-less verification)
+- **Security:** Browser Fingerprinting, Rate Limiting, Input Validation, XSS Prevention
+- **Styling:** `Tailwind CSS` (Cipher-punk Theme)
 
 ---
 
@@ -879,6 +934,7 @@ See [LICENSE](LICENSE) for full terms.
 ## 🔮 Roadmap
 
 **Recently Implemented (v0.9.3):**
+
 - ✅ Production Operations - Load testing, error tracking, database backups
 - ✅ Smart Load Testing - Autocannon-based testing of critical endpoints
 - ✅ Error Tracking - Winston logger with automatic rotation and JSON formatting
@@ -886,7 +942,8 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Database Backups - Automated D1 backup script with compression
 - ✅ MIT Licensed Tools - Autocannon and Winston (both MIT licensed)
 
-**Recently Implemented (v0.9.2):****
+**Recently Implemented (v0.9.2):\*\***
+
 - ✅ Ephemeral Seals UI - Complete user interface for self-destructing seals
 - ✅ Three Seal Types - TIMED | DEADMAN | EPHEMERAL buttons
 - ✅ Max Views Input - Configure 1-100 views before auto-deletion
@@ -894,7 +951,8 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Dashboard Integration - Ephemeral seals display with view count
 - ✅ Test Suite - Full ephemeral seal test script passing
 
-**Recently Implemented (v0.9.1):****
+**Recently Implemented (v0.9.1):\*\***
+
 - ✅ Encrypted Local Storage - Browser-based encrypted vault for saving seals
 - ✅ Three-Button Interface - COPY | DOWNLOAD (MD) | SAVE (encrypted)
 - ✅ Privacy-First Storage - No server storage of user's vault links
@@ -902,7 +960,8 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Dashboard Access - View and manage saved seals
 - ✅ Markdown Downloads - Offline backup with both vault and pulse links
 
-**Recently Implemented (v0.9.0):****
+**Recently Implemented (v0.9.0):\*\***
+
 - ✅ Ephemeral Seals - Self-destructing read-once messages
 - ✅ Atomic View Counting - Race-condition safe view tracking
 - ✅ Privacy-Preserving Fingerprints - SHA-256 hashed viewer tracking
@@ -910,12 +969,14 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Modular Architecture - Reusable ephemeral library
 
 **Recently Implemented (v0.8.1):**
+
 - ✅ Observer Pattern - Event-driven seal lifecycle (fully integrated)
 - ✅ Event System - Decoupled logging, metrics, audit trails
 - ✅ Zero Dead Code - Removed unused Builder/Decorator patterns
 - ✅ Production Ready - All events integrated in sealService.ts
 
-**Recently Implemented (v0.8.0):******
+**Recently Implemented (v0.8.0):\*\*\*\***
+
 - ✅ Reusable Libraries - Extracted 10 comprehensive libraries (~1,620 LOC)
 - ✅ Library Documentation - 4 comprehensive docs with examples
 - ✅ Code Refactoring - Eliminated duplication, improved maintainability
@@ -923,14 +984,16 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Tree-Shakeable Imports - Optimized bundle size
 - ✅ Regression Testing - All 135 tests pass, zero breaking changes
 
-**Recently Implemented (v0.7.0):****
+**Recently Implemented (v0.7.0):\*\***
+
 - ✅ Privacy-First Analytics - Zero external dependencies, GDPR compliant
 - ✅ Seal Counter - Homepage displays total seals created (social proof)
 - ✅ Analytics Security - Rate limiting and input validation on endpoints
 - ✅ Production-Grade Code - Removed MockDatabase, D1 required everywhere
 - ✅ Fail-Fast Configuration - No optional env vars, explicit errors on misconfiguration
 
-**Recently Implemented (v0.6.2):****
+**Recently Implemented (v0.6.2):\*\***
+
 - ✅ Replay Attack Prevention - Nonce-first validation eliminates race conditions
 - ✅ Atomic Pulse Updates - Single database operation prevents partial state
 - ✅ Strict Token Validation - Format checks reject malformed pulse tokens
@@ -940,7 +1003,8 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Access Count Accuracy - Only counts successful unlocks
 - ✅ File Size Alignment - 750KB enforced at all layers
 
-**Recently Implemented (v0.6.1):****
+**Recently Implemented (v0.6.1):\*\***
+
 - ✅ Dead Man's Switch Pulse Fix - Resolved 500 error on repeated pulses
 - ✅ Pulse Token URL Encoding - Fixed 404 errors with special characters
 - ✅ Security Hardening - Removed public pulse URL exposure
@@ -948,7 +1012,8 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Transaction Safety - Rollback mechanisms for database operations
 - ✅ Warrant Canary Cleanup - Removed broken admin endpoints
 
-**Recently Implemented (v0.6.0):****
+**Recently Implemented (v0.6.0):\*\***
+
 - ✅ Security Hardening - Memory protection, extension detection, warrant canary
 - ✅ Built-in Warrant Canary - Auto-updating transparency at /canary
 - ✅ Security Dashboard - Real-time browser extension warnings
@@ -956,11 +1021,13 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Self-Hosting Guide - Complete deployment instructions
 
 **Recently Implemented (v0.5.1):**
+
 - ✅ CRITICAL FIX: HKDF deterministic salt (decryption now works)
 - ✅ Server-only pulse token generation (removed client UUID)
 - ✅ Time check ordering fix (timing attack prevention)
 
 **Recently Implemented (v0.5.0):**
+
 - ✅ Cryptographic Receipts - HMAC-signed proof of seal creation
 - ✅ Receipt Verification - API endpoint to verify signatures
 - ✅ Seal Statistics - Access count tracking
@@ -973,11 +1040,13 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ Pulse Interval Fix - Critical 1000x multiplier bug fixed
 
 **Recently Implemented:**
+
 - ✅ Audit Logging - Immutable access trail
-- ✅ Code Deduplication - Cleaner API routes  
+- ✅ Code Deduplication - Cleaner API routes
 - ✅ Test Infrastructure - Fast, reliable tests
 
 **Recently Completed:**
+
 - ✅ Production Deployment - Live at timeseal.teycir-932.workers.dev
 - ✅ Cloudflare Workers Migration - Migrated from deprecated @cloudflare/next-on-pages
 
@@ -988,6 +1057,5 @@ See [TODO.md](docs/TODO.md) for complete checklist.
 <div align="center">
 
 **Built with 💚 and 🔒 by [Teycir Ben Soltane](https://teycirbensoltane.tn)**
-
 
 </div>
