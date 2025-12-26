@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-Production: https://timeseal.teycir-932.workers.dev
+Production: https://timeseal.online
 Development: http://localhost:3000
 ```
 
@@ -59,7 +59,7 @@ Creates a new time-locked seal with encrypted content.
 
 #### Example
 ```bash
-curl -X POST https://timeseal.teycir-932.workers.dev/api/create-seal \
+curl -X POST https://timeseal.online/api/create-seal \
   -F "encryptedBlob=@encrypted.bin" \
   -F "keyB=base64encodedkey" \
   -F "iv=base64encodediv" \
@@ -109,7 +109,7 @@ Retrieves seal status and encrypted content. Returns Key B only if unlocked.
 
 #### Example
 ```bash
-curl https://timeseal.teycir-932.workers.dev/api/seal/abc123def456
+curl https://timeseal.online/api/seal/abc123def456
 ```
 
 ---
@@ -144,7 +144,7 @@ Resets the unlock timer for a Dead Man's Switch seal.
 
 #### Example
 ```bash
-curl -X POST https://timeseal.teycir-932.workers.dev/api/pulse \
+curl -X POST https://timeseal.online/api/pulse \
   -H "Content-Type: application/json" \
   -d '{"pulseToken":"uuid-v4-token"}'
 ```
@@ -415,7 +415,7 @@ import time
 
 # Get seal status
 seal_id = "abc123def456"
-response = requests.get(f"https://timeseal.teycir-932.workers.dev/api/seal/{seal_id}")
+response = requests.get(f"https://timeseal.online/api/seal/{seal_id}")
 data = response.json()
 
 if data['isLocked']:
@@ -427,7 +427,7 @@ else:
 ### cURL
 ```bash
 # Send pulse
-curl -X POST https://timeseal.teycir-932.workers.dev/api/pulse \
+curl -X POST https://timeseal.online/api/pulse \
   -H "Content-Type: application/json" \
   -d '{"pulseToken":"your-uuid-token"}'
 ```

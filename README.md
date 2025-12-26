@@ -13,7 +13,7 @@
 
 ### _"If I go silent, this speaks for me."_
 
-[Create a Seal](https://timeseal.teycir-932.workers.dev) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
+[Create a Seal](https://timeseal.online) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
 
 </div>
 
@@ -555,7 +555,7 @@ Receipts contain HMAC-SHA256 signatures:
 2. Use `/api/verify-receipt` endpoint:
 
 ```bash
-curl -X POST https://timeseal.teycir-932.workers.dev/api/verify-receipt \
+curl -X POST https://timeseal.online/api/verify-receipt \
   -H "Content-Type: application/json" \
   -d @receipt.json
 ```
@@ -616,23 +616,23 @@ See [SELF-HOSTING.md](docs/SELF-HOSTING.md) for complete guide.
 
    ```
    Stage 3 (Final): Create seal with final content
-   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC
+   → Get vault link: https://timeseal.online/vault/xyz789#keyC
 
    Stage 2 (Middle): Create seal with:
-   - Content: "Stage 2 complete. Next: https://timeseal.teycir-932.workers.dev/vault/xyz789#keyC"
+   - Content: "Stage 2 complete. Next: https://timeseal.online/vault/xyz789#keyC"
    - Unlock time: 7 days from now
-   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB
+   → Get vault link: https://timeseal.online/vault/abc456#keyB
 
    Stage 1 (First): Create seal with:
-   - Content: "Stage 1 complete. Next: https://timeseal.teycir-932.workers.dev/vault/abc456#keyB"
+   - Content: "Stage 1 complete. Next: https://timeseal.online/vault/abc456#keyB"
    - Unlock time: Today (immediate)
-   → Get vault link: https://timeseal.teycir-932.workers.dev/vault/def123#keyA
+   → Get vault link: https://timeseal.online/vault/def123#keyA
    ```
 
 2. **Share only the first vault link** with recipients:
 
    ```
-   https://timeseal.teycir-932.workers.dev/vault/def123#keyA
+   https://timeseal.online/vault/def123#keyA
    ```
 
 3. **Recipients experience the chain**:
@@ -886,7 +886,7 @@ Open [http://localhost:3000](http://localhost:3000) to create your first seal.
 
 ### 🔐 Production Deployment
 
-The app is deployed at **[https://timeseal.teycir-932.workers.dev](https://timeseal.teycir-932.workers.dev)**
+The app is deployed at **[https://timeseal.online](https://timeseal.online)**
 
 ```bash
 # Deploy to Cloudflare Workers
@@ -1047,7 +1047,7 @@ See [LICENSE](LICENSE) for full terms.
 
 **Recently Completed:**
 
-- ✅ Production Deployment - Live at timeseal.teycir-932.workers.dev
+- ✅ Production Deployment - Live at timeseal.online
 - ✅ Cloudflare Workers Migration - Migrated from deprecated @cloudflare/next-on-pages
 
 See [TODO.md](docs/TODO.md) for complete checklist.

@@ -40,10 +40,14 @@ export const withErrorHandling: Middleware = async (ctx, next) => {
       ip: ctx.ip,
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      errorType: error?.constructor?.name,
+      errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error)),
     };
     
     console.error('[ERROR HANDLER] ===== ERROR CAUGHT =====');
+    console.error('[ERROR HANDLER] Type:', errorDetails.errorType);
     console.error('[ERROR HANDLER] Message:', errorDetails.message);
+    console.error('[ERROR HANDLER] Full Error:', errorDetails.errorObject);
     console.error('[ERROR HANDLER] Stack:', errorDetails.stack);
     console.error('[ERROR HANDLER] URL:', errorDetails.url);
     console.error('[ERROR HANDLER] Method:', errorDetails.method);

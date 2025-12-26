@@ -2,13 +2,13 @@
 
 ## What Changed
 
-Your production URL `https://timeseal.teycir-932.workers.dev` is now **configured via environment variables** instead of being hardcoded in the source code.
+Your production URL `https://timeseal.online` is now **configured via environment variables** instead of being hardcoded in the source code.
 
 ## Files Updated
 
 ### 1. Environment Files
 - ✅ `.env.example` - Added `NEXT_PUBLIC_APP_URL` with localhost default
-- ✅ `.env.local` - Added production URL: `https://timeseal.teycir-932.workers.dev`
+- ✅ `.env.local` - Added production URL: `https://timeseal.online`
 - ✅ `.dev.vars` - Added localhost URL for Cloudflare Workers dev
 
 ### 2. Configuration Module
@@ -33,7 +33,7 @@ if (!appUrl && isProduction) {
 | Environment | URL | Source |
 |-------------|-----|--------|
 | **Development** | `http://localhost:3000` | `.env.local` or `.dev.vars` |
-| **Production** | `https://timeseal.teycir-932.workers.dev` | Environment variable |
+| **Production** | `https://timeseal.online` | Environment variable |
 
 ## Deployment Instructions
 
@@ -44,7 +44,7 @@ Set the environment variable before deploying:
 ```bash
 # Option 1: Using wrangler CLI
 wrangler secret put NEXT_PUBLIC_APP_URL
-# Enter: https://timeseal.teycir-932.workers.dev
+# Enter: https://timeseal.online
 
 # Option 2: Deploy with environment
 wrangler deploy --env production
@@ -56,7 +56,7 @@ wrangler deploy --env production
 2. **Settings** → **Variables**
 3. Add variable:
    - Name: `NEXT_PUBLIC_APP_URL`
-   - Value: `https://timeseal.teycir-932.workers.dev`
+   - Value: `https://timeseal.online`
 
 ## Benefits
 
@@ -70,11 +70,11 @@ wrangler deploy --env production
 Test that CORS is working with your production URL:
 
 ```bash
-curl -I https://timeseal.teycir-932.workers.dev/api/health \
-  -H "Origin: https://timeseal.teycir-932.workers.dev"
+curl -I https://timeseal.online/api/health \
+  -H "Origin: https://timeseal.online"
 
 # Expected response includes:
-# Access-Control-Allow-Origin: https://timeseal.teycir-932.workers.dev
+# Access-Control-Allow-Origin: https://timeseal.online
 ```
 
 ## Next Steps

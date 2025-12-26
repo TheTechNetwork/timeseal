@@ -309,7 +309,7 @@ class ConcurrentRequestTracker {
 export const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'https://timeseal.teycir-932.workers.dev'
+  'https://timeseal.online'
 ];
 ```
 
@@ -410,7 +410,7 @@ export function validateCSRF(request: Request): boolean {
     cachedEnv.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://timeseal.teycir-932.workers.dev'
+    'https://timeseal.online'
   ].filter(Boolean);
   
   return allowedOrigins.some(allowed => 
@@ -419,7 +419,7 @@ export function validateCSRF(request: Request): boolean {
 }
 ```
 
-**Issue:** Uses `startsWith()` instead of exact match. An attacker could use `https://timeseal.teycir-932.workers.dev.evil.com` to bypass validation.
+**Issue:** Uses `startsWith()` instead of exact match. An attacker could use `https://timeseal.online.evil.com` to bypass validation.
 
 **Fix:** Use exact origin matching or URL parsing.
 

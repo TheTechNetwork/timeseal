@@ -36,7 +36,7 @@ destroy(): void {
 
 **Fixed:** Created centralized config (`lib/appConfig.ts`)
 
-- Removed `https://timeseal.teycir-932.workers.dev` from constants
+- Removed `https://timeseal.online` from constants
 - All URLs now from `NEXT_PUBLIC_APP_URL` environment variable
 - Development fallbacks only for localhost
 

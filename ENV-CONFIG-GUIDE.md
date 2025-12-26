@@ -2,7 +2,7 @@
 
 ## Setting Your Production URL
 
-Your production URL (`https://timeseal.teycir-932.workers.dev`) is now configured via environment variables instead of being hardcoded.
+Your production URL (`https://timeseal.online`) is now configured via environment variables instead of being hardcoded.
 
 ### Local Development
 
@@ -24,7 +24,7 @@ Set the environment variable in Cloudflare Workers:
 
 ```bash
 wrangler secret put NEXT_PUBLIC_APP_URL
-# When prompted, enter: https://timeseal.teycir-932.workers.dev
+# When prompted, enter: https://timeseal.online
 ```
 
 #### Option 2: Using Cloudflare Dashboard
@@ -34,7 +34,7 @@ wrangler secret put NEXT_PUBLIC_APP_URL
 3. Go to **Settings** → **Variables**
 4. Add environment variable:
    - **Name:** `NEXT_PUBLIC_APP_URL`
-   - **Value:** `https://timeseal.teycir-932.workers.dev`
+   - **Value:** `https://timeseal.online`
    - **Type:** Plain text (not encrypted)
 
 #### Option 3: Using wrangler.toml
@@ -42,7 +42,7 @@ wrangler secret put NEXT_PUBLIC_APP_URL
 **File:** `wrangler.toml`
 ```toml
 [env.production]
-vars = { NEXT_PUBLIC_APP_URL = "https://timeseal.teycir-932.workers.dev" }
+vars = { NEXT_PUBLIC_APP_URL = "https://timeseal.online" }
 ```
 
 ### Verification
@@ -51,11 +51,11 @@ After deployment, verify the configuration is working:
 
 ```bash
 # Test CORS headers
-curl -I https://timeseal.teycir-932.workers.dev/api/health \
-  -H "Origin: https://timeseal.teycir-932.workers.dev"
+curl -I https://timeseal.online/api/health \
+  -H "Origin: https://timeseal.online"
 
 # Should return:
-# Access-Control-Allow-Origin: https://timeseal.teycir-932.workers.dev
+# Access-Control-Allow-Origin: https://timeseal.online
 ```
 
 ### How It Works
@@ -107,7 +107,7 @@ For staging/production separation:
 vars = { NEXT_PUBLIC_APP_URL = "https://staging.timeseal.dev" }
 
 [env.production]
-vars = { NEXT_PUBLIC_APP_URL = "https://timeseal.teycir-932.workers.dev" }
+vars = { NEXT_PUBLIC_APP_URL = "https://timeseal.online" }
 ```
 
 Deploy to specific environment:
@@ -147,6 +147,6 @@ wrangler deploy --force
 ### Current Configuration
 
 **Development:** `http://localhost:3000`  
-**Production:** `https://timeseal.teycir-932.workers.dev`
+**Production:** `https://timeseal.online`
 
 Both are now configured via environment variables! 🎉

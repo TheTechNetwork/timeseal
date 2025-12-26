@@ -18,5 +18,36 @@
     }
   ],
   
-  "workers_dev": true
+  "vars": {
+    "APP_URL": "https://timeseal.online"
+  },
+  
+  "workers_dev": true,
+  
+  "env": {
+    "production": {
+      "vars": {
+        "NEXT_PUBLIC_APP_URL": "https://timeseal.online"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "time-seal-db",
+          "database_id": "a3e58150-939a-4336-9161-3e7ea4da964c"
+        }
+      ]
+    },
+    "development": {
+      "vars": {
+        "NEXT_PUBLIC_APP_URL": "http://localhost:3000"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "time-seal-db",
+          "database_id": "a3e58150-939a-4336-9161-3e7ea4da964c"
+        }
+      ]
+    }
+  }
 }
