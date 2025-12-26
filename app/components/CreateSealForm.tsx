@@ -1110,8 +1110,7 @@ export function CreateSealForm({
             onExpire={() => setTurnstileToken(null)}
             options={{
               theme: "dark",
-              size: "flexible",
-              appearance: "interaction-only",
+              size: "normal",
               refreshExpired: "auto",
             }}
             className="w-full"
