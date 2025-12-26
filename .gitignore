@@ -57,3 +57,7 @@ scripts/backup-db.sh
 scripts/deploy.sh
 *.backup
 *.bak
+
+# Backup files with sensitive data
+backup-seals-*.json
+*.backup
