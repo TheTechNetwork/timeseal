@@ -281,6 +281,16 @@ export function CreateSealForm({
     [message, formatFileSize],
   );
 
+  const resetForm = useCallback(() => {
+    setMessage("");
+    setFile(null);
+    setUnlockDate(null);
+    setPulseValue(7);
+    setSealType("timed");
+    setMaxViews(1);
+    toast.info("Form reset");
+  }, []);
+
   const [dragValidation, setDragValidation] = useState<{
     isValid: boolean;
     message: string;
@@ -640,10 +650,9 @@ export function CreateSealForm({
       <Card className="space-y-6 shimmer-border">
         <motion.div
           variants={containerVariants}
-          initial="hidden"
-          animate="show"
           className="space-y-6"
         >
+
           <motion.section variants={itemVariants} aria-labelledby="templates-heading">
             <div className="flex items-center justify-between mb-2">
               <h2
@@ -841,10 +850,10 @@ export function CreateSealForm({
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 bg-dark-bg/30 p-1 rounded-xl border border-neon-green/10">
+              <div className="seal-type-container">
                 <button
                   onClick={() => setSealType("timed")}
-                  className={`py-2 rounded text-xs sm:text-sm font-bold transition-all tooltip ${sealType === "timed" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
+                  className={`seal-type-button tooltip ${sealType === "timed" ? "seal-type-button-active" : "seal-type-button-inactive"}`}
                 >
                   <span className="tooltip-text">
                     Unlock at a specific future date and time
@@ -853,7 +862,7 @@ export function CreateSealForm({
                 </button>
                 <button
                   onClick={() => setSealType("deadman")}
-                  className={`py-2 rounded text-xs sm:text-sm font-bold transition-all tooltip ${sealType === "deadman" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
+                  className={`seal-type-button tooltip ${sealType === "deadman" ? "seal-type-button-active" : "seal-type-button-inactive"}`}
                 >
                   <span className="tooltip-text">
                     Auto-unlock if you don&apos;t check in periodically
@@ -862,7 +871,7 @@ export function CreateSealForm({
                 </button>
                 <button
                   onClick={() => setSealType("ephemeral")}
-                  className={`py-2 rounded text-xs sm:text-sm font-bold transition-all tooltip ${sealType === "ephemeral" ? "bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)]" : "text-neon-green/50 hover:text-neon-green hover:bg-neon-green/5"}`}
+                  className={`seal-type-button tooltip ${sealType === "ephemeral" ? "seal-type-button-active" : "seal-type-button-inactive"}`}
                 >
                   <span className="tooltip-text">
                     Self-destruct after limited views (read-once messages)
@@ -934,32 +943,32 @@ export function CreateSealForm({
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="button-group grid-cols-2 sm:grid-cols-4">
                       <button
                         type="button"
                         onClick={() => setUnlockDate(new Date(Date.now() + 60 * 60 * 1000))}
-                        className="cyber-border py-2.5 text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
+                        className="cyber-border text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
                       >
                         +1 HOUR
                       </button>
                       <button
                         type="button"
                         onClick={() => setUnlockDate(new Date(Date.now() + 24 * 60 * 60 * 1000))}
-                        className="cyber-border py-2.5 text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
+                        className="cyber-border text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
                       >
                         TOMORROW
                       </button>
                       <button
                         type="button"
                         onClick={() => setUnlockDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))}
-                        className="cyber-border py-2.5 text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
+                        className="cyber-border text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
                       >
                         1 WEEK
                       </button>
                       <button
                         type="button"
                         onClick={() => setUnlockDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))}
-                        className="cyber-border py-2.5 text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
+                        className="cyber-border text-xs font-mono font-bold text-neon-green/70 hover:text-neon-green hover:bg-neon-green/10 hover:border-neon-green/50 active:scale-95 transition-all rounded-lg"
                       >
                         30 DAYS
                       </button>

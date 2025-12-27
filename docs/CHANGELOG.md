@@ -46,48 +46,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Production Operations** - Load testing and error tracking
-  - Smart load testing script (`scripts/load-test.mjs`) using autocannon (MIT)
-  - Tests critical endpoints: seal creation, status checks, analytics
-  - Winston-based error tracking (`lib/errorTracker.ts`) with automatic log rotation
-  - Error tracking integrated at 7 strategic points in sealService.ts
-  - D1 database backup script (`scripts/backup-db.sh`) with compression
-  - Structured JSON logging with context metadata (sealId, ip, action)
-  - Automatic log rotation (5MB, 5 files) for production environments
-
-- **UI/UX Enhancements** - Premium visual effects and animations
-  - Staggered entrance animation for form sections (cascading reveal)
-  - Shimmer border beam effect on main card (continuous moving light)
-  - Magnetic button effect on CREATE TIME-SEAL button (follows cursor)
-  - Dust particle effect with 50 floating neon-green particles
-  - Right-to-left character fade animation on tagline and feature banner
-  - User-friendly rotating messages (25 benefit-focused messages)
-  - Canary link added to footer navigation
-  - Consistent page styling across FAQ, Security, and Canary pages
-  - Animated DecryptedText titles on all pages
-  - Background beams effect on all pages
-  - Proof of freshness section on Canary page (full timestamp display)
-  - Improved checklist layout with bullet points on Canary page
+- **UI/UX Improvements** - Enhanced button consistency and mobile responsiveness
+  - Uniform button styling across all pages (dashboard, success, pulse, vault)
+  - Consistent border-radius (0.5rem) matching seal type buttons
+  - Proper text spacing ensuring no text touches borders
+  - Subtle hover effects (5% green tint) for better visual feedback
+  - Mobile-responsive button sizing and padding
+  - Footer social share links (X/Twitter, Reddit, LinkedIn)
+  - Extracted reusable CSS classes for button groups
+  - Global button safety rules for consistent spacing
 
 ### Changed
-- Security features banner now shows user benefits instead of technical details
-- Removed subtitle "Encrypt messages that unlock at a future date or after inactivity"
-- Moved warning "⚠️ Seals auto-delete 30 days after unlock" below CREATE TIME-SEAL button
-- Canary page now matches FAQ/Security page styling and layout
-- All page titles use consistent DecryptedText animation
-- Footer buttons now say "CREATE YOUR SEAL" instead of "BACK TO TIMESEAL"
-
-### Fixed
-- Canary page visibility (added explicit dark background)
-- Canary page header styling (now uses animated title)
-- Canary page footer button (consistent with other pages)
-
-### UI/UX Improvements
-- Slower animation timing for better visual impact (0.15s stagger, 0.05s delay per character)
-- Enhanced magnetic button physics (spring: stiffness 200, damping 20)
-- Cleaner layout with removed redundant text
-- Better visual hierarchy with repositioned warning
-- Consistent navigation and styling across all pages
+- All buttons now use transparent background with subtle hover effects
+- Button text color standardized to 50% opacity (full opacity on hover)
+- Social share section in success page matches footer design
+- Improved mobile padding and font sizes for better touch targets
 
 ### Added
 - **Ephemeral Seals UI** - Complete user interface for self-destructing seals

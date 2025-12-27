@@ -6,7 +6,6 @@ import { BackgroundBeams } from "../components/ui/background-beams";
 import { FloatingIcons } from "../components/FloatingIcons";
 import { Card } from "../components/Card";
 import {
-  Copy,
   ExternalLink,
   Trash2,
   Clock,
@@ -42,21 +41,25 @@ export default function DashboardPage() {
 
     // Listen for storage changes from other tabs/windows
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'timeseal_links') {
-        loadSeals().then(setSeals).catch(() => {});
+      if (e.key === "timeseal_links") {
+        loadSeals()
+          .then(setSeals)
+          .catch(() => {});
       }
     };
 
     // Listen for focus to reload seals (catches same-tab changes)
     const handleFocus = () => {
-      loadSeals().then(setSeals).catch(() => {});
+      loadSeals()
+        .then(setSeals)
+        .catch(() => {});
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleFocus);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleFocus);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -87,14 +90,15 @@ export default function DashboardPage() {
       const data = await res.json();
       if (res.ok) {
         const updatedSeals = seals.map((s) =>
-          s.id === seal.id ? { ...s, unlockTime: -1 } : s
+          s.id === seal.id ? { ...s, unlockTime: -1 } : s,
         );
         setSeals(updatedSeals);
         await saveSeals(updatedSeals);
         toast.success("Seal destroyed permanently");
         setBurnConfirm(null);
       } else {
-        const errorMsg = data.error?.message || data.error || "Failed to destroy seal";
+        const errorMsg =
+          data.error?.message || data.error || "Failed to destroy seal";
         console.error("Burn failed:", { status: res.status, error: data });
         toast.error(`Burn failed: ${errorMsg}`);
       }
@@ -139,14 +143,18 @@ ${seal.pulseUrl}/${encodeURIComponent(seal.pulseToken)}
 
 `
     : ""
-}${seal.type === "ephemeral" ? `## Ephemeral Seal Warning
+}${
+      seal.type === "ephemeral"
+        ? `## Ephemeral Seal Warning
 
 ⚠️ This seal will self-destruct after ${seal.maxViews || 1} view${seal.maxViews === 1 ? "" : "s"}.
 Once deleted, the content cannot be recovered.
 
 ---
 
-` : ""}## Security Notes
+`
+        : ""
+    }## Security Notes
 
 - Store this file securely (encrypted storage, password manager, or safe)
 - The vault link contains Key A in the URL hash (#)
@@ -191,6 +199,170 @@ ${seal.type === "ephemeral" ? `- Ephemeral seals delete automatically after ${se
       return `Ephemeral (${seal.maxViews || 1} view${seal.maxViews === 1 ? "" : "s"})`;
     }
     return seal.type === "deadman" ? "Dead Man's Switch" : "Timed Release";
+  };
+
+  const getTimeDisplayClass = (isDestroyed: boolean, isUnlocked: boolean) => {
+    if (isDestroyed) return "font-bold text-red-500";
+    if (isUnlocked) return "font-bold text-neon-green";
+    return "text-neon-green/50";
+  };
+
+  const getSealTypeDisplay = (seal: StoredSeal) => {
+    if (seal.type === "ephemeral") {
+      return `EPHEMERAL (${seal.maxViews || 1} VIEW${seal.maxViews === 1 ? "" : "S"})`;
+    }
+    if (seal.type === "deadman") {
+      return "DEAD MAN'S SWITCH";
+    }
+    return "TIMED RELEASE";
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <Card className="text-center py-12">
+          <div className="animate-pulse">
+            <Clock className="w-16 h-16 text-neon-green/30 mx-auto mb-4" />
+            <p className="text-neon-green/70">Loading seals...</p>
+          </div>
+        </Card>
+      );
+    }
+
+    if (seals.length === 0) {
+      return (
+        <Card className="text-center py-12">
+          <Clock className="w-16 h-16 text-neon-green/30 mx-auto mb-4" />
+          <p className="text-neon-green/70 mb-4">No seals saved yet</p>
+          <p className="text-xs text-neon-green/50 mb-2">
+            Seals are automatically saved when you create them
+          </p>
+          <p className="text-xs text-neon-green/40 mb-6">
+            Note: Removing from dashboard only deletes the link, not the
+            actual seal
+          </p>
+          <Link
+            href="/"
+            className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] inline-block"
+          >
+            CREATE YOUR FIRST SEAL
+          </Link>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {seals.map((seal) => {
+          const timeDisplay = formatTimeLeft(seal.unlockTime);
+          const isUnlocked = timeDisplay === "UNLOCKED";
+          const isDestroyed = timeDisplay === "DESTROYED";
+
+          return (
+            <motion.div
+              key={seal.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="p-4">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex items-center gap-2 mb-2">
+                      {seal.type === "deadman" ? (
+                        <Shield className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-neon-green flex-shrink-0" />
+                      )}
+                      <span className="text-xs font-mono text-neon-green/50">
+                        {getSealTypeDisplay(seal)}
+                      </span>
+                    </div>
+
+                    <div className="text-sm font-mono text-neon-green/70 mb-1 truncate">
+                      ID: {seal.id}
+                    </div>
+
+                    <div className="text-xs text-neon-green/40 mb-2">
+                      Created: {new Date(seal.createdAt).toLocaleString()}
+                    </div>
+
+                    <div className="text-xs mb-3">
+                      <span className={getTimeDisplayClass(isDestroyed, isUnlocked)}>
+                        {timeDisplay}
+                      </span>
+                      {!isUnlocked && !isDestroyed && (
+                        <span className="text-neon-green/50">
+                          {" "}
+                          remaining
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() =>
+                          window.open(seal.publicUrl, "_blank")
+                        }
+                        disabled={isDestroyed}
+                        className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        VAULT
+                      </button>
+
+                      {seal.pulseUrl && seal.pulseToken && (
+                        <button
+                          onClick={() =>
+                            seal.pulseUrl &&
+                            seal.pulseToken &&
+                            window.open(
+                              `${seal.pulseUrl}/${encodeURIComponent(seal.pulseToken)}`,
+                              "_blank",
+                            )
+                          }
+                          disabled={isDestroyed}
+                          className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <Shield className="w-3 h-3" />
+                          PULSE
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => downloadSeal(seal)}
+                        disabled={isDestroyed}
+                        className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Download className="w-3 h-3" />
+                        DOWNLOAD
+                      </button>
+
+                      {seal.pulseToken && !isDestroyed && (
+                        <button
+                          onClick={() => setBurnConfirm(seal)}
+                          className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          BURN
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => deleteSeal(seal.id)}
+                    className="text-red-500 hover:text-red-400 transition-colors p-2 self-start sm:self-auto"
+                    aria-label="Delete seal"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -256,133 +428,13 @@ ${seal.type === "ephemeral" ? `- Ephemeral seals delete automatically after ${se
           </p>
         </div>
 
-        {isLoading ? (
-          <Card className="text-center py-12">
-            <div className="animate-pulse">
-              <Clock className="w-16 h-16 text-neon-green/30 mx-auto mb-4" />
-              <p className="text-neon-green/70">Loading seals...</p>
-            </div>
-          </Card>
-        ) : seals.length === 0 ? (
-          <Card className="text-center py-12">
-            <Clock className="w-16 h-16 text-neon-green/30 mx-auto mb-4" />
-            <p className="text-neon-green/70 mb-4">No seals saved yet</p>
-            <p className="text-xs text-neon-green/50 mb-2">
-              Seals are automatically saved when you create them
-            </p>
-            <p className="text-xs text-neon-green/40 mb-6">
-              Note: Removing from dashboard only deletes the link, not the
-              actual seal
-            </p>
-            <Link href="/" className="cyber-button inline-block">
-              CREATE YOUR FIRST SEAL
-            </Link>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {seals.map((seal) => {
-              const timeDisplay = formatTimeLeft(seal.unlockTime);
-              const isUnlocked = timeDisplay === "UNLOCKED";
-              const isDestroyed = timeDisplay === "DESTROYED";
-
-              return (
-                <motion.div
-                  key={seal.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card className="p-4">
-                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0 w-full">
-                        <div className="flex items-center gap-2 mb-2">
-                          {seal.type === "deadman" ? (
-                            <Shield className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-neon-green flex-shrink-0" />
-                          )}
-                          <span className="text-xs font-mono text-neon-green/50">
-                            {seal.type === "ephemeral"
-                              ? `EPHEMERAL (${seal.maxViews || 1} VIEW${seal.maxViews === 1 ? "" : "S"})`
-                              : seal.type === "deadman"
-                                ? "DEAD MAN'S SWITCH"
-                                : "TIMED RELEASE"}
-                          </span>
-                        </div>
-
-                        <div className="text-sm font-mono text-neon-green/70 mb-1 truncate">
-                          ID: {seal.id}
-                        </div>
-
-                        <div className="text-xs text-neon-green/40 mb-2">
-                          Created: {new Date(seal.createdAt).toLocaleString()}
-                        </div>
-
-                        <div className="text-xs mb-3">
-                          <span className={isDestroyed ? "font-bold text-red-500" : isUnlocked ? "font-bold text-neon-green" : "text-neon-green/50"}>
-                            {timeDisplay}
-                          </span>
-                          {(!isUnlocked && !isDestroyed) && <span className="text-neon-green/50"> remaining</span>}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() => window.open(seal.publicUrl, '_blank')}
-                            disabled={isDestroyed}
-                            className="cyber-button text-xs py-1 px-3 flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            VAULT
-                          </button>
-
-                          {seal.pulseUrl && seal.pulseToken && (
-                            <button
-                              onClick={() => seal.pulseUrl && seal.pulseToken && window.open(`${seal.pulseUrl}/${encodeURIComponent(seal.pulseToken)}`, '_blank')}
-                              disabled={isDestroyed}
-                              className="cyber-button text-xs py-1 px-3 flex items-center gap-1 bg-yellow-500/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                              <Shield className="w-3 h-3" />
-                              PULSE
-                            </button>
-                          )}
-
-                          <button
-                            onClick={() => downloadSeal(seal)}
-                            disabled={isDestroyed}
-                            className="cyber-button text-xs py-1 px-3 flex items-center gap-1 bg-neon-green/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <Download className="w-3 h-3" />
-                            DOWNLOAD
-                          </button>
-
-                          {seal.pulseToken && !isDestroyed && (
-                            <button
-                              onClick={() => setBurnConfirm(seal)}
-                              className="cyber-button text-xs py-1 px-3 flex items-center gap-1 bg-red-500/10 text-red-500 border-red-500/50"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              BURN
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => deleteSeal(seal.id)}
-                        className="text-red-500 hover:text-red-400 transition-colors p-2 self-start sm:self-auto"
-                        aria-label="Delete seal"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+        {renderContent()}
 
         <div className="text-center mt-8">
-          <Link href="/" className="cyber-button inline-block">
+          <Link
+            href="/"
+            className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] inline-block"
+          >
             CREATE NEW SEAL
           </Link>
         </div>
@@ -411,7 +463,9 @@ ${seal.type === "ephemeral" ? `- Ephemeral seals delete automatically after ${se
                 <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
                   <Trash2 className="w-8 h-8 text-red-500" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-red-500 mb-2">DESTROY SEAL?</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-red-500 mb-2">
+                  DESTROY SEAL?
+                </h2>
                 <p className="text-neon-green/70 text-sm mb-4">
                   This action is permanent and cannot be undone.
                 </p>
@@ -424,13 +478,13 @@ ${seal.type === "ephemeral" ? `- Ephemeral seals delete automatically after ${se
               <div className="flex gap-3">
                 <button
                   onClick={() => setBurnConfirm(null)}
-                  className="cyber-button flex-1 bg-neon-green/10"
+                  className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex-1"
                 >
                   CANCEL
                 </button>
                 <button
                   onClick={() => burnSeal(burnConfirm)}
-                  className="cyber-button flex-1 bg-red-500/20 border-red-500/50 text-red-500 hover:bg-red-500/30"
+                  className="py-2 rounded text-xs sm:text-sm font-bold transition-all bg-neon-green text-dark-bg shadow-[0_0_10px_rgba(0,255,65,0.3)] flex-1"
                 >
                   DESTROY
                 </button>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { BackgroundBeams } from "@/app/components/ui/background-beams";
 import { Card } from "@/app/components/Card";
+import { Button } from "@/app/components/Button";
 import {
   CheckCircle,
   XCircle,
@@ -20,7 +21,7 @@ export default function PulsePage({ params }: { params: { token: string } }) {
   >("loading");
   const [message, setMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState<any>(null);
-  const [sealInfo, setSealInfo] = useState<any>(null);
+  const [, setSealInfo] = useState<any>(null);
   const [pulseInterval, setPulseInterval] = useState(10);
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -275,11 +276,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 </p>
               </div>
             </Card>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-              <button
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <Button
                 onClick={() => handleAction("renew")}
                 disabled={isUpdating}
-                className="cyber-button bg-neon-green/20 hover:bg-neon-green/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
+                className="w-full h-12 flex items-center justify-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="whitespace-nowrap">
@@ -287,11 +288,11 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                     ? "PROCESSING..."
                     : "RENEW PULSE"}
                 </span>
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleAction("unlock")}
                 disabled={isUpdating}
-                className="cyber-button bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-12"
+                className="w-full h-12 flex items-center justify-center gap-2"
               >
                 <Unlock className="w-4 h-4" />
                 <span className="whitespace-nowrap">
@@ -299,12 +300,13 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                     ? "PROCESSING..."
                     : "UNLOCK NOW"}
                 </span>
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
               onClick={() => handleAction("delete")}
               disabled={isUpdating}
-              className="cyber-button w-full bg-red-500/20 hover:bg-red-500/30 border-red-500/50 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed mb-4 flex items-center justify-center gap-2 h-12"
+              variant="danger"
+              className="w-full h-12 flex items-center justify-center gap-2 mb-4 text-xs sm:text-sm"
             >
               <Trash2 className="w-4 h-4" />
               <span className="whitespace-nowrap">
@@ -312,11 +314,15 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                   ? "PROCESSING..."
                   : "DELETE SEAL FOREVER"}
               </span>
-            </button>
+            </Button>
             <div className="flex gap-3 mb-2">
-              <a href="/" className="cyber-button flex-1 bg-neon-green/10">
+              <Button
+                onClick={() => window.location.href = "/"}
+                variant="primary"
+                className="w-full"
+              >
                 CREATE NEW SEAL
-              </a>
+              </Button>
             </div>
             <a
               href="/"
@@ -345,26 +351,26 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 </p>
               )}
             </Card>
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-4 mb-4">
               {actionType === "renew" && (
-                <button
+                <Button
                   onClick={() => {
                     globalThis.location.href = `/pulse/${encodeURIComponent(currentToken)}`;
                   }}
-                  className="cyber-button flex-1"
+                  className="flex-1"
                 >
                   PULSE AGAIN
-                </button>
+                </Button>
               )}
               {actionType !== "delete" && (
-                <a href="/" className="cyber-button flex-1 bg-neon-green/10">
+                <Button onClick={() => window.location.href = "/"} className="flex-1">
                   RETURN HOME
-                </a>
+                </Button>
               )}
               {actionType === "delete" && (
-                <a href="/" className="cyber-button w-full">
+                <Button onClick={() => window.location.href = "/"} className="w-full">
                   RETURN HOME
-                </a>
+                </Button>
               )}
             </div>
           </>
@@ -389,20 +395,20 @@ export default function PulsePage({ params }: { params: { token: string } }) {
                 </details>
               )}
             </Card>
-            <div className="flex gap-3 mb-4">
-              <button
+            <div className="flex gap-4 mb-4">
+              <Button
                 onClick={() => {
                   setStatus("loading");
                   setErrorDetails(null);
                   globalThis.location.reload();
                 }}
-                className="cyber-button flex-1"
+                className="flex-1"
               >
                 TRY AGAIN
-              </button>
-              <a href="/" className="cyber-button flex-1 bg-neon-green/10">
+              </Button>
+              <Button onClick={() => window.location.href = "/"} className="flex-1">
                 RETURN HOME
-              </a>
+              </Button>
             </div>
           </>
         )}
