@@ -11,6 +11,10 @@
 
 ![TimeSeal Demo](public/demo.gif)
 
+![YouTube Thumbnail](public/thumbnail.png)
+
+![Time-Seal Architecture](public/explainerimage.png)
+
 ![Time-Seal Animation](public/timeseal_ascii.svg)
 
 ![Time-Seal Landing Page](public/landingpage.png)
@@ -28,8 +32,6 @@
 **TIME-SEAL** is a cryptographically enforced time-locked vault system built on Cloudflare's edge infrastructure. It allows you to encrypt a file or message that **mathematically cannot be opened** until a specific moment in the future.
 
 **⚠️ Retention Policy:** All seals are automatically deleted 30 days after their unlock time to protect database resources. Maximum seal lifetime is 60 days (30 days until unlock + 30 days retention).
-
-![Time-Seal Architecture](public/explainerimage.png)
 
 ### Why is this different?
 
