@@ -288,9 +288,10 @@ sequenceDiagram
 6. Click "Create Time-Seal"
 7. Choose how to save the vault link:
    - **COPY** - Copy to clipboard
-   - **DOWNLOAD** - Save markdown file with links
-   - **SAVE** - Encrypt and store in browser vault
+   - **DOWNLOAD** - Save markdown file for offline backup
 8. Share vault link with recipient
+
+**Note:** All created seals are automatically saved encrypted in your browser's local storage and accessible from the dashboard.
 
 **Manual Configuration:**
 
@@ -304,9 +305,10 @@ sequenceDiagram
 6. Click "Create Time-Seal"
 7. Choose how to save the vault link:
    - **COPY** - Copy to clipboard
-   - **DOWNLOAD** - Save markdown file with links
-   - **SAVE** - Encrypt and store in browser vault
+   - **DOWNLOAD** - Save markdown file for offline backup
 8. Share vault link with recipient
+
+**Note:** All created seals are automatically saved encrypted in your browser's local storage and accessible from the dashboard.
 
 **Dead Man's Switch:**
 
@@ -327,7 +329,7 @@ sequenceDiagram
 3. Set max views (1-100, default: 1 for read-once)
 4. Complete security check
 5. Click "Create Time-Seal"
-6. Save vault link (COPY/DOWNLOAD/SAVE)
+6. Save vault link (COPY/DOWNLOAD)
 7. Share with recipient - seal auto-deletes after N views
 
 ### How do I unlock a seal?
@@ -368,7 +370,7 @@ sequenceDiagram
 
 ### How do I save my seals for later?
 
-**Three options after creating a seal:**
+**Two options for saving vault links:**
 
 1. **COPY** - Copy vault link to clipboard
    - Paste into password manager
@@ -380,37 +382,39 @@ sequenceDiagram
    - Includes security notes and instructions
    - Offline backup for your records
    - Print or store in secure location
+   - **Save files offline** for permanent backup independent of browser storage
 
-3. **SAVE** - Encrypt and save to browser vault
-   - Stored encrypted in your browser (AES-GCM-256)
-   - Access anytime from dashboard
-   - Never transmitted to server
-   - Unique encryption key per browser
+**Automatic Encrypted Storage:**
 
-**Encrypted Local Storage:**
-
-- Your seals are encrypted with AES-GCM-256
-- Encryption key stored in your browser only
-- No server-side storage of your vault links
-- Data persists in localStorage until you clear it
-- Access saved seals at /dashboard
+- All created seals are automatically saved encrypted in your browser's localStorage
+- Encryption uses AES-GCM-256 with a unique key per browser
+- Access your saved seals anytime from the dashboard at /dashboard
+- No server-side storage - your vault links never leave your device
+- Data persists until you clear browser data
 
 **Best practices:**
 
-- Use all three methods for important seals
-- Store markdown files in encrypted cloud storage
-- Keep vault links in password manager
+- Download markdown files for important seals (offline backup)
+- Keep vault links in password manager for extra security
 - Never share vault links over unencrypted channels
-- Clear browser data will delete saved seals
+- Visit /dashboard to manage your saved seals
 
 ### How do I access my saved seals?
 
+**All seals are automatically saved to your browser's encrypted storage.**
+
 1. Visit /dashboard
-2. See all seals saved in your browser
+2. See all seals you've created (encrypted locally)
 3. Click any seal to open vault page
 4. Delete seals you no longer need
 
-**Note:** Saved seals are encrypted and stored locally in your browser. They are NOT synced to the server or across devices.
+**How it works:**
+- Seals are automatically encrypted with AES-GCM-256 when created
+- Stored in your browser's localStorage (never sent to server)
+- Unique encryption key per browser
+- Access from any page via the dashboard link
+
+**Note:** Saved seals are stored locally in your browser only. They are NOT synced to the server or across devices. Clearing browser data will delete saved seals.
 
 ### What happens if I lose the vault link?
 
