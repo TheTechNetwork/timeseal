@@ -416,7 +416,7 @@ sequenceDiagram
 - Access from any page via the dashboard link
 - **Storage limit:** ~5MB (browser localStorage limit)
 
-**Note:** Saved seals are stored locally in your browser only. They are NOT synced to the server or across devices. Clearing browser data will delete saved seals. If you reach the storage limit, delete old seals or download them as markdown files for offline backup.
+**Note:** Saved seals are stored locally in your browser only. They are NOT synced to the server or across devices. Clearing browser data will delete your saved vault links (but the seals remain in the database). If you reach the storage limit, delete old saved links or download them as markdown files for offline backup.
 
 ### What happens if I lose the vault link?
 
