@@ -5,17 +5,17 @@
 ![Storage](https://img.shields.io/badge/Storage-D1_Database-neon_green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Operational-neon_green?style=for-the-badge)
 
-# ⏳ TIME-SEAL
+![Time-Seal Animation](public/timeseal_ascii.svg)
 
 **Send digital time capsules that are impossible to open until the date you choose.**
 
-[![TimeSeal Demo](public/demo.gif)](https://www.youtube.com/watch?v=7nwcL-pt0pA)
+<a href="https://www.youtube.com/watch?v=7nwcL-pt0pA">
+  <img src="public/demo.gif" alt="TimeSeal Demo" width="800">
+</a>
 
 ![YouTube Thumbnail](public/thumbnail.png)
 
 ![Time-Seal Architecture](public/explainerimage.png)
-
-![Time-Seal Animation](public/timeseal_ascii.svg)
 
 ![Time-Seal Landing Page](public/landingpage.png)
 
@@ -39,6 +39,8 @@
 
 ### 📸 User Journey
 
+<div align="center">
+
 **1. Create Your Seal**
 
 ![Seal Created](public/sealcreated.png)
@@ -54,6 +56,8 @@
 **4. Manage Your Seals**
 
 ![My Seals Dashboard](public/myseals.png)
+
+</div>
 
 ---
 
