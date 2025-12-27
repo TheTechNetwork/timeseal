@@ -3,6 +3,34 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+  "description": "Cryptographically enforced time-locked vault system with Dead Man's Switch, ephemeral messages, and zero-trust architecture",
+  "keywords": [
+    "encryption",
+    "cryptography",
+    "time-lock",
+    "dead-mans-switch",
+    "cloudflare-workers",
+    "nextjs",
+    "security",
+    "privacy",
+    "aes-encryption",
+    "zero-trust",
+    "self-hosted",
+    "typescript",
+    "serverless",
+    "edge-computing",
+    "web-crypto"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Teycir/TimeSeal.git"
+  },
+  "homepage": "https://timeseal.online",
+  "bugs": {
+    "url": "https://github.com/Teycir/TimeSeal/issues"
+  },
+  "author": "Teycir Ben Soltane <https://teycirbensoltane.tn>",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
