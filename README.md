@@ -11,6 +11,8 @@
 
 ![Time-Seal Animation](public/timeseal_ascii.svg)
 
+![Time-Seal Landing Page](public/landingpage.png)
+
 ### _"If I go silent, this speaks for me."_
 
 [Create a Seal](https://timeseal.online) · [View Architecture](#-architecture) · [Report Bug](https://github.com/teycir/timeseal/issues)
@@ -30,6 +32,24 @@
 ### Why is this different?
 
 > most "future message" apps contain "trust me bro" promises. Time-Seal is **Cryptographically Enforced** at the Edge.
+
+### 📸 User Journey
+
+**1. Create Your Seal**
+
+![Seal Created](public/sealcreated.png)
+
+**2. Keep It Alive (Dead Man's Switch)**
+
+![Pulse Page](public/pulse.png)
+
+**3. Unlock Your Content**
+
+![Unlocked Seal](public/unlocked.png)
+
+**4. Manage Your Seals**
+
+![My Seals Dashboard](public/myseals.png)
 
 ---
 
@@ -901,21 +921,33 @@ wrangler secret put MASTER_ENCRYPTION_KEY
 
 ## 📚 Documentation
 
+### Core Documentation
 - [API Reference](docs/API.md) - Complete REST API documentation
 - [Architecture Guide](docs/ARCHITECTURE.md) - Design patterns and abstractions
-- [Reusable Libraries](docs/REUSABLE-LIBRARIES.md) - **NEW:** Extracted library documentation
-- [Libraries Quick Reference](docs/LIBRARIES-QUICK-REF.md) - **NEW:** Quick reference cheat sheet
+- [Reusable Libraries](docs/REUSABLE-LIBRARIES.md) - Extracted library documentation
+- [Libraries Quick Reference](docs/LIBRARIES-QUICK-REF.md) - Quick reference cheat sheet
+
+### Deployment & Operations
 - [Deployment Guide](docs/DEPLOYMENT.md) - Cloudflare setup instructions
+- [Self-Hosting Guide](docs/SELF-HOSTING.md) - Deploy your own instance
+- [Domain Migration Guide](docs/DOMAIN-MIGRATION-LEARNINGS.md) - Custom domain setup and troubleshooting
+- [Analytics Setup](docs/ANALYTICS.md) - Privacy-first analytics implementation
+
+### Security
 - [Security Documentation](docs/SECURITY.md) - Threat model and security controls
+- [Defense Audit Report](docs/DEFENSE-AUDIT.md) - Comprehensive security audit (v1.0.0)
 - [Trust Assumptions](docs/TRUST-ASSUMPTIONS.md) - What you must trust to use TimeSeal
 - [Hardening Guide](docs/HARDENING.md) - Mitigations for highest-priority threats
-- [Self-Hosting Guide](docs/SELF-HOSTING.md) - Deploy your own instance
 - [Security Enhancements](docs/SECURITY-ENHANCEMENTS.md) - Key rotation, upload limits, integrity
 - [Key Rotation Guide](docs/KEY-ROTATION.md) - Master key rotation procedures
 - [Security Testing](docs/SECURITY-TESTING.md) - Penetration testing guide
 - [Audit Logging](docs/AUDIT-LOGGING.md) - Immutable audit trail for all operations
+
+### Testing & Quality
 - [Testing Guide](docs/TESTING.md) - Complete testing documentation
 - [Testing Infrastructure](docs/TESTING-INFRASTRUCTURE.md) - Test setup and configuration
+
+### Legal & Transparency
 - [Transparency Reports](docs/TRANSPARENCY-REPORT-TEMPLATE.md) - Quarterly legal disclosure
 - [Changelog](docs/CHANGELOG.md) - Version history and changes
 - [TODO](docs/TODO.md) - Production readiness checklist
@@ -928,129 +960,6 @@ This project is licensed under the **Business Source License (BSL)**.
 - **Converts to Apache 2.0 after 4 years**
 
 See [LICENSE](LICENSE) for full terms.
-
----
-
-## 🔮 Roadmap
-
-**Recently Implemented (v0.9.3):**
-
-- ✅ Production Operations - Load testing, error tracking, database backups
-- ✅ Smart Load Testing - Autocannon-based testing of critical endpoints
-- ✅ Error Tracking - Winston logger with automatic rotation and JSON formatting
-- ✅ Strategic Integration - Error tracking at 7 critical points in sealService
-- ✅ Database Backups - Automated D1 backup script with compression
-- ✅ MIT Licensed Tools - Autocannon and Winston (both MIT licensed)
-
-**Recently Implemented (v0.9.2):\*\***
-
-- ✅ Ephemeral Seals UI - Complete user interface for self-destructing seals
-- ✅ Three Seal Types - TIMED | DEADMAN | EPHEMERAL buttons
-- ✅ Max Views Input - Configure 1-100 views before auto-deletion
-- ✅ Responsive Design - All text sizes responsive across all pages
-- ✅ Dashboard Integration - Ephemeral seals display with view count
-- ✅ Test Suite - Full ephemeral seal test script passing
-
-**Recently Implemented (v0.9.1):\*\***
-
-- ✅ Encrypted Local Storage - Browser-based encrypted vault for saving seals
-- ✅ Three-Button Interface - COPY | DOWNLOAD (MD) | SAVE (encrypted)
-- ✅ Privacy-First Storage - No server storage of user's vault links
-- ✅ Simplified Security - Removed seed phrase complexity
-- ✅ Dashboard Access - View and manage saved seals
-- ✅ Markdown Downloads - Offline backup with both vault and pulse links
-
-**Recently Implemented (v0.9.0):\*\***
-
-- ✅ Ephemeral Seals - Self-destructing read-once messages
-- ✅ Atomic View Counting - Race-condition safe view tracking
-- ✅ Privacy-Preserving Fingerprints - SHA-256 hashed viewer tracking
-- ✅ Auto-Deletion - Blob and database cleanup on exhaustion
-- ✅ Modular Architecture - Reusable ephemeral library
-
-**Recently Implemented (v0.8.1):**
-
-- ✅ Observer Pattern - Event-driven seal lifecycle (fully integrated)
-- ✅ Event System - Decoupled logging, metrics, audit trails
-- ✅ Zero Dead Code - Removed unused Builder/Decorator patterns
-- ✅ Production Ready - All events integrated in sealService.ts
-
-**Recently Implemented (v0.8.0):\*\*\*\***
-
-- ✅ Reusable Libraries - Extracted 10 comprehensive libraries (~1,620 LOC)
-- ✅ Library Documentation - 4 comprehensive docs with examples
-- ✅ Code Refactoring - Eliminated duplication, improved maintainability
-- ✅ TypeScript Support - Full type safety across all libraries
-- ✅ Tree-Shakeable Imports - Optimized bundle size
-- ✅ Regression Testing - All 135 tests pass, zero breaking changes
-
-**Recently Implemented (v0.7.0):\*\***
-
-- ✅ Privacy-First Analytics - Zero external dependencies, GDPR compliant
-- ✅ Seal Counter - Homepage displays total seals created (social proof)
-- ✅ Analytics Security - Rate limiting and input validation on endpoints
-- ✅ Production-Grade Code - Removed MockDatabase, D1 required everywhere
-- ✅ Fail-Fast Configuration - No optional env vars, explicit errors on misconfiguration
-
-**Recently Implemented (v0.6.2):\*\***
-
-- ✅ Replay Attack Prevention - Nonce-first validation eliminates race conditions
-- ✅ Atomic Pulse Updates - Single database operation prevents partial state
-- ✅ Strict Token Validation - Format checks reject malformed pulse tokens
-- ✅ Safe Deletion Order - Database-first prevents data loss
-- ✅ Fingerprint Hashing - SHA-256 prevents rate limit collisions
-- ✅ Memory Leak Fix - Concurrent tracker cleanup mechanism
-- ✅ Access Count Accuracy - Only counts successful unlocks
-- ✅ File Size Alignment - 750KB enforced at all layers
-
-**Recently Implemented (v0.6.1):\*\***
-
-- ✅ Dead Man's Switch Pulse Fix - Resolved 500 error on repeated pulses
-- ✅ Pulse Token URL Encoding - Fixed 404 errors with special characters
-- ✅ Security Hardening - Removed public pulse URL exposure
-- ✅ Error Logging System - Comprehensive debugging with ErrorLogger
-- ✅ Transaction Safety - Rollback mechanisms for database operations
-- ✅ Warrant Canary Cleanup - Removed broken admin endpoints
-
-**Recently Implemented (v0.6.0):\*\***
-
-- ✅ Security Hardening - Memory protection, extension detection, warrant canary
-- ✅ Built-in Warrant Canary - Auto-updating transparency at /canary
-- ✅ Security Dashboard - Real-time browser extension warnings
-- ✅ Memory Obfuscation - Key A protected from casual inspection
-- ✅ Self-Hosting Guide - Complete deployment instructions
-
-**Recently Implemented (v0.5.1):**
-
-- ✅ CRITICAL FIX: HKDF deterministic salt (decryption now works)
-- ✅ Server-only pulse token generation (removed client UUID)
-- ✅ Time check ordering fix (timing attack prevention)
-
-**Recently Implemented (v0.5.0):**
-
-- ✅ Cryptographic Receipts - HMAC-signed proof of seal creation
-- ✅ Receipt Verification - API endpoint to verify signatures
-- ✅ Seal Statistics - Access count tracking
-- ✅ Custom Unlock Messages - Personalized messages on unlock
-- ✅ Auto-Expiration - Configurable seal deletion after unlock
-- ✅ Blob Hash Preview - SHA-256 hash visible before unlock
-- ✅ DB-Backed Security - Rate limits and nonces in D1
-- ✅ Browser Fingerprinting - Enhanced rate limit bypass prevention
-- ✅ Timing Attack Mitigation - Random response jitter
-- ✅ Pulse Interval Fix - Critical 1000x multiplier bug fixed
-
-**Recently Implemented:**
-
-- ✅ Audit Logging - Immutable access trail
-- ✅ Code Deduplication - Cleaner API routes
-- ✅ Test Infrastructure - Fast, reliable tests
-
-**Recently Completed:**
-
-- ✅ Production Deployment - Live at timeseal.online
-- ✅ Cloudflare Workers Migration - Migrated from deprecated @cloudflare/next-on-pages
-
-See [TODO.md](docs/TODO.md) for complete checklist.
 
 ---
 
