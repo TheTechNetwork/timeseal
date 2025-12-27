@@ -12,7 +12,7 @@
 **Send digital time capsules that are impossible to open until the date you choose.**
 
 <a href="https://www.youtube.com/watch?v=7nwcL-pt0pA">
-  <img src="public/demo.gif" alt="TimeSeal Demo" width="800">
+  <img src="public/demo.gif" alt="TimeSeal Demo">
 </a>
 
 ![YouTube Thumbnail](public/thumbnail.png)
