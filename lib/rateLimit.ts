@@ -88,13 +88,18 @@ export async function withRateLimit(
   handler: () => Promise<Response>,
   config: RateLimitConfig
 ): Promise<Response> {
+  // Skip rate limiting in E2E mode
+  if (process.env.NEXT_PUBLIC_IS_E2E === 'true') {
+    return handler();
+  }
+
   if (!config.db) {
     throw new Error("Database required for rate limiting");
   }
 
   const identifier = config.key || request.headers.get('CF-Connecting-IP') || 'unknown';
   const { allowed, remaining } = await config.db.checkRateLimit(identifier, config.limit, config.window);
-  
+
   if (!allowed) {
     return new Response(
       JSON.stringify({ error: 'Rate limit exceeded' }),
