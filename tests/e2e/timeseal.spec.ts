@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8788';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8787';
 
 test.describe('TimeSeal E2E Tests', () => {
 
