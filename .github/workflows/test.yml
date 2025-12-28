@@ -33,8 +33,6 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npx playwright install --with-deps
       - run: npm run test:e2e
-        env:
-          NEXT_PUBLIC_IS_E2E: true
       - uses: actions/upload-artifact@v3
         if: always()
         with:

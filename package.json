@@ -48,6 +48,7 @@
     "test:watch": "jest --watch",
     "test:unit": "jest tests/unit --maxWorkers=50%",
     "test:integration": "jest tests/integration --maxWorkers=50%",
+    "preview:e2e": "./scripts/init-e2e-db.sh && npm run preview",
     "test:e2e": "playwright test -c tests/config/playwright.config.ts",
     "test:e2e:ui": "playwright test -c tests/config/playwright.config.ts --ui",
     "test:e2e:full": "playwright test -c tests/config/playwright-e2e.config.ts",

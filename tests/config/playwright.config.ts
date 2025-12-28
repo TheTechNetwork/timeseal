@@ -13,7 +13,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:8788',
     trace: 'on-first-retry',
   },
   projects: [
@@ -21,9 +21,9 @@ export default defineConfig({
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
   ],
   webServer: {
-    command: 'NEXT_PUBLIC_IS_E2E=true MASTER_ENCRYPTION_KEY=e2e-test-key-32-characters-long npm run dev',
-    url: 'http://localhost:3000',
+    command: 'npm run preview:e2e',
+    url: 'http://localhost:8788',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 180000, // 3 minutes for build + DB init + startup
   },
 });
