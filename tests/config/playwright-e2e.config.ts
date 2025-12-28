@@ -32,7 +32,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'NEXT_PUBLIC_IS_E2E=true npm run dev',
+    command: 'NEXT_PUBLIC_IS_E2E=true MASTER_ENCRYPTION_KEY=e2e-test-key-32-characters-long npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
