@@ -94,7 +94,7 @@ export async function withRateLimit(
 
   const identifier = config.key || request.headers.get('CF-Connecting-IP') || 'unknown';
   const { allowed, remaining } = await config.db.checkRateLimit(identifier, config.limit, config.window);
-  
+
   if (!allowed) {
     return new Response(
       JSON.stringify({ error: 'Rate limit exceeded' }),

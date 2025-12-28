@@ -27,7 +27,7 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e:full
         env:
-          BASE_URL: http://localhost:3000
+          BASE_URL: http://localhost:8787
       
       - name: Upload test results
         if: always()

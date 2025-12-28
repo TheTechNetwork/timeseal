@@ -1,0 +1,19 @@
+# Cloudflare Workers Configuration for E2E Testing
+name = "timeseal-e2e"
+compatibility_date = "2024-01-01"
+
+# D1 Database Binding for E2E
+[[d1_databases]]
+binding = "DB"
+database_name = "timeseal-e2e"
+database_id = "local-e2e-db"
+
+# R2 Bucket Binding (will use mock in dev)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "timeseal-e2e-storage"
+
+# Environment Variables for E2E
+[vars]
+NODE_ENV = "test"
+NEXT_PUBLIC_IS_E2E = "true"

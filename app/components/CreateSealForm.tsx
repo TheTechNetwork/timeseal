@@ -205,6 +205,8 @@ export function CreateSealForm({
   onSuccess,
   onProgressChange,
 }: CreateSealFormProps) {
+  const isE2EMode = process.env.NEXT_PUBLIC_IS_E2E === 'true';
+
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [unlockDate, setUnlockDate] = useState<Date | null>(null);
@@ -215,7 +217,7 @@ export function CreateSealForm({
   const [pulseUnit, setPulseUnit] = useState<"minutes" | "days">("days");
   const [maxViews, setMaxViews] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(isE2EMode ? 'e2e-bypass-token' : null);
 
   const formatFileSize = useCallback((bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -399,7 +401,7 @@ export function CreateSealForm({
       return;
     }
 
-    if (!turnstileToken) {
+    if (!turnstileToken && !isE2EMode) {
       toast.error("Please complete the security check");
       return;
     }
@@ -1105,27 +1107,29 @@ export function CreateSealForm({
         </motion.div>
       </Card>
 
-      <div className="flex justify-center mt-6">
-        <div className="tooltip">
-          <span className="tooltip-text">
-            Complete this security check to prove you&apos;re human
-          </span>
-          <Turnstile
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-            onSuccess={setTurnstileToken}
-            onError={() =>
-              toast.error("Security verification failed. Please refresh.")
-            }
-            onExpire={() => setTurnstileToken(null)}
-            options={{
-              theme: "dark",
-              size: "normal",
-              refreshExpired: "auto",
-            }}
-            className="w-full"
-          />
+      {!isE2EMode && (
+        <div className="flex justify-center mt-6">
+          <div className="tooltip">
+            <span className="tooltip-text">
+              Complete this security check to prove you&apos;re human
+            </span>
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onSuccess={setTurnstileToken}
+              onError={() =>
+                toast.error("Security verification failed. Please refresh.")
+              }
+              onExpire={() => setTurnstileToken(null)}
+              options={{
+                theme: "dark",
+                size: "normal",
+                refreshExpired: "auto",
+              }}
+              className="w-full"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
