@@ -1,14 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  testDir: '../e2e',
+  testDir: path.join(__dirname, '../e2e'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:8787',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -27,8 +32,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'NEXT_PUBLIC_IS_E2E=true npm run dev',
-    url: 'http://localhost:3000',
+    command: 'npm run preview:e2e',
+    url: 'http://localhost:8787',
     reuseExistingServer: !process.env.CI,
+    timeout: 180000, // 3 minutes for build + DB init + startup
   },
 });

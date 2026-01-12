@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { CommandPalette } from './components/CommandPalette'
@@ -10,7 +9,8 @@ import { ScrollProgress } from './components/ScrollProgress'
 import { IdleBlur } from './components/IdleBlur'
 import { SecurityDashboard } from '@/components/SecurityDashboard'
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'] })
+// Use system monospace font (temporarily disabled Google Fonts for E2E compatibility)
+const jetbrainsMono = { className: 'font-mono' }
 
 export const viewport: Viewport = {
   width: 'device-width',

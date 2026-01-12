@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Force HTTPS redirect
-  if (request.nextUrl.protocol === 'http:') {
+  // Skip HTTPS redirect in development and E2E mode
+  const isDev = process.env.NODE_ENV === 'development';
+  const isE2E = process.env.NEXT_PUBLIC_IS_E2E === 'true';
+
+  // Force HTTPS redirect (except in dev/E2E)
+  if (!isDev && !isE2E && request.nextUrl.protocol === 'http:') {
     const httpsUrl = request.nextUrl.clone();
     httpsUrl.protocol = 'https:';
     return NextResponse.redirect(httpsUrl, 301);
